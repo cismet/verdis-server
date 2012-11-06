@@ -8,7 +8,6 @@
 package de.cismet.verdis.server.search;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
-import Sirius.server.search.CidsServerSearch;
 
 import org.apache.log4j.Logger;
 
@@ -16,6 +15,8 @@ import java.rmi.RemoteException;
 
 import java.util.ArrayList;
 import java.util.Collection;
+
+import de.cismet.cids.server.search.AbstractCidsServerSearch;
 
 import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 import de.cismet.verdis.commons.constants.RegenFlaechenPropertyConstants;
@@ -28,7 +29,7 @@ import de.cismet.verdis.commons.constants.VerdisConstants;
  * @version  $Revision$, $Date$
  */
 
-public class FlaechenCrossReferencesServerSearch extends CidsServerSearch {
+public class FlaechenCrossReferencesServerSearch extends AbstractCidsServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -78,7 +79,7 @@ public class FlaechenCrossReferencesServerSearch extends CidsServerSearch {
 
     @Override
     public Collection performServerSearch() {
-        final MetaService ms = (MetaService)getActiveLoaclServers().get(VerdisConstants.DOMAIN);
+        final MetaService ms = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);
         if (ms != null) {
             try {
                 final ArrayList<ArrayList> lists = ms.performCustomSearch(searchQuery);
