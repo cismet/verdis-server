@@ -8,6 +8,7 @@
 package de.cismet.verdis.server.search;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
+import Sirius.server.middleware.types.MetaObjectNode;
 
 import org.apache.log4j.Logger;
 
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
+import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
 
 import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
@@ -25,7 +27,7 @@ import de.cismet.verdis.commons.constants.VerdisConstants;
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public class KassenzeichenSearchStatement extends AbstractCidsServerSearch {
+public class KassenzeichenSearchStatement extends AbstractCidsServerSearch implements MetaObjectNodeServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -54,7 +56,7 @@ public class KassenzeichenSearchStatement extends AbstractCidsServerSearch {
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public Collection performServerSearch() {
+    public Collection<MetaObjectNode> performServerSearch() {
         try {
             final String sql;
             if (searchString.length() == 6) {
