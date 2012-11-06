@@ -11,6 +11,8 @@ import Sirius.server.middleware.interfaces.domainserver.MetaService;
 
 import com.vividsolutions.jts.geom.Geometry;
 
+import org.apache.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,6 +32,11 @@ import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
  * @version  $Revision$, $Date$
  */
 public class KassenzeichenGeomSearch extends GeomServerSearch {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** LOGGER. */
+    private static final transient Logger LOG = Logger.getLogger(KassenzeichenGeomSearch.class);
 
     //~ Methods ----------------------------------------------------------------
 
@@ -91,39 +98,39 @@ public class KassenzeichenGeomSearch extends GeomServerSearch {
                         + searchGeometry.getSRID() + "), geom.geo_field) "
                         + "    ORDER BY kassenzeichennumer ASC;";
 
-            final MetaService metaService = (MetaService)getActiveLoaclServers().get(VerdisConstants.DOMAIN);
+            final MetaService metaService = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);
 
             // ids der kassenzeichen sammeln
             final Set<Integer> idSet = new HashSet<Integer>();
-            if (getLog().isDebugEnabled()) {
-                getLog().debug(sqlKassenzeichenGeom);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(sqlKassenzeichenGeom);
             }
             try {
                 for (final ArrayList fields : metaService.performCustomSearch(sqlKassenzeichenGeom)) {
                     idSet.add((Integer)fields.get(0));
                 }
             } catch (Exception ex) {
-                getLog().error("problem during kassenzeichen geom search", ex);
+                LOG.error("problem during kassenzeichen geom search", ex);
             }
-            if (getLog().isDebugEnabled()) {
-                getLog().debug(sqlFlaechenGeom);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(sqlFlaechenGeom);
             }
             try {
                 for (final ArrayList fields : metaService.performCustomSearch(sqlFlaechenGeom)) {
                     idSet.add((Integer)fields.get(0));
                 }
             } catch (Exception ex) {
-                getLog().error("problem during flaechen geom search", ex);
+                LOG.error("problem during flaechen geom search", ex);
             }
-            if (getLog().isDebugEnabled()) {
-                getLog().debug(sqlFrontenGeom);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(sqlFrontenGeom);
             }
             try {
                 for (final ArrayList fields : metaService.performCustomSearch(sqlFrontenGeom)) {
                     idSet.add((Integer)fields.get(0));
                 }
             } catch (Exception ex) {
-                getLog().error("problem during fronten geom search", ex);
+                LOG.error("problem during fronten geom search", ex);
             }
 
             // ids der Kassenzeichen sortieren
@@ -133,7 +140,7 @@ public class KassenzeichenGeomSearch extends GeomServerSearch {
             //
             return sortedIdList;
         } else {
-            getLog().info("searchGeometry is null, geom search is not possible");
+            LOG.info("searchGeometry is null, geom search is not possible");
         }
 
         return null;
