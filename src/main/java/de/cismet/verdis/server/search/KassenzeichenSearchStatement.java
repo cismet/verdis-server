@@ -8,10 +8,15 @@
 package de.cismet.verdis.server.search;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
-import Sirius.server.search.CidsServerSearch;
+import Sirius.server.middleware.types.MetaObjectNode;
+
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
+
+import de.cismet.cids.server.search.AbstractCidsServerSearch;
+import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
 
 import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
@@ -22,7 +27,12 @@ import de.cismet.verdis.commons.constants.VerdisConstants;
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public class KassenzeichenSearchStatement extends CidsServerSearch {
+public class KassenzeichenSearchStatement extends AbstractCidsServerSearch implements MetaObjectNodeServerSearch {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** LOGGER. */
+    private static final transient Logger LOG = Logger.getLogger(KassenzeichenSearchStatement.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -46,7 +56,7 @@ public class KassenzeichenSearchStatement extends CidsServerSearch {
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public Collection performServerSearch() {
+    public Collection<MetaObjectNode> performServerSearch() {
         try {
             final String sql;
             if (searchString.length() == 6) {
@@ -61,7 +71,7 @@ public class KassenzeichenSearchStatement extends CidsServerSearch {
                             + searchString;
             }
 
-            final MetaService ms = (MetaService)getActiveLoaclServers().get(VerdisConstants.DOMAIN);
+            final MetaService ms = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);
 
             final ArrayList<ArrayList> result = ms.performCustomSearch(sql);
 
@@ -73,7 +83,7 @@ public class KassenzeichenSearchStatement extends CidsServerSearch {
 
             return aln;
         } catch (final Exception e) {
-            getLog().error("problem during kassenzeichen search", e); // NOI18N
+            LOG.error("problem during kassenzeichen search", e); // NOI18N
 
             return null;
         }

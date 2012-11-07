@@ -7,9 +7,9 @@
 ****************************************************/
 package de.cismet.verdis.server.search;
 
-import Sirius.server.search.CidsServerSearch;
-
 import com.vividsolutions.jts.geom.Geometry;
+
+import de.cismet.cids.server.search.AbstractCidsServerSearch;
 
 /**
  * DOCUMENT ME!
@@ -17,7 +17,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-public abstract class GeomServerSearch extends CidsServerSearch {
+public abstract class GeomServerSearch extends AbstractCidsServerSearch {
 
     //~ Instance fields --------------------------------------------------------
 
