@@ -46,7 +46,6 @@ public class AssignLandparcelGeomSearch extends GeomServerSearch {
         try {
             final Point pointGeometry = (Point)getGeometry();
 
-            LOG.fatal("Pointgeom:" + pointGeometry);
             final String sql = "SELECT ASTEXT(geom.geo_field) "
                         + "FROM "
                         + "   alkis_landparcel, "
@@ -66,7 +65,6 @@ public class AssignLandparcelGeomSearch extends GeomServerSearch {
                 final String geomString = (String)fields.get(0);
                 final PGgeometry pgGeometry = new PGgeometry(geomString);
                 final Geometry geom = PostGisGeometryFactory.createJtsGeometry(pgGeometry.getGeometry());
-                LOG.fatal("FSgeom:" + geom);
                 geoms.add(geom);
             }
 
