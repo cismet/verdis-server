@@ -46,7 +46,9 @@ public class AssignLandparcelGeomSearch extends GeomServerSearch {
         try {
             final Point pointGeometry = (Point)getGeometry();
 
-            final String sql = "SELECT ASTEXT(geom.geo_field) "
+            final String sql = "SELECT "
+                        + "   ASTEXT(geom.geo_field), "
+                        + "   alkis_landparcel.bezeichnung "
                         + "FROM "
                         + "   alkis_landparcel, "
                         + "   geom "
@@ -60,15 +62,23 @@ public class AssignLandparcelGeomSearch extends GeomServerSearch {
             final MetaService metaService = (MetaService)getActiveLocalServers().get("WUNDA_BLAU");
             final ArrayList<ArrayList> result = metaService.performCustomSearch(sql);
 
-            final ArrayList<Geometry> geoms = new ArrayList<Geometry>();
-            for (final ArrayList fields : result) {
+            if (!result.isEmpty()) {
+                final ArrayList fields = result.get(0);
+
                 final String geomString = (String)fields.get(0);
+                final String bezeichnung = (String)fields.get(1);
+
                 final PGgeometry pgGeometry = new PGgeometry(geomString);
                 final Geometry geom = PostGisGeometryFactory.createJtsGeometry(pgGeometry.getGeometry());
-                geoms.add(geom);
-            }
 
-            return geoms;
+                final ArrayList data = new ArrayList();
+                data.add(geom);
+                data.add(bezeichnung);
+
+                return data;
+            } else {
+                return null;
+            }
         } catch (final Exception e) {
             LOG.fatal("problem during landparcel search", e);
             return null;
