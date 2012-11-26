@@ -9,6 +9,7 @@ package de.cismet.verdis.server.search;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 import org.apache.log4j.Logger;
@@ -39,7 +40,7 @@ public class AlkisLandparcelSearch extends GeomServerSearch {
     @Override
     public Collection performServerSearch() {
         try {
-            final Point pointGeometry = (Point)getGeometry();
+            final Geometry geometry = (Geometry)getGeometry();
 
             final String sql = "SELECT alkis_landparcel.id "
                         + "FROM "
@@ -47,7 +48,9 @@ public class AlkisLandparcelSearch extends GeomServerSearch {
                         + "   geom "
                         + "WHERE "
                         + "   geom.id = alkis_landparcel.geometrie AND "
-                        + "   ST_Within(GeomFromText('" + pointGeometry.toText() + "', " + pointGeometry.getSRID()
+                        + "   GeomFromText('" + geometry.toText() + "', " + geometry.getSRID()
+                        + ") && geom.geo_field AND"
+                        + "   ST_intersects(GeomFromText('" + geometry.toText() + "', " + geometry.getSRID()
                         + "), geom.geo_field)";
             if (LOG.isDebugEnabled()) {
                 LOG.debug(sql);

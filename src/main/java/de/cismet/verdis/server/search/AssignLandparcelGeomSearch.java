@@ -44,7 +44,7 @@ public class AssignLandparcelGeomSearch extends GeomServerSearch {
     @Override
     public Collection performServerSearch() {
         try {
-            final Point pointGeometry = (Point)getGeometry();
+            final Geometry geometry = (Geometry)getGeometry();
 
             final String sql = "SELECT "
                         + "   ASTEXT(geom.geo_field), "
@@ -54,26 +54,27 @@ public class AssignLandparcelGeomSearch extends GeomServerSearch {
                         + "   geom "
                         + "WHERE "
                         + "   geom.id = alkis_landparcel.geometrie AND "
-                        + "   ST_Within(GeomFromText('" + pointGeometry.toText() + "', " + pointGeometry.getSRID()
+                        + "   ST_Within(GeomFromText('" + geometry.toText() + "', " + geometry.getSRID()
                         + "), geom.geo_field)";
             if (LOG.isDebugEnabled()) {
                 LOG.debug(sql);
             }
             final MetaService metaService = (MetaService)getActiveLocalServers().get("WUNDA_BLAU");
-            final ArrayList<ArrayList> result = metaService.performCustomSearch(sql);
+            final ArrayList<ArrayList> results = metaService.performCustomSearch(sql);
 
-            if (!result.isEmpty()) {
-                final ArrayList fields = result.get(0);
-
-                final String geomString = (String)fields.get(0);
-                final String bezeichnung = (String)fields.get(1);
-
-                final PGgeometry pgGeometry = new PGgeometry(geomString);
-                final Geometry geom = PostGisGeometryFactory.createJtsGeometry(pgGeometry.getGeometry());
-
+            if (!results.isEmpty()) {
                 final ArrayList data = new ArrayList();
-                data.add(geom);
-                data.add(bezeichnung);
+
+                for (final ArrayList result : results) {
+                    final String geomString = (String)result.get(0);
+                    final String bezeichnung = (String)result.get(1);
+
+                    final PGgeometry pgGeometry = new PGgeometry(geomString);
+                    final Geometry geom = PostGisGeometryFactory.createJtsGeometry(pgGeometry.getGeometry());
+
+                    data.add(geom);
+                    data.add(bezeichnung);
+                }
 
                 return data;
             } else {
