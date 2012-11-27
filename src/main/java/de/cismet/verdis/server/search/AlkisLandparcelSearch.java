@@ -10,7 +10,6 @@ package de.cismet.verdis.server.search;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
 
 import org.apache.log4j.Logger;
 
@@ -42,7 +41,7 @@ public class AlkisLandparcelSearch extends GeomServerSearch {
         try {
             final Geometry geometry = (Geometry)getGeometry();
 
-            final String sql = "SELECT alkis_landparcel.id "
+            final String sql = "SELECT DISTINCT alkis_landparcel.id "
                         + "FROM "
                         + "   alkis_landparcel, "
                         + "   geom "
