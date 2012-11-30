@@ -8,7 +8,6 @@
 package de.cismet.verdis.server.search;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
-import Sirius.server.middleware.types.MetaObjectNode;
 
 import org.apache.log4j.Logger;
 
@@ -16,10 +15,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
-import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
 
+import de.cismet.verdis.commons.constants.KassenzeichenGeometriePropertyConstants;
 import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
+import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
 
 /**
  * DOCUMENT ME!
@@ -27,12 +27,13 @@ import de.cismet.verdis.commons.constants.VerdisConstants;
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public class NextKassenzeichenWithoutGeomSearchStatement extends AbstractCidsServerSearch {
+public class NextKassenzeichenWithoutKassenzeichenGeometrieSearchStatement extends AbstractCidsServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
 
     /** LOGGER. */
-    private static final transient Logger LOG = Logger.getLogger(NextKassenzeichenWithoutGeomSearchStatement.class);
+    private static final transient Logger LOG = Logger.getLogger(
+            NextKassenzeichenWithoutKassenzeichenGeometrieSearchStatement.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -45,7 +46,7 @@ public class NextKassenzeichenWithoutGeomSearchStatement extends AbstractCidsSer
      *
      * @param  kassenzeichennummer  DOCUMENT ME!
      */
-    public NextKassenzeichenWithoutGeomSearchStatement(final Integer kassenzeichennummer) {
+    public NextKassenzeichenWithoutKassenzeichenGeometrieSearchStatement(final Integer kassenzeichennummer) {
         this.kassenzeichennummer = kassenzeichennummer; // NOI18N
     }
 
@@ -59,14 +60,21 @@ public class NextKassenzeichenWithoutGeomSearchStatement extends AbstractCidsSer
                 : ("WHERE " + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " "
                             + "> '" + kassenzeichennummer + "' ");
 
-            final String sql = "SELECT kassenzeichen." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " "
-                        + "FROM kassenzeichen LEFT JOIN flurstuecke ON "
-                        + "     kassenzeichen." + KassenzeichenPropertyConstants.PROP__ID
-                        + " = flurstuecke.kassenzeichen "
+            final String sql = "SELECT " + VerdisMetaClassConstants.MC_KASSENZEICHEN + "."
+                        + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " "
+                        + "FROM " + VerdisMetaClassConstants.MC_KASSENZEICHEN + " LEFT JOIN "
+                        + VerdisMetaClassConstants.MC_KASSENZEICHEN_GEOMETRIE + " ON "
+                        + "     " + VerdisMetaClassConstants.MC_KASSENZEICHEN + "."
+                        + KassenzeichenPropertyConstants.PROP__ID
+                        + " = " + VerdisMetaClassConstants.MC_KASSENZEICHEN_GEOMETRIE + "."
+                        + KassenzeichenGeometriePropertyConstants.PROP__KASSENZEICHEN + " "
                         + whereKassenzeichennummer
-                        + "GROUP BY kassenzeichen." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER
-                        + ", flurstuecke.kassenzeichen "
-                        + "HAVING count(flurstuecke.kassenzeichen) = 0 "
+                        + "GROUP BY " + VerdisMetaClassConstants.MC_KASSENZEICHEN + "."
+                        + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER
+                        + ", " + VerdisMetaClassConstants.MC_KASSENZEICHEN_GEOMETRIE + "."
+                        + KassenzeichenGeometriePropertyConstants.PROP__KASSENZEICHEN + " "
+                        + "HAVING count(" + VerdisMetaClassConstants.MC_KASSENZEICHEN_GEOMETRIE + "."
+                        + KassenzeichenGeometriePropertyConstants.PROP__KASSENZEICHEN + ") = 0 "
                         + "ORDER BY " + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " "
                         + "LIMIT 1";
 
