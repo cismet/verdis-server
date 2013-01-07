@@ -18,8 +18,8 @@ import java.util.Collection;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 
+import de.cismet.verdis.commons.constants.FlaechePropertyConstants;
 import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
-import de.cismet.verdis.commons.constants.RegenFlaechenPropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
 /**
@@ -49,10 +49,10 @@ public class FlaechenCrossReferencesServerSearch extends AbstractCidsServerSearc
     public FlaechenCrossReferencesServerSearch(final int kzNummer) {
         searchQuery = "SELECT "
                     + "    kassenzeichen1." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " AS kz1, "
-                    + "    flaeche1." + RegenFlaechenPropertyConstants.PROP__ID + " AS fid, "
-                    + "    flaeche1." + RegenFlaechenPropertyConstants.PROP__FLAECHENBEZEICHNUNG + " AS f1, "
+                    + "    flaeche1." + FlaechePropertyConstants.PROP__ID + " AS fid, "
+                    + "    flaeche1." + FlaechePropertyConstants.PROP__FLAECHENBEZEICHNUNG + " AS f1, "
                     + "    kassenzeichen2." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " AS kz2, "
-                    + "    flaeche2." + RegenFlaechenPropertyConstants.PROP__FLAECHENBEZEICHNUNG + " AS f2 "
+                    + "    flaeche2." + FlaechePropertyConstants.PROP__FLAECHENBEZEICHNUNG + " AS f2 "
                     + "FROM "
                     + "    kassenzeichen AS kassenzeichen1, "
                     + "    kassenzeichen AS kassenzeichen2, "
