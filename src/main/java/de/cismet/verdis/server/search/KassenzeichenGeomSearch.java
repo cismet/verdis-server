@@ -50,14 +50,16 @@ public class KassenzeichenGeomSearch extends GeomServerSearch {
                         + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " AS kassenzeichennumer "
                         + "FROM "
                         + "    " + VerdisMetaClassConstants.MC_KASSENZEICHEN + " AS kassenzeichen, "
+                        + "    " + VerdisMetaClassConstants.MC_KASSENZEICHEN_GEOMETRIE
+                        + " AS kassenzeichen_geometrie, "
                         + "    " + VerdisMetaClassConstants.MC_GEOM + " AS geom "
                         + "WHERE "
                         + "    kassenzeichen." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER
                         + " IS NOT NULL AND "
-                        + "    geom.id = kassenzeichen.geometrie AND "
+                        + "    kassenzeichen.id = kassenzeichen_geometrie.kassenzeichen AND "
+                        + "    kassenzeichen_geometrie.geometrie = geom.id AND "
                         + "    ST_Intersects(GeomFromText('" + searchGeometry.toText() + "', "
-                        + searchGeometry.getSRID() + "), geom.geo_field) AND "
-                        + "    GeometryType(geom.geo_field) = 'POINT' "
+                        + searchGeometry.getSRID() + "), geom.geo_field) "
                         + "    ORDER BY kassenzeichennumer ASC;";
 
             final String sqlFlaechenGeom = "SELECT "
