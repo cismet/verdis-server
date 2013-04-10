@@ -21,6 +21,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import de.cismet.verdis.commons.constants.FlaechePropertyConstants;
+import de.cismet.verdis.commons.constants.FlaechenPropertyConstants;
+import de.cismet.verdis.commons.constants.FlaecheninfoPropertyConstants;
+import de.cismet.verdis.commons.constants.FrontenPropertyConstants;
+import de.cismet.verdis.commons.constants.FrontinfoPropertyConstants;
+import de.cismet.verdis.commons.constants.GeomPropertyConstants;
+import de.cismet.verdis.commons.constants.KassenzeichenGeometriePropertyConstants;
 import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
 import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
@@ -50,14 +57,18 @@ public class KassenzeichenGeomSearch extends GeomServerSearch {
                         + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " AS kassenzeichennumer "
                         + "FROM "
                         + "    " + VerdisMetaClassConstants.MC_KASSENZEICHEN + " AS kassenzeichen, "
+                        + "    " + VerdisMetaClassConstants.MC_KASSENZEICHEN_GEOMETRIE
+                        + " AS kassenzeichen_geometrie, "
                         + "    " + VerdisMetaClassConstants.MC_GEOM + " AS geom "
                         + "WHERE "
                         + "    kassenzeichen." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER
                         + " IS NOT NULL AND "
-                        + "    geom.id = kassenzeichen.geometrie AND "
+                        + "    kassenzeichen." + KassenzeichenPropertyConstants.PROP__ID + " = kassenzeichen_geometrie."
+                        + KassenzeichenGeometriePropertyConstants.PROP__KASSENZEICHEN + " AND "
+                        + "    kassenzeichen_geometrie." + KassenzeichenGeometriePropertyConstants.PROP__GEOMETRIE
+                        + " = geom." + GeomPropertyConstants.PROP__ID + " AND "
                         + "    ST_Intersects(GeomFromText('" + searchGeometry.toText() + "', "
-                        + searchGeometry.getSRID() + "), geom.geo_field) AND "
-                        + "    GeometryType(geom.geo_field) = 'POINT' "
+                        + searchGeometry.getSRID() + "), geom." + GeomPropertyConstants.PROP__GEO_FIELD + ") "
                         + "    ORDER BY kassenzeichennumer ASC;";
 
             final String sqlFlaechenGeom = "SELECT "
@@ -72,12 +83,16 @@ public class KassenzeichenGeomSearch extends GeomServerSearch {
                         + "WHERE "
                         + "    kassenzeichen." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER
                         + " IS NOT NULL AND "
-                        + "    flaechen.kassenzeichen_reference = kassenzeichen.id AND "
-                        + "    flaechen.flaeche = flaeche.id AND "
-                        + "    flaeche.flaecheninfo = flaecheninfo.id AND "
-                        + "    geom.id = flaecheninfo.geometrie AND "
+                        + "    flaechen." + FlaechenPropertyConstants.PROP__KASSENZEICHEN_REFERENCE
+                        + " = kassenzeichen." + KassenzeichenPropertyConstants.PROP__ID + " AND "
+                        + "    flaechen." + FlaechenPropertyConstants.PROP__FLAECHE + " = flaeche."
+                        + FlaechePropertyConstants.PROP__ID + " AND "
+                        + "    flaeche." + FlaechePropertyConstants.PROP__FLAECHENINFO + " = flaecheninfo."
+                        + FlaecheninfoPropertyConstants.PROP__ID + " AND "
+                        + "    geom." + GeomPropertyConstants.PROP__ID + " = flaecheninfo."
+                        + FlaecheninfoPropertyConstants.PROP__GEOMETRIE + " AND "
                         + "    ST_Intersects(GeomFromText('" + searchGeometry.toText() + "', "
-                        + searchGeometry.getSRID() + "), geom.geo_field) "
+                        + searchGeometry.getSRID() + "), geom." + GeomPropertyConstants.PROP__GEO_FIELD + ") "
                         + "    ORDER BY kassenzeichennumer ASC;";
 
             final String sqlFrontenGeom = "SELECT "
@@ -91,11 +106,14 @@ public class KassenzeichenGeomSearch extends GeomServerSearch {
                         + "WHERE "
                         + "    kassenzeichen." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER
                         + " IS NOT NULL AND "
-                        + "    fronten.kassenzeichen_reference = kassenzeichen.id AND "
-                        + "    fronten.frontinfo = frontinfo.id AND "
-                        + "    geom.id = frontinfo.geometrie AND  "
+                        + "    fronten." + FrontenPropertyConstants.PROP__KASSENZEICHEN_REFERENCE + " = kassenzeichen."
+                        + KassenzeichenPropertyConstants.PROP__ID + " AND "
+                        + "    fronten." + FrontenPropertyConstants.PROP__FRONT_INFO + " = frontinfo."
+                        + FrontinfoPropertyConstants.PROP__ID + " AND "
+                        + "    geom." + GeomPropertyConstants.PROP__ID + " = frontinfo."
+                        + FrontinfoPropertyConstants.PROP__GEOMETRIE + " AND  "
                         + "    ST_Intersects(GeomFromText('" + searchGeometry.toText() + "', "
-                        + searchGeometry.getSRID() + "), geom.geo_field) "
+                        + searchGeometry.getSRID() + "), geom." + GeomPropertyConstants.PROP__GEO_FIELD + ") "
                         + "    ORDER BY kassenzeichennumer ASC;";
 
             final MetaService metaService = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);
