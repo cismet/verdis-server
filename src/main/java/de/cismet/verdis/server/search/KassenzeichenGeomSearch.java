@@ -67,6 +67,8 @@ public class KassenzeichenGeomSearch extends GeomServerSearch {
                         + KassenzeichenGeometriePropertyConstants.PROP__KASSENZEICHEN + " AND "
                         + "    kassenzeichen_geometrie." + KassenzeichenGeometriePropertyConstants.PROP__GEOMETRIE
                         + " = geom." + GeomPropertyConstants.PROP__ID + " AND "
+                        + "    GeomFromText('" + searchGeometry.toText() + "', " + searchGeometry.getSRID()
+                        + ") && geom.geo_field AND "
                         + "    ST_Intersects(GeomFromText('" + searchGeometry.toText() + "', "
                         + searchGeometry.getSRID() + "), geom." + GeomPropertyConstants.PROP__GEO_FIELD + ") "
                         + "    ORDER BY kassenzeichennumer ASC;";
@@ -91,6 +93,8 @@ public class KassenzeichenGeomSearch extends GeomServerSearch {
                         + FlaecheninfoPropertyConstants.PROP__ID + " AND "
                         + "    geom." + GeomPropertyConstants.PROP__ID + " = flaecheninfo."
                         + FlaecheninfoPropertyConstants.PROP__GEOMETRIE + " AND "
+                        + "    GeomFromText('" + searchGeometry.toText() + "', " + searchGeometry.getSRID()
+                        + ") && geom.geo_field AND "
                         + "    ST_Intersects(GeomFromText('" + searchGeometry.toText() + "', "
                         + searchGeometry.getSRID() + "), geom." + GeomPropertyConstants.PROP__GEO_FIELD + ") "
                         + "    ORDER BY kassenzeichennumer ASC;";
@@ -112,6 +116,8 @@ public class KassenzeichenGeomSearch extends GeomServerSearch {
                         + FrontinfoPropertyConstants.PROP__ID + " AND "
                         + "    geom." + GeomPropertyConstants.PROP__ID + " = frontinfo."
                         + FrontinfoPropertyConstants.PROP__GEOMETRIE + " AND  "
+                        + "    GeomFromText('" + searchGeometry.toText() + "', " + searchGeometry.getSRID()
+                        + ") && geom.geo_field AND "
                         + "    ST_Intersects(GeomFromText('" + searchGeometry.toText() + "', "
                         + searchGeometry.getSRID() + "), geom." + GeomPropertyConstants.PROP__GEO_FIELD + ") "
                         + "    ORDER BY kassenzeichennumer ASC;";
