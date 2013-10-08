@@ -65,7 +65,7 @@ public class KassenzeichenGeomSearch extends GeomServerSearch {
                             + GeomPropertyConstants.PROP__ID);
             }
             if (frontFilter) {
-                searchGeometry = searchGeometry.buffer(0.0015 * scaleDenominator);
+                searchGeometry = searchGeometry.buffer(0.0010 * scaleDenominator);
 
                 joinFilter.add(VerdisMetaClassConstants.MC_FRONTINFO + " AS frontinfo");
                 whereFilter.add("frontinfo." + FrontinfoPropertyConstants.PROP__GEOMETRIE + " = geom."
