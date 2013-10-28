@@ -21,7 +21,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import de.cismet.verdis.commons.constants.FlaecheninfoPropertyConstants;
+import de.cismet.verdis.commons.constants.FrontinfoPropertyConstants;
 import de.cismet.verdis.commons.constants.GeomPropertyConstants;
+import de.cismet.verdis.commons.constants.KassenzeichenGeometriePropertyConstants;
 import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
 import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
@@ -39,22 +42,53 @@ public class KassenzeichenGeomSearch extends GeomServerSearch {
     /** LOGGER. */
     private static final transient Logger LOG = Logger.getLogger(KassenzeichenGeomSearch.class);
 
+    //~ Instance fields --------------------------------------------------------
+
+    private boolean flaecheFilter = false;
+    private boolean frontFilter = false;
+    private boolean allgemeinFilter = false;
+    private double scaleDenominator = 0.0d;
+
     //~ Methods ----------------------------------------------------------------
 
     @Override
     public Collection performServerSearch() {
-        final Geometry searchGeometry = getGeometry();
+        Geometry searchGeometry = getGeometry();
 
         if (searchGeometry != null) {
+            final ArrayList<String> joinFilter = new ArrayList<String>();
+            final ArrayList<String> whereFilter = new ArrayList<String>();
+
+            if (flaecheFilter) {
+                joinFilter.add(VerdisMetaClassConstants.MC_FLAECHENINFO + " AS flaecheninfo");
+                whereFilter.add("flaecheninfo." + FlaecheninfoPropertyConstants.PROP__GEOMETRIE + " = geom."
+                            + GeomPropertyConstants.PROP__ID);
+            }
+            if (frontFilter) {
+                searchGeometry = searchGeometry.buffer(0.0010 * scaleDenominator);
+
+                joinFilter.add(VerdisMetaClassConstants.MC_FRONTINFO + " AS frontinfo");
+                whereFilter.add("frontinfo." + FrontinfoPropertyConstants.PROP__GEOMETRIE + " = geom."
+                            + GeomPropertyConstants.PROP__ID);
+            }
+            if (allgemeinFilter) {
+                joinFilter.add(VerdisMetaClassConstants.MC_KASSENZEICHEN_GEOMETRIE + " AS kassenzeichen_geometrie");
+                whereFilter.add("kassenzeichen_geometrie." + KassenzeichenGeometriePropertyConstants.PROP__GEOMETRIE
+                            + " = geom." + GeomPropertyConstants.PROP__ID);
+            }
+
             final String sqlDerived = "SELECT "
                         + "    DISTINCT " + VerdisMetaClassConstants.MC_KASSENZEICHEN + "."
                         + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " AS kassenzeichennumer "
                         + "FROM "
                         + "    cs_attr_object_derived, "
                         + "    " + VerdisMetaClassConstants.MC_KASSENZEICHEN + " AS kassenzeichen, "
+                        + ((joinFilter.isEmpty()) ? "" : (implodeArray(joinFilter.toArray(new String[0]), ", ") + ", "))
                         + "    " + VerdisMetaClassConstants.MC_GEOM + " AS geom "
                         + "WHERE "
-                        + "    cs_attr_object_derived.class_id = 11 "
+                        + ((whereFilter.isEmpty())
+                            ? " TRUE " : ("(" + implodeArray(whereFilter.toArray(new String[0]), " OR ") + ")"))
+                        + "    AND cs_attr_object_derived.class_id = 11 "
                         + "    AND cs_attr_object_derived.attr_class_id = 0 "
                         + "    AND kassenzeichen." + KassenzeichenPropertyConstants.PROP__ID
                         + " = cs_attr_object_derived.object_id "
@@ -93,5 +127,63 @@ public class KassenzeichenGeomSearch extends GeomServerSearch {
         }
 
         return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  flaecheFilter  DOCUMENT ME!
+     */
+    public void setFlaecheFilter(final boolean flaecheFilter) {
+        this.flaecheFilter = flaecheFilter;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  frontFilter  DOCUMENT ME!
+     */
+    public void setFrontFilter(final boolean frontFilter) {
+        this.frontFilter = frontFilter;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  allgemeinFilter  DOCUMENT ME!
+     */
+    public void setAllgemeinFilter(final boolean allgemeinFilter) {
+        this.allgemeinFilter = allgemeinFilter;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   inputArray  DOCUMENT ME!
+     * @param   glueString  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static String implodeArray(final String[] inputArray, final String glueString) {
+        String output = "";
+        if (inputArray.length > 0) {
+            final StringBuilder sb = new StringBuilder();
+            sb.append(inputArray[0]);
+            for (int i = 1; i < inputArray.length; i++) {
+                sb.append(glueString);
+                sb.append(inputArray[i]);
+            }
+            output = sb.toString();
+        }
+        return output;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  scaleDenominator  DOCUMENT ME!
+     */
+    public void setScaleDenominator(final double scaleDenominator) {
+        this.scaleDenominator = scaleDenominator;
     }
 }
