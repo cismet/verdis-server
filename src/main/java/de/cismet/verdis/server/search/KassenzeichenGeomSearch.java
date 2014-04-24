@@ -77,6 +77,8 @@ public class KassenzeichenGeomSearch extends GeomServerSearch {
                             + " = geom." + GeomPropertyConstants.PROP__ID);
             }
 
+            final String geomFromText = "GeomFromText('" + searchGeometry.toText() + "', " + searchGeometry.getSRID()
+                        + ")";
             final String sqlDerived = "SELECT "
                         + "    DISTINCT " + VerdisMetaClassConstants.MC_KASSENZEICHEN + "."
                         + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " AS kassenzeichennumer "
@@ -95,11 +97,10 @@ public class KassenzeichenGeomSearch extends GeomServerSearch {
                         + "    AND kassenzeichen." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER
                         + " IS NOT NULL "
                         + "    AND geom." + GeomPropertyConstants.PROP__ID + " = cs_attr_object_derived.attr_object_id "
-                        + "    AND GeomFromText('" + searchGeometry.toText() + "', " + searchGeometry.getSRID()
-                        + ") && geom.geo_field "
-                        + "    AND ST_Intersects(GeomFromText('" + searchGeometry.toText() + "', "
-                        + searchGeometry.getSRID() + "), geom." + GeomPropertyConstants.PROP__GEO_FIELD + ") "
-                        + "ORDER BY kassenzeichennumer ASC;";
+                        + "    AND ST_Intersects("
+                        + "       (SELECT geom." + GeomPropertyConstants.PROP__GEO_FIELD + "), "
+                        + "       " + geomFromText
+                        + "    ) ORDER BY kassenzeichennumer ASC;";
 
             final MetaService metaService = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);
 
