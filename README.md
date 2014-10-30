@@ -1,4 +1,4 @@
-verdis-server
+verdis-server [![Build Status](http://ci.cismet.de/buildStatus/icon?job=verdis-server)](https://ci.cismet.de/job/verdis-server/)
 =============
 
 VerDIS is a custom app based on cismap and cids to manage sealed surfaces. (Server Part)
