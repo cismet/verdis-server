@@ -18,11 +18,6 @@ import java.util.List;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 
-import de.cismet.verdis.commons.constants.FortfuehrungAnlassPropertyConstants;
-import de.cismet.verdis.commons.constants.FortfuehrungPropertyConstants;
-import de.cismet.verdis.commons.constants.VerdisConstants;
-import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
-
 /**
  * DOCUMENT ME!
  *
@@ -95,22 +90,21 @@ public class FortfuehrungItemSearch extends AbstractCidsServerSearch {
     @Override
     public Collection performServerSearch() {
         final List<Object[]> items = new ArrayList<Object[]>();
+        final String query = "SELECT lookup_alkis_ffn.id AS id "
+                    + ", lookup_alkis_ffn.ffn AS ffn "
+                    + ", lookup_ffn_anlassarten.anl_bezeichnung AS anlass_name "
+                    + ", to_date(lookup_alkis_ffn.beginn, 'DD-Mon-YY') AS beginn_date "
+                    + ", flurstueckskennzeichen_alt AS fs_alt "
+                    + ", flurstueckskennzeichen_neu AS fs_neu "
+                    + ", asText(geom.geo_field) AS geo_field "
+                    + "FROM lookup_alkis_ffn "
+                    + "LEFT JOIN lookup_ffn_anlassarten ON '\\\"' || lookup_ffn_anlassarten.anl_ffn || '\\\"' = lookup_alkis_ffn.anl_ffn "
+                    + "LEFT JOIN flurstueck ON lookup_alkis_ffn.ffn = flurstueck.fortfuehrungsnummer "
+                    + "LEFT JOIN geom ON geom.id = flurstueck.umschreibendes_rechteck "
+                    + "WHERE geom.id IS NOT NULL AND "
+                    + "to_date(lookup_alkis_ffn.beginn, 'DD-Mon-YY') BETWEEN '" + fromDate + "' AND '" + toDate + "';";
 
-        final String query = "SELECT "
-                    + "   fortfuehrung." + FortfuehrungPropertyConstants.PROP__ID + ", "
-                    + "   fortfuehrung_anlass." + FortfuehrungAnlassPropertyConstants.PROP__NAME + " AS anlass_name, "
-                    + "   fortfuehrung." + FortfuehrungPropertyConstants.PROP__BEGINN + ", "
-                    + "   fortfuehrung." + FortfuehrungPropertyConstants.PROP__FLURSTUECK_ALT + ", "
-                    + "   fortfuehrung." + FortfuehrungPropertyConstants.PROP__FLURSTUECK_NEU + ", "
-                    + "   fortfuehrung." + FortfuehrungPropertyConstants.PROP__IST_ABGEARBEITET + " "
-                    + "FROM " + VerdisMetaClassConstants.MC_FORTFUEHRUNG + " AS fortfuehrung "
-                    + "LEFT JOIN " + VerdisMetaClassConstants.MC_FORTFUEHRUNG_ANLASS + " AS fortfuehrung_anlass "
-                    + "ON fortfuehrung." + FortfuehrungPropertyConstants.PROP__ANLASS + " = fortfuehrung_anlass.id "
-                    + "WHERE "
-                    + "   fortfuehrung." + FortfuehrungPropertyConstants.PROP__BEGINN + " BETWEEN '" + fromDate
-                    + "' AND '" + toDate + "';";
-
-        final MetaService metaService = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);
+        final MetaService metaService = (MetaService)getActiveLocalServers().get("WUNDA_BLAU");
 
         try {
             for (final ArrayList fields : metaService.performCustomSearch(query)) {
@@ -118,13 +112,14 @@ public class FortfuehrungItemSearch extends AbstractCidsServerSearch {
                     new Object[] {
                         (Integer)fields.get(0),
                         (String)fields.get(1),
-                        (Date)fields.get(2),
-                        (String)fields.get(3),
+                        (String)fields.get(2),
+                        (Date)fields.get(3),
                         (String)fields.get(4),
-                        (Boolean)fields.get(5)
+                        (String)fields.get(5),
+                        (String)fields.get(6)
                     });
             }
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             LOG.error("problem fortfuehrung item search", ex);
         }
 
