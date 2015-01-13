@@ -48,7 +48,7 @@ public class AssignLandparcelGeomSearch extends GeomServerSearch {
 
             final String sql = "SELECT "
                         + "   ASTEXT(geom.geo_field), "
-                        + "   alkis_landparcel.bezeichnung "
+                        + "   alkis_landparcel.alkis_id "
                         + "FROM "
                         + "   alkis_landparcel, "
                         + "   geom "
