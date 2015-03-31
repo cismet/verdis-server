@@ -23,6 +23,7 @@ import de.cismet.verdis.commons.constants.FlaechenPropertyConstants;
 import de.cismet.verdis.commons.constants.FlaecheninfoPropertyConstants;
 import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 import de.cismet.verdis.commons.constants.VeranlagungsgrundlagePropertyConstants;
+import de.cismet.verdis.commons.constants.VeranlagungsnummerPropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
 import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
 /**
@@ -59,8 +60,8 @@ public class FlaechenSummenServerSearch extends AbstractCidsServerSearch {
                     + "    SELECT "
                     + "        " + VerdisMetaClassConstants.MC_FLAECHE + "." + FlaechePropertyConstants.PROP__ID
                     + ", "
-                    + "        " + VerdisMetaClassConstants.MC_VERANLAGUNGSGRUNDLAGE + "."
-                    + VeranlagungsgrundlagePropertyConstants.PROP__BEZEICHNER + " AS bezeichner, "
+                    + "        " + VerdisMetaClassConstants.MC_VERANLAGUNGSNUMMER + "."
+                    + VeranlagungsnummerPropertyConstants.PROP__BEZEICHNER + " AS bezeichner, "
                     + "        (" + VerdisMetaClassConstants.MC_FLAECHENINFO + "."
                     + FlaecheninfoPropertyConstants.PROP__GROESSE_KORREKTUR + ") AS Groesse, "
                     + "        (" + VerdisMetaClassConstants.MC_FLAECHENINFO + "."
@@ -72,6 +73,7 @@ public class FlaechenSummenServerSearch extends AbstractCidsServerSearch {
                     + "        " + VerdisMetaClassConstants.MC_FLAECHE + ", "
                     + "        " + VerdisMetaClassConstants.MC_FLAECHENINFO + ", "
                     + "        " + VerdisMetaClassConstants.MC_VERANLAGUNGSGRUNDLAGE + ", "
+                    + "        " + VerdisMetaClassConstants.MC_VERANLAGUNGSNUMMER + ", "
                     + "        " + VerdisMetaClassConstants.MC_KASSENZEICHEN + " "
                     + "    WHERE "
                     + "        " + VerdisMetaClassConstants.MC_FLAECHE + "."
@@ -95,13 +97,17 @@ public class FlaechenSummenServerSearch extends AbstractCidsServerSearch {
                     + "        " + VerdisMetaClassConstants.MC_FLAECHENINFO + "."
                     + FlaecheninfoPropertyConstants.PROP__ANSCHLUSSGRAD + " = "
                     + VerdisMetaClassConstants.MC_VERANLAGUNGSGRUNDLAGE + "."
-                    + VeranlagungsgrundlagePropertyConstants.PROP__ANSCHLUSSGRAD + " "
+                    + VeranlagungsgrundlagePropertyConstants.PROP__ANSCHLUSSGRAD + " AND "
+                    + "        " + VerdisMetaClassConstants.MC_VERANLAGUNGSGRUNDLAGE + "."
+                    + VeranlagungsgrundlagePropertyConstants.PROP__VERANLAGUNGSNUMMER + " = "
+                    + VerdisMetaClassConstants.MC_VERANLAGUNGSNUMMER + "."
+                    + VeranlagungsnummerPropertyConstants.PROP__ID + " "
                     + "    UNION "
                     + "    SELECT "
                     + "        " + VerdisMetaClassConstants.MC_FLAECHE + "." + FlaechePropertyConstants.PROP__ID
                     + ", "
-                    + "        " + VerdisMetaClassConstants.MC_VERANLAGUNGSGRUNDLAGE + "."
-                    + VeranlagungsgrundlagePropertyConstants.PROP__BEZEICHNER + ", "
+                    + "        " + VerdisMetaClassConstants.MC_VERANLAGUNGSNUMMER + "."
+                    + VeranlagungsnummerPropertyConstants.PROP__BEZEICHNER + " AS bezeichner, "
                     + "        " + VerdisMetaClassConstants.MC_FLAECHE + "."
                     + FlaechePropertyConstants.PROP__ANTEIL + " AS Groesse, "
                     + "        (" + VerdisMetaClassConstants.MC_FLAECHE + "."
@@ -113,6 +119,7 @@ public class FlaechenSummenServerSearch extends AbstractCidsServerSearch {
                     + "        " + VerdisMetaClassConstants.MC_FLAECHE + ", "
                     + "        " + VerdisMetaClassConstants.MC_FLAECHENINFO + ", "
                     + "        " + VerdisMetaClassConstants.MC_VERANLAGUNGSGRUNDLAGE + ", "
+                    + "        " + VerdisMetaClassConstants.MC_VERANLAGUNGSNUMMER + ", "
                     + "        " + VerdisMetaClassConstants.MC_KASSENZEICHEN + " "
                     + "    WHERE "
                     + "        " + VerdisMetaClassConstants.MC_FLAECHE + "."
@@ -126,8 +133,8 @@ public class FlaechenSummenServerSearch extends AbstractCidsServerSearch {
                     + " = " + VerdisMetaClassConstants.MC_FLAECHE + "." + FlaechePropertyConstants.PROP__ID
                     + " AND "
                     + "        " + VerdisMetaClassConstants.MC_FLAECHE + "."
-                    + FlaechePropertyConstants.PROP__FLAECHENINFO + " = "
-                    + VerdisMetaClassConstants.MC_FLAECHENINFO + "." + FlaecheninfoPropertyConstants.PROP__ID + " AND "
+                    + FlaechePropertyConstants.PROP__FLAECHENINFO + " = " + VerdisMetaClassConstants.MC_FLAECHENINFO
+                    + "." + FlaecheninfoPropertyConstants.PROP__ID + " AND "
                     + "        " + VerdisMetaClassConstants.MC_FLAECHENINFO + "."
                     + FlaecheninfoPropertyConstants.PROP__FLAECHENART + " = "
                     + VerdisMetaClassConstants.MC_VERANLAGUNGSGRUNDLAGE + "."
@@ -135,7 +142,11 @@ public class FlaechenSummenServerSearch extends AbstractCidsServerSearch {
                     + "        " + VerdisMetaClassConstants.MC_FLAECHENINFO + "."
                     + FlaecheninfoPropertyConstants.PROP__ANSCHLUSSGRAD + " = "
                     + VerdisMetaClassConstants.MC_VERANLAGUNGSGRUNDLAGE + "."
-                    + VeranlagungsgrundlagePropertyConstants.PROP__ANSCHLUSSGRAD + " "
+                    + VeranlagungsgrundlagePropertyConstants.PROP__ANSCHLUSSGRAD + " AND "
+                    + "        " + VerdisMetaClassConstants.MC_VERANLAGUNGSGRUNDLAGE + "."
+                    + VeranlagungsgrundlagePropertyConstants.PROP__VERANLAGUNGSNUMMER + " = "
+                    + VerdisMetaClassConstants.MC_VERANLAGUNGSNUMMER + "."
+                    + VeranlagungsnummerPropertyConstants.PROP__ID + " "
                     + ") AS sub "
                     + "GROUP BY bezeichner "
                     + "HAVING bezeichner IS NOT null "
