@@ -74,8 +74,8 @@ public class VeranlagungsdateiScheduledServerAction extends DefaultScheduledServ
         }
     }
 
-    private static final transient SimpleDateFormat SUFFIX_DATEFORMAT = new SimpleDateFormat("yymmdd");
-    private static final transient SimpleDateFormat DATUM_DATEFORMAT = new SimpleDateFormat("dd.mm.yyyy");
+    private static final transient SimpleDateFormat SUFFIX_DATEFORMAT = new SimpleDateFormat("yyMMdd");
+    private static final transient SimpleDateFormat DATUM_DATEFORMAT = new SimpleDateFormat("dd.MM.yyyy");
 
     //~ Instance fields --------------------------------------------------------
 
