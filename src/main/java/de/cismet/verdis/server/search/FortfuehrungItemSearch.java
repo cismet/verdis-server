@@ -18,6 +18,8 @@ import java.util.List;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 
+import de.cismet.verdis.commons.constants.VerdisConstants;
+
 /**
  * DOCUMENT ME!
  *
@@ -30,6 +32,16 @@ public class FortfuehrungItemSearch extends AbstractCidsServerSearch {
 
     /** LOGGER. */
     private static final transient Logger LOG = Logger.getLogger(FortfuehrungItemSearch.class);
+
+    public static int FIELD_ID = 0;
+    public static int FIELD_FFN = 1;
+    public static int FIELD_ANLASSNAME = 2;
+    public static int FIELD_BEGINN = 3;
+    public static int FIELD_FS_ALT = 4;
+    public static int FIELD_FS_NEU = 5;
+    public static int FIELD_GEOFIELD = 6;
+    public static int FIELD_FLURSTUECK_ID = 7;
+    public static int FIELD_FORTFUEHRUNG_ID = 8;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -97,6 +109,7 @@ public class FortfuehrungItemSearch extends AbstractCidsServerSearch {
                     + ", flurstueckskennzeichen_alt AS fs_alt "
                     + ", flurstueckskennzeichen_neu AS fs_neu "
                     + ", asText(geom.geo_field) AS geo_field "
+                    + ", flurstueck.id AS flurstueck_id "
                     + "FROM lookup_alkis_ffn "
                     + "LEFT JOIN lookup_ffn_anlassarten ON '\\\"' || lookup_ffn_anlassarten.anl_ffn || '\\\"' = lookup_alkis_ffn.anl_ffn "
                     + "LEFT JOIN flurstueck ON lookup_alkis_ffn.ffn = flurstueck.fortfuehrungsnummer "
@@ -108,15 +121,36 @@ public class FortfuehrungItemSearch extends AbstractCidsServerSearch {
 
         try {
             for (final ArrayList fields : metaService.performCustomSearch(query)) {
+                final String queryFF = "SELECT id FROM fortfuehrung where alkis_ffn_id = '" + (Integer)fields.get(0)
+                            + "' AND flurstueck_id = '" + (Integer)fields.get(7) + "' ";
+                final MetaService metaServiceFF = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);
+
+                Integer ffId = null;
+                for (final ArrayList fieldsFF : metaServiceFF.performCustomSearch(queryFF)) {
+                    ffId = (Integer)fieldsFF.get(0);
+                    break;
+                }
+
                 items.add(
                     new Object[] {
+//    public static int FIELD_ID = 0;
                         (Integer)fields.get(0),
+//    public static int FIELD_FFN = 1;
                         (String)fields.get(1),
+//    public static int FIELD_ANLASSNAME = 2;
                         (String)fields.get(2),
+//    public static int FIELD_BEGINN = 3;
                         (Date)fields.get(3),
+//    public static int FIELD_FS_ALT = 4;
                         (String)fields.get(4),
+//    public static int FIELD_FS_NEU = 5;
                         (String)fields.get(5),
-                        (String)fields.get(6)
+//    public static int FIELD_GEOFIELD = 6;
+                        (String)fields.get(6),
+//    public static int FIELD_FLURSTUECK_ID = 7;
+                        (Integer)fields.get(7),
+//    public static int FIELD_FORTFUEHRUNG_DI = 8;
+                        ffId
                     });
             }
         } catch (final Exception ex) {
