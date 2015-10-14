@@ -51,15 +51,15 @@ public class DeletedKassenzeichenIdSearchStatement extends AbstractCidsServerSea
     @Override
     public Collection<Integer> performServerSearch() {
         try {
-            final String sql = "SELECT cs_history.object_id FROM cs_history, (\n"
-                        + "   SELECT object_id, valid_from FROM (\n"
-                        + "      SELECT min(valid_from) AS valid_from, object_id\n"
-                        + "      FROM cs_history WHERE class_id = 11 AND object_id IN (SELECT object_id FROM cs_history WHERE class_id = 11 AND json_data = '{ DELETED }') \n"
-                        + "      GROUP BY object_id\n"
-                        + "   ) AS tmp WHERE tmp.object_id = object_id AND tmp.valid_from = valid_from \n"
-                        + ") AS tmp WHERE tmp.object_id = cs_history.object_id AND tmp.valid_from = cs_history.valid_from AND cs_history.json_data LIKE '% \"kassenzeichennummer8\" : "
-                        + kassenzeichennummer + ",%'        \n"
-                        + "";
+            final String sql = "SELECT cs_history.object_id FROM cs_history\n"
+                        + "WHERE class_id = 11 AND object_id IN (SELECT object_id FROM cs_history WHERE class_id = 11 AND json_data ilike '{ DELETED }') AND (\n"
+                        + "      cs_history.json_data LIKE '% \"kassenzeichennummer8\" : " + kassenzeichennummer
+                        + ",%' OR \n"
+                        + "      cs_history.json_data LIKE '% \"kassenzeichennummer8\" : " + kassenzeichennummer
+                        + " %' OR \n"
+                        + "      cs_history.json_data LIKE '% \"kassenzeichennummer8\" : \"" + kassenzeichennummer
+                        + "\"%' \n"
+                        + ") ORDER BY cs_history.valid_from DESC";
 
             final MetaService ms = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);
 
