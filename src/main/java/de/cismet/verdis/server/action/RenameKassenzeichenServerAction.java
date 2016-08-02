@@ -16,17 +16,21 @@ import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
 import Sirius.server.middleware.types.MetaClass;
+import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import de.cismet.cids.dynamics.CidsBean;
+
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.actions.UserAwareServerAction;
 
 import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
+import de.cismet.verdis.commons.constants.VerdisConstants;
 import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
 
 /**
@@ -42,20 +46,12 @@ public class RenameKassenzeichenServerAction implements MetaServiceStore, UserAw
 
     private static final transient org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(
             RenameKassenzeichenServerAction.class);
-    private static final String QUERY_SELECT_KASSENZEICHEN = ""
-                + "SELECT * "
-                + "FROM {mcTableKassenzeichen} "
-                + "WHERE {fieldKassenzeichenKassenzeichennummer} = ?;";
     private static final String QUERY_SELECT_CSLOCKS = ""
                 + "SELECT cs_locks.id "
                 + "FROM cs_locks, {mcTableKassenzeichen} AS kassenzeichen "
                 + "WHERE kassenzeichen.id = cs_locks.object_id "
                 + "AND cs_locks.class_id = {mcIdKassenzeichen} "
                 + "AND kassenzeichen.{fieldKassenzeichenKassenzeichennummer} = ?;";
-    private static final String QUERY_UPDATE_KASSENZEICHEN = ""
-                + "UPDATE {mcTableKassenzeichen} "
-                + "SET {fieldKassenzeichenKassenzeichennummer} = ?"
-                + "WHERE {fieldKassenzeichenKassenzeichennummer} = ?;";
 
     public static final String TASKNAME = "renameKassenzeichen";
 
@@ -78,7 +74,6 @@ public class RenameKassenzeichenServerAction implements MetaServiceStore, UserAw
     private Connection connection;
     private PreparedStatement selectKassenzeichenStatement;
     private PreparedStatement selectLocksStatement;
-    private PreparedStatement updateKassenzeichenStatement;
 
     private MetaService service;
     private User user;
@@ -106,29 +101,6 @@ public class RenameKassenzeichenServerAction implements MetaServiceStore, UserAw
         }
         return connection;
     }
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    private PreparedStatement getSelectKassenzeichenPreparedStatement() throws Exception {
-        if (selectKassenzeichenStatement == null) {
-            final MetaClass mcKassenzeichen = getMetaService().getClassByTableName(
-                    getUser(),
-                    VerdisMetaClassConstants.MC_KASSENZEICHEN);
-            final String query = QUERY_SELECT_KASSENZEICHEN.replaceAll(
-                        "\\{mcTableKassenzeichen\\}",
-                        mcKassenzeichen.getTableName())
-                        .replaceAll(
-                            "\\{fieldKassenzeichenKassenzeichennummer\\}",
-                            KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER);
-
-            selectKassenzeichenStatement = getConnection().prepareStatement(query);
-        }
-        return selectKassenzeichenStatement;
-    }
 
     /**
      * DOCUMENT ME!
@@ -153,29 +125,6 @@ public class RenameKassenzeichenServerAction implements MetaServiceStore, UserAw
             selectLocksStatement = getConnection().prepareStatement(query);
         }
         return selectLocksStatement;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    private PreparedStatement getUpdateKassenzeichenPreparedStatement() throws Exception {
-        if (updateKassenzeichenStatement == null) {
-            final MetaClass mcKassenzeichen = getMetaService().getClassByTableName(
-                    getUser(),
-                    VerdisMetaClassConstants.MC_KASSENZEICHEN);
-            final String query = QUERY_UPDATE_KASSENZEICHEN.replaceAll(
-                        "\\{mcTableKassenzeichen\\}",
-                        mcKassenzeichen.getTableName())
-                        .replaceAll(
-                            "\\{fieldKassenzeichenKassenzeichennummer\\}",
-                            KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER);
-            updateKassenzeichenStatement = getConnection().prepareStatement(query);
-        }
-        return updateKassenzeichenStatement;
     }
 
     @Override
@@ -206,15 +155,15 @@ public class RenameKassenzeichenServerAction implements MetaServiceStore, UserAw
         }
 
         try {
-            final boolean sourceExists = checkKassenzeichenExists(kassenzeichennummerOld);
-            final boolean targetExists = checkKassenzeichenExists(kassenzeichennummerNew);
+            final CidsBean source = getKassenzeichen(kassenzeichennummerOld);
+            final CidsBean target = getKassenzeichen(kassenzeichennummerNew);
             final boolean locked = checkLocksExists(kassenzeichennummerOld);
 
-            if (!sourceExists) {
+            if (source == null) {
                 return new Exception("Das Kassenzeichen mit der Nummer " + kassenzeichennummerOld
                                 + " wurde nicht gefunden.");
             }
-            if (targetExists) {
+            if (target != null) {
                 return new Exception("Das Kassenzeichen mit der Nummer " + kassenzeichennummerNew
                                 + " existiert bereits.");
             }
@@ -223,30 +172,13 @@ public class RenameKassenzeichenServerAction implements MetaServiceStore, UserAw
                                 + " ist gesperrt.");
             }
 
-            updateKassenzeichennummer(kassenzeichennummerOld, kassenzeichennummerNew);
+            updateKassenzeichennummer(source, kassenzeichennummerNew);
         } catch (final Exception ex) {
             LOG.error(ex, ex);
             return ex;
         }
 
         return null;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   kassenzeichennummer  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    private boolean checkKassenzeichenExists(final int kassenzeichennummer) throws Exception {
-        final PreparedStatement preparedSelectStatement = getSelectKassenzeichenPreparedStatement();
-        preparedSelectStatement.setInt(1, kassenzeichennummer);
-
-        final ResultSet rs = preparedSelectStatement.executeQuery();
-        return rs.next();
     }
 
     /**
@@ -269,17 +201,47 @@ public class RenameKassenzeichenServerAction implements MetaServiceStore, UserAw
     /**
      * DOCUMENT ME!
      *
-     * @param   kassenzeichennumerOld  DOCUMENT ME!
-     * @param   kassenzeichennumerNew  DOCUMENT ME!
+     * @param   kassenzeichennummer  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    private void updateKassenzeichennummer(final int kassenzeichennumerOld, final int kassenzeichennumerNew)
+    private CidsBean getKassenzeichen(final int kassenzeichennummer) throws Exception {
+        final MetaClass kassenzeichenMc = CidsBean.getMetaClassFromTableName(
+                VerdisConstants.DOMAIN,
+                VerdisMetaClassConstants.MC_KASSENZEICHEN);
+
+        final String kassenzeichenQuery = "SELECT DISTINCT " + kassenzeichenMc.getID() + ", "
+                    + kassenzeichenMc.getTableName() + "." + kassenzeichenMc.getPrimaryKey() + " "
+                    + "FROM " + kassenzeichenMc.getTableName() + " "
+                    + "WHERE " + kassenzeichenMc.getTableName() + "."
+                    + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " = " + kassenzeichennummer + " "
+                    + "LIMIT 1;";
+
+        final MetaObject[] mos = getMetaService().getMetaObject(getUser(), kassenzeichenQuery);
+        if (mos.length == 1) {
+            return mos[0].getBean();
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   kassenzeichen       DOCUMENT ME!
+     * @param   kassenzeichennumer  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    private void updateKassenzeichennummer(final CidsBean kassenzeichen, final int kassenzeichennumer)
             throws Exception {
-        final PreparedStatement preparedUpdateStatement = getUpdateKassenzeichenPreparedStatement();
-        preparedUpdateStatement.setInt(1, kassenzeichennumerNew);
-        preparedUpdateStatement.setInt(2, kassenzeichennumerOld);
-        preparedUpdateStatement.executeUpdate();
+        if (kassenzeichen != null) {
+            kassenzeichen.setProperty(KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER, kassenzeichennumer);
+
+            DomainServerImpl.getServerInstance().updateMetaObject(getUser(), kassenzeichen.getMetaObject());
+        }
     }
 
     @Override

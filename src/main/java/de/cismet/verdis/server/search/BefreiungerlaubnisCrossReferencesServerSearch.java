@@ -54,7 +54,8 @@ public class BefreiungerlaubnisCrossReferencesServerSearch extends AbstractCidsS
         searchQuery = "SELECT  "
                     + "   kassenzeichen1." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " AS kz1, "
                     + "   befreiungerlaubnis." + BefreiungerlaubnisPropertyConstants.PROP__ID + " AS bid, "
-                    + "   befreiungerlaubnis." + BefreiungerlaubnisPropertyConstants.PROP__AKTENZEICHEN + " AS aktenzeichen1, "
+                    + "   befreiungerlaubnis." + BefreiungerlaubnisPropertyConstants.PROP__AKTENZEICHEN
+                    + " AS aktenzeichen1, "
                     + "   kassenzeichen2." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " AS kz2 "
                     + "FROM "
                     + "   " + VerdisMetaClassConstants.MC_KASSENZEICHEN + " AS kassenzeichen1, "
