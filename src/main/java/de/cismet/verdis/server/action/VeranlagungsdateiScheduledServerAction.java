@@ -32,15 +32,17 @@ import java.text.SimpleDateFormat;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import de.cismet.cids.server.actions.DefaultScheduledServerAction;
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
+import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
 import de.cismet.commons.security.WebDavClient;
 
 import de.cismet.netutil.Proxy;
+import de.cismet.verdis.server.utils.VerdisServerResources;
+import java.util.Properties;
 
 /**
  * DOCUMENT ME!
@@ -64,11 +66,11 @@ public class VeranlagungsdateiScheduledServerAction extends DefaultScheduledServ
 
     static {
         try {
-            final ResourceBundle bundle = ResourceBundle.getBundle("WebDavGrundis");
-            WEBDAV_PATH = bundle.getString("url_veranlagung");
+            final Properties properties = ServerResourcesLoader.getInstance().loadPropertiesResource(VerdisServerResources.WEBDAV.getValue());
+            WEBDAV_PATH = properties.getProperty("url_veranlagung");
             WEBDAV_CLIENT = new WebDavClient(Proxy.fromPreferences(),
-                    bundle.getString("user"),
-                    bundle.getString("password"));
+                    properties.getProperty("user"),
+                    properties.getProperty("password"));
         } catch (final Exception ex) {
             LOG.error("error while initializing WebDAV client. maybe missing resource ?", ex);
         }
