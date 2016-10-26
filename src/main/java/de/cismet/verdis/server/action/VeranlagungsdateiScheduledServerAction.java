@@ -61,20 +61,7 @@ public class VeranlagungsdateiScheduledServerAction extends DefaultScheduledServ
 
     public static final String TASKNAME = "veranlagungsdatei";
 
-    private static transient String WEBDAV_PATH;
-    private static transient WebDavClient WEBDAV_CLIENT;
-
-    static {
-        try {
-            final Properties properties = ServerResourcesLoader.getInstance().loadPropertiesResource(VerdisServerResources.WEBDAV.getValue());
-            WEBDAV_PATH = properties.getProperty("url_veranlagung");
-            WEBDAV_CLIENT = new WebDavClient(Proxy.fromPreferences(),
-                    properties.getProperty("user"),
-                    properties.getProperty("password"));
-        } catch (final Exception ex) {
-            LOG.error("error while initializing WebDAV client. maybe missing resource ?", ex);
-        }
-    }
+    private transient WebDavClient webdavClient;
 
     private static final transient SimpleDateFormat SUFFIX_DATEFORMAT = new SimpleDateFormat("yyMMdd");
     private static final transient SimpleDateFormat DATUM_DATEFORMAT = new SimpleDateFormat("dd.MM.yyyy");
@@ -171,7 +158,15 @@ public class VeranlagungsdateiScheduledServerAction extends DefaultScheduledServ
                             + ".csv";
 
                 final InputStream data = new ByteArrayInputStream(csvBuffer.toString().getBytes("UTF-8"));
-                WEBDAV_CLIENT.put(WEBDAV_PATH + "/" + filename, data);
+                
+            final Properties webdavProperties = ServerResourcesLoader.getInstance().loadProperties(VerdisServerResources.WEBDAV.getValue());
+            final String webdavPath = webdavProperties.getProperty("url_veranlagung");
+            if (webdavClient == null) {
+                webdavClient = new WebDavClient(Proxy.fromPreferences(),
+                        webdavProperties.getProperty("user"),
+                        webdavProperties.getProperty("password"));
+            }                
+                webdavClient.put(webdavPath + "/" + filename, data);
 
                 final String updateQuery = "UPDATE veranlagungseintrag "
                             + "SET ist_veranlagt = TRUE "

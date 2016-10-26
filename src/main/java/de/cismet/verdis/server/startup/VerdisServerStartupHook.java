@@ -13,6 +13,7 @@
 package de.cismet.verdis.server.startup;
 
 import Sirius.server.middleware.interfaces.domainserver.DomainServerStartupHook;
+import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
 import org.apache.log4j.Logger;
 
@@ -48,9 +49,9 @@ public class VerdisServerStartupHook implements DomainServerStartupHook {
      */
     public void loadAllServerResources() {
         boolean error = false;
-        for (final VerdisServerResources resource : VerdisServerResources.values()) {
+        for (final VerdisServerResources verdisServerResource : VerdisServerResources.values()) {
             try {
-                resource.loadServerResources();
+                ServerResourcesLoader.getInstance().load(verdisServerResource.getValue());
             } catch (final Exception ex) {
                 LOG.warn("Exception while loading resource from the resources base path.", ex);
                 error = true;
