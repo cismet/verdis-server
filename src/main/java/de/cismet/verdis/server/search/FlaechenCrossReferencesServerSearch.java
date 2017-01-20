@@ -8,7 +8,6 @@
 package de.cismet.verdis.server.search;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
-import Sirius.server.search.CidsServerSearch;
 
 import org.apache.log4j.Logger;
 
@@ -17,9 +16,14 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import de.cismet.cids.server.search.AbstractCidsServerSearch;
+
+import de.cismet.verdis.commons.constants.FlaechePropertyConstants;
+import de.cismet.verdis.commons.constants.FlaechenPropertyConstants;
+import de.cismet.verdis.commons.constants.FlaecheninfoPropertyConstants;
 import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
-import de.cismet.verdis.commons.constants.RegenFlaechenPropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
+import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
 
 /**
  * DOCUMENT ME!
@@ -28,7 +32,7 @@ import de.cismet.verdis.commons.constants.VerdisConstants;
  * @version  $Revision$, $Date$
  */
 
-public class FlaechenCrossReferencesServerSearch extends CidsServerSearch {
+public class FlaechenCrossReferencesServerSearch extends AbstractCidsServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -48,28 +52,36 @@ public class FlaechenCrossReferencesServerSearch extends CidsServerSearch {
     public FlaechenCrossReferencesServerSearch(final int kzNummer) {
         searchQuery = "SELECT "
                     + "    kassenzeichen1." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " AS kz1, "
-                    + "    flaeche1." + RegenFlaechenPropertyConstants.PROP__ID + " AS fid, "
-                    + "    flaeche1." + RegenFlaechenPropertyConstants.PROP__FLAECHENBEZEICHNUNG + " AS f1, "
+                    + "    flaeche1." + FlaechePropertyConstants.PROP__ID + " AS fid, "
+                    + "    flaeche1." + FlaechePropertyConstants.PROP__FLAECHENBEZEICHNUNG + " AS f1, "
                     + "    kassenzeichen2." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " AS kz2, "
-                    + "    flaeche2." + RegenFlaechenPropertyConstants.PROP__FLAECHENBEZEICHNUNG + " AS f2 "
+                    + "    flaeche2." + FlaechePropertyConstants.PROP__FLAECHENBEZEICHNUNG + " AS f2 "
                     + "FROM "
-                    + "    kassenzeichen AS kassenzeichen1, "
-                    + "    kassenzeichen AS kassenzeichen2, "
-                    + "    flaechen AS flaechen1, "
-                    + "    flaechen AS flaechen2, "
-                    + "    flaeche AS flaeche1, "
-                    + "    flaeche AS flaeche2, "
-                    + "    flaecheninfo AS flaecheninfo1, "
-                    + "    flaecheninfo AS flaecheninfo2 "
+                    + "    " + VerdisMetaClassConstants.MC_KASSENZEICHEN + " AS kassenzeichen1, "
+                    + "    " + VerdisMetaClassConstants.MC_KASSENZEICHEN + " AS kassenzeichen2, "
+                    + "    " + VerdisMetaClassConstants.MC_FLAECHEN + " AS flaechen1, "
+                    + "    " + VerdisMetaClassConstants.MC_FLAECHEN + " AS flaechen2, "
+                    + "    " + VerdisMetaClassConstants.MC_FLAECHE + " AS flaeche1, "
+                    + "    " + VerdisMetaClassConstants.MC_FLAECHE + " AS flaeche2, "
+                    + "    " + VerdisMetaClassConstants.MC_FLAECHENINFO + " AS flaecheninfo1, "
+                    + "    " + VerdisMetaClassConstants.MC_FLAECHENINFO + " AS flaecheninfo2 "
                     + "WHERE "
-                    + "    kassenzeichen1.id = flaechen1.kassenzeichen_reference AND "
-                    + "    kassenzeichen2.id = flaechen2.kassenzeichen_reference AND "
-                    + "    flaechen1.flaeche = flaeche1.id AND "
-                    + "    flaechen2.flaeche = flaeche2.id AND "
-                    + "    flaeche1.flaecheninfo = flaecheninfo1.id AND "
-                    + "    flaeche2.flaecheninfo = flaecheninfo2.id AND "
-                    + "    flaecheninfo2.id = flaecheninfo1.id AND "
-                    + "    NOT flaechen2.kassenzeichen_reference = flaechen1.kassenzeichen_reference AND "
+                    + "    kassenzeichen1." + KassenzeichenPropertyConstants.PROP__ID + " = flaechen1."
+                    + FlaechenPropertyConstants.PROP__KASSENZEICHEN_REFERENCE + " AND "
+                    + "    kassenzeichen2." + KassenzeichenPropertyConstants.PROP__ID + " = flaechen2."
+                    + FlaechenPropertyConstants.PROP__KASSENZEICHEN_REFERENCE + " AND "
+                    + "    flaechen1." + FlaechenPropertyConstants.PROP__FLAECHE + " = flaeche1."
+                    + FlaechePropertyConstants.PROP__ID + " AND "
+                    + "    flaechen2." + FlaechenPropertyConstants.PROP__FLAECHE + " = flaeche2."
+                    + FlaechePropertyConstants.PROP__ID + " AND "
+                    + "    flaeche1." + FlaechePropertyConstants.PROP__FLAECHENINFO + " = flaecheninfo1."
+                    + FlaecheninfoPropertyConstants.PROP__ID + " AND "
+                    + "    flaeche2." + FlaechePropertyConstants.PROP__FLAECHENINFO + " = flaecheninfo2."
+                    + FlaecheninfoPropertyConstants.PROP__ID + " AND "
+                    + "    flaecheninfo2." + FlaecheninfoPropertyConstants.PROP__ID + " = flaecheninfo1."
+                    + FlaecheninfoPropertyConstants.PROP__ID + " AND "
+                    + "    NOT flaechen2." + FlaechenPropertyConstants.PROP__KASSENZEICHEN_REFERENCE + " = flaechen1."
+                    + FlaechenPropertyConstants.PROP__KASSENZEICHEN_REFERENCE + " AND "
                     + "    kassenzeichen1." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " = "
                     + kzNummer;
     }
@@ -78,7 +90,7 @@ public class FlaechenCrossReferencesServerSearch extends CidsServerSearch {
 
     @Override
     public Collection performServerSearch() {
-        final MetaService ms = (MetaService)getActiveLoaclServers().get(VerdisConstants.DOMAIN);
+        final MetaService ms = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);
         if (ms != null) {
             try {
                 final ArrayList<ArrayList> lists = ms.performCustomSearch(searchQuery);

@@ -8,7 +8,6 @@
 package de.cismet.verdis.server.search;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
-import Sirius.server.middleware.types.MetaObjectNode;
 
 import org.apache.log4j.Logger;
 
@@ -16,10 +15,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
-import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
 
 import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
+import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
 
 /**
  * DOCUMENT ME!
@@ -27,58 +26,46 @@ import de.cismet.verdis.commons.constants.VerdisConstants;
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public class KassenzeichenSearchStatement extends AbstractCidsServerSearch implements MetaObjectNodeServerSearch {
+public class KassenzeichenlistSearchStatement extends AbstractCidsServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
 
     /** LOGGER. */
-    private static final transient Logger LOG = Logger.getLogger(KassenzeichenSearchStatement.class);
+    private static final transient Logger LOG = Logger.getLogger(KassenzeichenlistSearchStatement.class);
 
     //~ Instance fields --------------------------------------------------------
 
-    private final String searchString;
+    private final String querySnippet;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new KassenzeichenSearchStatement object.
      *
-     * @param  searchString  DOCUMENT ME!
+     * @param  querySnippet  DOCUMENT ME!
      */
-    public KassenzeichenSearchStatement(final String searchString) {
-        if (searchString == null) {
-            this.searchString = "-1"; // NOI18N
-        } else {
-            this.searchString = searchString;
-        }
+    public KassenzeichenlistSearchStatement(final String querySnippet) {
+        this.querySnippet = querySnippet; // NOI18N
     }
 
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public Collection<MetaObjectNode> performServerSearch() {
+    public Collection<Integer> performServerSearch() {
         try {
-            final String sql;
-            if (searchString.length() == 6) {
-                sql = "SELECT id FROM kassenzeichen WHERE " // NOI18N
-                            + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER
-                            + "/10 = "                      // NOI18N
-                            + searchString;
-            } else {
-                sql = "SELECT id FROM kassenzeichen WHERE " // NOI18N
-                            + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER
-                            + " = "                         // NOI18N
-                            + searchString;
-            }
+            final String sql = "SELECT " + VerdisMetaClassConstants.MC_KASSENZEICHEN + "."
+                        + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " "
+                        + "FROM " + VerdisMetaClassConstants.MC_KASSENZEICHEN + " WHERE " + " "
+                        + querySnippet;
 
             final MetaService ms = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);
 
             final ArrayList<ArrayList> result = ms.performCustomSearch(sql);
 
-            final ArrayList aln = new ArrayList();
+            final ArrayList<Integer> aln = new ArrayList<Integer>();
             for (final ArrayList al : result) {
-                final int oid = (Integer)al.get(1);
-                aln.add(oid);
+                final Integer kassenzeichennummer = (Integer)al.get(0);
+                aln.add(kassenzeichennummer);
             }
 
             return aln;
