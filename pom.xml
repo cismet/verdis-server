@@ -49,6 +49,13 @@
             </dependency>
         
             <!-- BEGIN: managed cids-dependencies -->
+            <dependency>
+                <groupId>de.cismet.commons</groupId>
+                <artifactId>cismet-commons</artifactId>
+                <version>5.0-SNAPSHOT</version>
+                <type>jar</type>
+                <scope>compile</scope>
+            </dependency>
             
             <dependency>
                 <groupId>de.cismet.cids</groupId>
@@ -94,12 +101,12 @@
     <dependencies>
         <!-- BEGIN: cids-dependencies -->
         <dependency>
-            <groupId>de.cismet.cids</groupId>
-            <artifactId>cids-server</artifactId>
+            <groupId>de.cismet.commons</groupId>
+            <artifactId>cismet-commons</artifactId>
         </dependency>
         <dependency>
             <groupId>de.cismet.cids</groupId>
-            <artifactId>cids-server-rest-types</artifactId>
+            <artifactId>cids-server</artifactId>
         </dependency>
         <dependency>
             <groupId>de.cismet.verdis</groupId>
@@ -113,7 +120,27 @@
         <!-- END: cids-dependencies -->
         
         <!-- BEGIN: managed dependencies -->
-        
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.vividsolutions</groupId>
+            <artifactId>jts</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.postgis</groupId>
+            <artifactId>postgis-jdbc</artifactId>
+            <!--
+                override managed runtime scope since postgis is used during compilation!
+            -->
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
         <!-- END: managed dependencies -->
         
         <!-- BEGIN: Provided dependencies -->
@@ -123,6 +150,7 @@
             <scope>provided</scope>
         </dependency>
         <!-- END: Provided dependencies -->
+       
         
         <!-- BEGIN: Runtime dependencies -->
         <dependency>
@@ -139,11 +167,7 @@
             <version>4.0</version>
             <scope>runtime</scope>
         </dependency>-->
-        <dependency>
-            <groupId>org.postgis</groupId>
-            <artifactId>postgis-jdbc</artifactId>
-            <scope>compile</scope>
-        </dependency>
+        
 
     </dependencies>
 </project>
