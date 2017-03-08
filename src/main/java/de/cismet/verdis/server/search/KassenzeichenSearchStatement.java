@@ -103,7 +103,7 @@ public class KassenzeichenSearchStatement extends AbstractCidsServerSearch imple
             
             if (searchString.length() == 6) {
                 
-                sql = "SELECT (select id from cs_class where table_name = '"+VerdisMetaClassConstants.MC_KASSENZEICHEN+"') as cid, id as oid FROM kassenzeichen WHERE " // NOI18N
+                sql = "SELECT (select id from cs_class where table_name ilike '"+VerdisMetaClassConstants.MC_KASSENZEICHEN+"') as cid, id as oid FROM kassenzeichen WHERE " // NOI18N
                         + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER
                         + "/10 = " // NOI18N
                         + searchString;
