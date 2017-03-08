@@ -10,7 +10,7 @@
 
     <groupId>de.cismet.verdis</groupId>
     <artifactId>verdis-server</artifactId>
-    <version>4.0.1</version>
+    <version>4.0.2</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -35,7 +35,7 @@
         <connection>https://github.com/cismet/verdis-server.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/verdis-server.git</developerConnection>
         <url>https://github.com/cismet/verdis-server</url>
-      <tag>v4.0.1</tag>
+      <tag>v4.0.2</tag>
   </scm>
 
     <repositories>
@@ -75,4 +75,8 @@
         </dependency>
 
     </dependencies>
+    
+    <build>
+        <finalName>verdis-server-2.0-SNAPSHOT</finalName>
+    </build>
 </project>
