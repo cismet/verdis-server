@@ -94,6 +94,13 @@ public class KassenzeichenSearchStatement extends AbstractCidsServerSearch imple
     public Collection<MetaObjectNode> performServerSearch() {
         try {
             final String sql;
+            try {
+                int kassZInt=new Integer(searchString);
+            }
+            catch (Exception e) {
+                searchString="-1";
+            }
+            
             if (searchString.length() == 6) {
                 
                 sql = "SELECT (select id from cs_class where table_name = '"+VerdisMetaClassConstants.MC_KASSENZEICHEN+"') as cid, id as oid FROM kassenzeichen WHERE " // NOI18N
