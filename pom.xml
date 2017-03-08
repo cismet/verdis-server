@@ -75,4 +75,8 @@
         </dependency>
 
     </dependencies>
+    
+    <build>
+        <finalName>verdis-server-2.0-SNAPSHOT</finalName>
+    </build>
 </project>
