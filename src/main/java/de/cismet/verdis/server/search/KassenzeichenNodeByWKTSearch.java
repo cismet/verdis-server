@@ -43,6 +43,7 @@ public class KassenzeichenNodeByWKTSearch extends KassenzeichenGeomSearch implem
     private SearchInfo searchInfo;
     @Getter
     private String wktString = "";
+    final private int KASSENZEICHEN_CLASS_ID = 11;
 
     @Getter
     @Setter
@@ -177,7 +178,7 @@ public class KassenzeichenNodeByWKTSearch extends KassenzeichenGeomSearch implem
 
                 final String geomFromText = "GeomFromText('" + searchGeometry.toText() + "', " + searchGeometry.getSRID()
                         + ")";
-                final String sqlDerived = "SELECT DISTINCT (select id from cs_class where table_name ilike '" + VerdisMetaClassConstants.MC_KASSENZEICHEN + "') as cid, "
+                final String sqlDerived = "SELECT DISTINCT " + KASSENZEICHEN_CLASS_ID + " as cid, "
                         + VerdisMetaClassConstants.MC_KASSENZEICHEN + ".id"
                         + " AS oid "
                         + "FROM "
@@ -188,15 +189,14 @@ public class KassenzeichenNodeByWKTSearch extends KassenzeichenGeomSearch implem
                         + "WHERE "
                         + ((whereFilter.isEmpty())
                         ? " TRUE " : ("(" + implodeArray(whereFilter.toArray(new String[0]), " OR ") + ")"))
-                        + "    AND cs_attr_object_derived.class_id = 11 "
+                        + "    AND cs_attr_object_derived.class_id = " + KASSENZEICHEN_CLASS_ID + " "
                         + "    AND cs_attr_object_derived.attr_class_id = 0 "
                         + "    AND kassenzeichen." + KassenzeichenPropertyConstants.PROP__ID
                         + " = cs_attr_object_derived.object_id "
                         + "    AND kassenzeichen." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER
                         + " IS NOT NULL "
                         + "    AND geom." + GeomPropertyConstants.PROP__ID + " = cs_attr_object_derived.attr_object_id "
-                        + "    AND ST_Intersects("
-                        + "       (SELECT geom." + GeomPropertyConstants.PROP__GEO_FIELD + "), "
+                        + "    AND ST_Intersects(geom." + GeomPropertyConstants.PROP__GEO_FIELD + ", "
                         + "       " + geomFromText
                         + "    ) ORDER BY 2 ASC;";
 
