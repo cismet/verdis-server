@@ -13,9 +13,10 @@
 package de.cismet.verdis.server.startup;
 
 import Sirius.server.middleware.interfaces.domainserver.DomainServerStartupHook;
-import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
 import org.apache.log4j.Logger;
+
+import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
 import de.cismet.verdis.server.utils.VerdisServerResources;
 
