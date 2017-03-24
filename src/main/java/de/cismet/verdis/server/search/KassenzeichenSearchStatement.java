@@ -1,23 +1,30 @@
-/** *************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- *
- *              ... and it just works.
- *
- *************************************************** */
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.verdis.server.search;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
+
 import de.cismet.cidsx.base.types.Type;
+
 import de.cismet.cidsx.server.api.types.SearchInfo;
 import de.cismet.cidsx.server.api.types.SearchParameterInfo;
 import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
@@ -25,49 +32,49 @@ import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
 import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
 import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
-import java.util.LinkedList;
-import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * DOCUMENT ME!
  *
- * @author thorsten
- * @version $Revision$, $Date$
+ * @author   thorsten
+ * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = RestApiCidsServerSearch.class)
-public class KassenzeichenSearchStatement extends AbstractCidsServerSearch implements MetaObjectNodeServerSearch, RestApiCidsServerSearch {
+public class KassenzeichenSearchStatement extends AbstractCidsServerSearch implements MetaObjectNodeServerSearch,
+    RestApiCidsServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
-    /**
-     * LOGGER.
-     */
+
+    /** LOGGER. */
     private static final transient Logger LOG = Logger.getLogger(KassenzeichenSearchStatement.class);
 
     //~ Instance fields --------------------------------------------------------
+
     @Getter @Setter private String searchString;
 
     @Getter private final SearchInfo searchInfo;
 
-
     //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new KassenzeichenSearchStatement object.
+     */
     public KassenzeichenSearchStatement() {
         this.searchString = "-1";
-       
+
         searchInfo = new SearchInfo();
         searchInfo.setKey(this.getClass().getName());
         searchInfo.setName(this.getClass().getSimpleName());
         searchInfo.setDescription("Search for Kassenzeichen-Objects by Kassenzeichen");
-        
+
         final List<SearchParameterInfo> parameterDescription = new LinkedList<SearchParameterInfo>();
-        SearchParameterInfo searchParameterInfo;
+        final SearchParameterInfo searchParameterInfo;
 
         searchParameterInfo = new SearchParameterInfo();
         searchParameterInfo.setKey("searchString");
         searchParameterInfo.setType(Type.STRING);
         parameterDescription.add(searchParameterInfo);
-        
+
         searchInfo.setParameterDescription(parameterDescription);
 
         final SearchParameterInfo resultParameterInfo = new SearchParameterInfo();
@@ -80,41 +87,44 @@ public class KassenzeichenSearchStatement extends AbstractCidsServerSearch imple
     /**
      * Creates a new KassenzeichenSearchStatement object.
      *
-     * @param searchString DOCUMENT ME!
+     * @param  searchString  DOCUMENT ME!
      */
     public KassenzeichenSearchStatement(final String searchString) {
         this();
-        if (searchString != null) {           
+        if (searchString != null) {
             this.searchString = searchString;
         }
     }
 
     //~ Methods ----------------------------------------------------------------
+
     @Override
     public Collection<MetaObjectNode> performServerSearch() {
         try {
             final String sql;
             try {
-                int kassZInt=new Integer(searchString);
-            }
-            catch (Exception e) {
-                searchString="-1";
-            }
-            
-            if (searchString.length() == 6) {
-                
-                sql = "SELECT (select id from cs_class where table_name ilike '"+VerdisMetaClassConstants.MC_KASSENZEICHEN+"') as cid, id as oid FROM kassenzeichen WHERE " // NOI18N
-                        + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER
-                        + "/10 = " // NOI18N
-                        + searchString;
-            } else {
-                sql = "SELECT (select id from cs_class where table_name ilike '"+VerdisMetaClassConstants.MC_KASSENZEICHEN+"') as cid, id as oid FROM kassenzeichen WHERE " // NOI18N
-                        + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER
-                        + " = " // NOI18N
-                        + searchString;
+                final int kassZInt = new Integer(searchString);
+            } catch (Exception e) {
+                searchString = "-1";
             }
 
-            final MetaService ms = (MetaService) getActiveLocalServers().get(VerdisConstants.DOMAIN);
+            if (searchString.length() == 6) {
+                sql = "SELECT (select id from cs_class where table_name ilike '"
+                            + VerdisMetaClassConstants.MC_KASSENZEICHEN
+                            + "') as cid, id as oid FROM kassenzeichen WHERE " // NOI18N
+                            + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER
+                            + "/10 = "                                         // NOI18N
+                            + searchString;
+            } else {
+                sql = "SELECT (select id from cs_class where table_name ilike '"
+                            + VerdisMetaClassConstants.MC_KASSENZEICHEN
+                            + "') as cid, id as oid FROM kassenzeichen WHERE " // NOI18N
+                            + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER
+                            + " = "                                            // NOI18N
+                            + searchString;
+            }
+
+            final MetaService ms = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);
 
             final List<MetaObjectNode> result = new ArrayList<MetaObjectNode>();
             final ArrayList<ArrayList> searchResult = ms.performCustomSearch(sql);
@@ -127,9 +137,6 @@ public class KassenzeichenSearchStatement extends AbstractCidsServerSearch imple
             }
 
             return result;
-            
-            
-           
         } catch (final Exception e) {
             LOG.error("problem during kassenzeichen search", e); // NOI18N
 
