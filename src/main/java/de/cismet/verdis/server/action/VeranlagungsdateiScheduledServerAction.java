@@ -32,17 +32,19 @@ import java.text.SimpleDateFormat;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Properties;
 
 import de.cismet.cids.server.actions.DefaultScheduledServerAction;
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
+
 import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
 import de.cismet.commons.security.WebDavClient;
 
 import de.cismet.netutil.Proxy;
+
 import de.cismet.verdis.server.utils.VerdisServerResources;
-import java.util.Properties;
 
 /**
  * DOCUMENT ME!
@@ -61,12 +63,12 @@ public class VeranlagungsdateiScheduledServerAction extends DefaultScheduledServ
 
     public static final String TASKNAME = "veranlagungsdatei";
 
-    private transient WebDavClient webdavClient;
-
     private static final transient SimpleDateFormat SUFFIX_DATEFORMAT = new SimpleDateFormat("yyMMdd");
     private static final transient SimpleDateFormat DATUM_DATEFORMAT = new SimpleDateFormat("dd.MM.yyyy");
 
     //~ Instance fields --------------------------------------------------------
+
+    private transient WebDavClient webdavClient;
 
     private MetaService service;
     private User user;
@@ -158,14 +160,15 @@ public class VeranlagungsdateiScheduledServerAction extends DefaultScheduledServ
                             + ".csv";
 
                 final InputStream data = new ByteArrayInputStream(csvBuffer.toString().getBytes("UTF-8"));
-                
-            final Properties webdavProperties = ServerResourcesLoader.getInstance().loadProperties(VerdisServerResources.WEBDAV.getValue());
-            final String webdavPath = webdavProperties.getProperty("url_veranlagung");
-            if (webdavClient == null) {
-                webdavClient = new WebDavClient(Proxy.fromPreferences(),
-                        webdavProperties.getProperty("user"),
-                        webdavProperties.getProperty("password"));
-            }                
+
+                final Properties webdavProperties = ServerResourcesLoader.getInstance()
+                            .loadProperties(VerdisServerResources.WEBDAV.getValue());
+                final String webdavPath = webdavProperties.getProperty("url_veranlagung");
+                if (webdavClient == null) {
+                    webdavClient = new WebDavClient(Proxy.fromPreferences(),
+                            webdavProperties.getProperty("user"),
+                            webdavProperties.getProperty("password"));
+                }
                 webdavClient.put(webdavPath + "/" + filename, data);
 
                 final String updateQuery = "UPDATE veranlagungseintrag "

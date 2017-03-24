@@ -12,9 +12,10 @@
  */
 package de.cismet.verdis.server.utils;
 
+import lombok.Getter;
+
 import de.cismet.cids.utils.serverresources.ServerResource;
 import de.cismet.cids.utils.serverresources.TextServerResource;
-import lombok.Getter;
 
 /**
  * DOCUMENT ME!
@@ -25,16 +26,14 @@ import lombok.Getter;
 public enum VerdisServerResources {
 
     //~ Enum constants ---------------------------------------------------------
-//~ Enum constants ---------------------------------------------------------
 
     MOTD_VERDIS_GRUNDIS_PROPERTIES(new TextServerResource("/motd/verdis_grundis.properties")),
 
     WEBDAV(new TextServerResource("/webdav/WebDav.properties"));
-    
+
     //~ Instance fields --------------------------------------------------------
 
-    @Getter
-    private final ServerResource value;
+    @Getter private final ServerResource value;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -42,10 +41,8 @@ public enum VerdisServerResources {
      * Creates a new Props object.
      *
      * @param  value  DOCUMENT ME!
-     * @param  type   DOCUMENT ME!
      */
     private VerdisServerResources(final ServerResource value) {
         this.value = value;
     }
-
 }
