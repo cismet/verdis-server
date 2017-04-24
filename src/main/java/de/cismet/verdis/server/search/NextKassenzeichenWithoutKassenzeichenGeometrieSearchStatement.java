@@ -17,6 +17,7 @@ import java.util.Collection;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 
 import de.cismet.verdis.commons.constants.KassenzeichenGeometriePropertyConstants;
+import de.cismet.verdis.commons.constants.KassenzeichenGeometrienPropertyConstants;
 import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
 import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
@@ -61,22 +62,25 @@ public class NextKassenzeichenWithoutKassenzeichenGeometrieSearchStatement exten
                             + "> '" + kassenzeichennummer + "' ");
 
             final String sql = "SELECT " + VerdisMetaClassConstants.MC_KASSENZEICHEN + "."
-                        + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " "
-                        + "FROM " + VerdisMetaClassConstants.MC_KASSENZEICHEN + " LEFT JOIN "
-                        + VerdisMetaClassConstants.MC_KASSENZEICHEN_GEOMETRIE + " ON "
-                        + "     " + VerdisMetaClassConstants.MC_KASSENZEICHEN + "."
-                        + KassenzeichenPropertyConstants.PROP__ID
-                        + " = " + VerdisMetaClassConstants.MC_KASSENZEICHEN_GEOMETRIE + "."
-                        + KassenzeichenGeometriePropertyConstants.PROP__KASSENZEICHEN + " "
-                        + whereKassenzeichennummer
-                        + "GROUP BY " + VerdisMetaClassConstants.MC_KASSENZEICHEN + "."
                         + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER
-                        + ", " + VerdisMetaClassConstants.MC_KASSENZEICHEN_GEOMETRIE + "."
-                        + KassenzeichenGeometriePropertyConstants.PROP__KASSENZEICHEN + " "
-                        + "HAVING count(" + VerdisMetaClassConstants.MC_KASSENZEICHEN_GEOMETRIE + "."
-                        + KassenzeichenGeometriePropertyConstants.PROP__KASSENZEICHEN + ") = 0 "
-                        + "ORDER BY " + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " "
-                        + "LIMIT 1";
+                        + " FROM " + VerdisMetaClassConstants.MC_KASSENZEICHEN
+                        + " LEFT JOIN " + VerdisMetaClassConstants.MC_KASSENZEICHEN_GEOMETRIEN + " ON "
+                        + VerdisMetaClassConstants.MC_KASSENZEICHEN_GEOMETRIEN + "."
+                        + KassenzeichenGeometrienPropertyConstants.PROP__KASSENZEICHEN_REFERENCE + " = "
+                        + VerdisMetaClassConstants.MC_KASSENZEICHEN + "." + KassenzeichenPropertyConstants.PROP__ID
+                        + " LEFT JOIN " + VerdisMetaClassConstants.MC_KASSENZEICHEN_GEOMETRIE + " ON "
+                        + VerdisMetaClassConstants.MC_KASSENZEICHEN_GEOMETRIEN + "."
+                        + KassenzeichenGeometrienPropertyConstants.PROP__KASSENZEICHEN_GEOMETRIE + " = "
+                        + VerdisMetaClassConstants.MC_KASSENZEICHEN_GEOMETRIE + "."
+                        + KassenzeichenPropertyConstants.PROP__ID + " " + whereKassenzeichennummer
+                        + "GROUP BY " + VerdisMetaClassConstants.MC_KASSENZEICHEN + "."
+                        + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + ", "
+                        + VerdisMetaClassConstants.MC_KASSENZEICHEN_GEOMETRIEN + "."
+                        + KassenzeichenGeometrienPropertyConstants.PROP__KASSENZEICHEN_REFERENCE
+                        + " HAVING count(" + VerdisMetaClassConstants.MC_KASSENZEICHEN_GEOMETRIEN + "."
+                        + KassenzeichenGeometrienPropertyConstants.PROP__KASSENZEICHEN_REFERENCE + ") = 0 ORDER BY "
+                        + VerdisMetaClassConstants.MC_KASSENZEICHEN + "."
+                        + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " LIMIT 1";
 
             final MetaService ms = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);
 
