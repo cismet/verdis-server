@@ -26,12 +26,12 @@ import de.cismet.verdis.commons.constants.VerdisConstants;
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public class FortfuehrungItemSearch extends AbstractCidsServerSearch {
+public class VerdisFortfuehrungItemSearch extends AbstractCidsServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
 
     /** LOGGER. */
-    private static final transient Logger LOG = Logger.getLogger(FortfuehrungItemSearch.class);
+    private static final transient Logger LOG = Logger.getLogger(VerdisFortfuehrungItemSearch.class);
 
     public static int FIELD_ID = 0;
     public static int FIELD_FFN = 1;
@@ -56,7 +56,7 @@ public class FortfuehrungItemSearch extends AbstractCidsServerSearch {
      * @param  fromDate  DOCUMENT ME!
      * @param  toDate    DOCUMENT ME!
      */
-    public FortfuehrungItemSearch(final Date fromDate, final Date toDate) {
+    public VerdisFortfuehrungItemSearch(final Date fromDate, final Date toDate) {
         setFromDate(fromDate);
         setToDate(toDate);
     }
