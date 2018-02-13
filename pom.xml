@@ -17,7 +17,7 @@
         <names.verdis-server>VerDIS Server</names.verdis-server>
     </properties>
     
-    <name>${names.verdis-server}</name>
+    <name>${names.verdis-server} [${project.version}]</name>
     <description>!!! description pending !!!</description>
 
     <scm>
@@ -60,7 +60,7 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>6.0</version>
+                <version>6.0.1</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
