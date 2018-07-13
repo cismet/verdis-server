@@ -52,19 +52,19 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>6.1</version>
-                <type>jar</type>
-                <scope>compile</scope>
-            </dependency>
-            
-            <dependency>
-                <groupId>de.cismet.cids</groupId>
-                <artifactId>cids-server</artifactId>
-                <version>6.1</version>
+                <version>6.2.1</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
 
+            <dependency>
+                <groupId>de.cismet.cids</groupId>
+                <artifactId>cids-server</artifactId>
+                <version>6.3.1</version>
+                <type>jar</type>
+                <scope>compile</scope>
+            </dependency>
+                                    
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest-types</artifactId>
@@ -136,6 +136,21 @@
             <scope>compile</scope>
             <type>jar</type>
         </dependency>
+        
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+
         <dependency>
             <groupId>org.postgis</groupId>
             <artifactId>postgis-jdbc</artifactId>
@@ -162,7 +177,7 @@
             <artifactId>slf4j-log4j12</artifactId>
             <scope>runtime</scope>
             <optional>true</optional>
-        </dependency>
+        </dependency>                
         <!-- END: Runtime dependencies -->
        
         <!--<dependency>
