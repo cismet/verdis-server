@@ -191,8 +191,8 @@ public class EBReportServerAction implements UserAwareServerAction, MetaServiceS
                             .replaceAll("<domain>", (String)cmdProperties.get("domain"))
                             .replaceAll("<password>", (String)cmdProperties.get("password"))
                             .replaceAll("<kassenzeichenId>", String.valueOf(kassenzeichenId))
-                            .replaceAll("<type>", type != null ? type.name() : "_null_")
-                            .replaceAll("<mapFormat>", mapFormat != null ? mapFormat.name() : "_null_")
+                            .replaceAll("<type>", (type != null) ? type.name() : "_null_")
+                            .replaceAll("<mapFormat>", (mapFormat != null) ? mapFormat.name() : "_null_")
                             .replaceAll("<hints>", hints)
                             .replaceAll("<scaleDenominator>", String.valueOf(scaleDenominator))
                             .replaceAll("<abflusswirksamkeitFlag>", String.valueOf(abflusswirksamkeitFlag));
