@@ -21,6 +21,10 @@ import org.apache.log4j.Logger;
 
 import org.openide.util.Exceptions;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.StringReader;
+
 import java.util.Properties;
 
 import de.cismet.cids.server.actions.ServerAction;
@@ -33,7 +37,6 @@ import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextStore;
 
 import de.cismet.verdis.server.utils.VerdisServerResources;
-
 
 /**
  * DOCUMENT ME!
@@ -183,16 +186,32 @@ public class EBReportServerAction implements UserAwareServerAction, MetaServiceS
             try {
                 final Properties properties = ServerResourcesLoader.getInstance()
                             .loadProperties(VerdisServerResources.EB_REPORT_PROPERTIES.getValue());
-                final String ebGeneratorCmd = properties.getProperty("ebGeneratorCmd")
-                            .replaceAll(
-                                "<kassenzeichenId>",
-                                String.valueOf(kassenzeichenId).replaceAll("<type>", type.name()).replaceAll(
-                                    "<mapFormat>",
-                                    mapFormat.name()).replaceAll("<hints>", hints).replaceAll(
-                                    "<scaleDenominator>",
-                                    String.valueOf(scaleDenominator)).replaceAll(
-                                    "<abflusswirksamkeit>",
-                                    String.valueOf(abflusswirksamkeit)));
+
+                final Properties cmdProperties = new Properties();
+                final InputStream inputStream = new FileInputStream((String)properties.get("ebGeneratorCmdProperties"));
+                cmdProperties.load(inputStream);
+
+                final String abflusswirksamkeitFlag;
+                if (Boolean.TRUE.equals(abflusswirksamkeit)) {
+                    abflusswirksamkeitFlag = (String)cmdProperties.getProperty("abflusswirksamkeitFlag");
+                } else {
+                    abflusswirksamkeitFlag = "";
+                }
+
+                final String ebGeneratorCmd = cmdProperties.getProperty("cmd")
+                            .replaceAll("<callserverUrl>", (String)cmdProperties.get("callserverUrl"))
+                            .replaceAll("<compressionFlag>", (String)cmdProperties.get("compressionFlag"))
+                            .replaceAll("<user>", (String)cmdProperties.get("user"))
+                            .replaceAll("<group>", (String)cmdProperties.get("group"))
+                            .replaceAll("<domain>", (String)cmdProperties.get("domain"))
+                            .replaceAll("<password>", (String)cmdProperties.get("password"))
+                            .replaceAll("<kassenzeichenId>", String.valueOf(kassenzeichenId))
+                            .replaceAll("<type>", type.name())
+                            .replaceAll("<mapFormat>", mapFormat.name())
+                            .replaceAll("<hints>", hints)
+                            .replaceAll("<scaleDenominator>", String.valueOf(scaleDenominator))
+                            .replaceAll("<abflusswirksamkeitFlag>", String.valueOf(abflusswirksamkeitFlag));
+//                LOG.fatal(ebGeneratorCmd);
                 return executeCmd(ebGeneratorCmd);
             } finally {
             }
