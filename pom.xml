@@ -10,21 +10,21 @@
 
     <groupId>de.cismet.verdis</groupId>
     <artifactId>verdis-server</artifactId>
-    <version>6.0</version>
+    <version>6.1.1</version>
     <packaging>jar</packaging>
 
     <properties>
         <names.verdis-server>VerDIS Server</names.verdis-server>
     </properties>
     
-    <name>${names.verdis-server}</name>
+    <name>${names.verdis-server} [${project.version}]</name>
     <description>!!! description pending !!!</description>
 
     <scm>
         <connection>https://github.com/cismet/verdis-server.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/verdis-server.git</developerConnection>
         <url>https://github.com/cismet/verdis-server</url>
-        <tag>v6.1</tag>
+        <tag>v6.1.1</tag>
     </scm>
 
     <issueManagement>
@@ -52,19 +52,19 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>6.0</version>
-                <type>jar</type>
-                <scope>compile</scope>
-            </dependency>
-            
-            <dependency>
-                <groupId>de.cismet.cids</groupId>
-                <artifactId>cids-server</artifactId>
-                <version>6.0</version>
+                <version>6.2.1</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
 
+            <dependency>
+                <groupId>de.cismet.cids</groupId>
+                <artifactId>cids-server</artifactId>
+                <version>6.3.1</version>
+                <type>jar</type>
+                <scope>compile</scope>
+            </dependency>
+                                    
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server-rest-types</artifactId>
@@ -91,7 +91,7 @@
             <dependency>
                 <groupId>de.cismet.cids.custom.wupp.server</groupId>
                 <artifactId>cids-custom-server-wuppertal</artifactId>
-                <version>6.0</version>
+                <version>6.3</version>
                 <scope>runtime</scope>
             </dependency>
             <!-- END: managed cids-dependencies -->    
@@ -136,6 +136,14 @@
             <scope>compile</scope>
             <type>jar</type>
         </dependency>
+        
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+
         <dependency>
             <groupId>org.postgis</groupId>
             <artifactId>postgis-jdbc</artifactId>
@@ -162,7 +170,7 @@
             <artifactId>slf4j-log4j12</artifactId>
             <scope>runtime</scope>
             <optional>true</optional>
-        </dependency>
+        </dependency>                
         <!-- END: Runtime dependencies -->
        
         <!--<dependency>
