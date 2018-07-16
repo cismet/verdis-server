@@ -19,12 +19,11 @@ import Sirius.server.newuser.User;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
-import org.openide.util.Exceptions;
-
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.StringReader;
+import java.io.InputStreamReader;
 
+import java.util.Base64;
 import java.util.Properties;
 
 import de.cismet.cids.server.actions.ServerAction;
@@ -98,8 +97,6 @@ public class EBReportServerAction implements UserAwareServerAction, MetaServiceS
 
     private MetaService metaService;
 
-    private VerdisServerResources reportResource = null;
-
     private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Methods ----------------------------------------------------------------
@@ -132,29 +129,17 @@ public class EBReportServerAction implements UserAwareServerAction, MetaServiceS
     /**
      * DOCUMENT ME!
      *
-     * @param  args  DOCUMENT ME!
-     */
-    public static void main(final String[] args) {
-        try {
-            System.out.println(new String(executeCmd("/usr/bin/java -version")));
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
      * @param   cmd  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    private static byte[] executeCmd(final String cmd) throws Exception {
-        final Process p = Runtime.getRuntime().exec(cmd);
-        p.waitFor();
-        return IOUtils.toByteArray(p.getInputStream());
+    private static String executeCmd(final String cmd) throws Exception {
+        final ProcessBuilder builder = new ProcessBuilder("/bin/sh", "-c", cmd);
+        final Process process = builder.start();
+        final InputStream is = process.getInputStream();
+        return IOUtils.toString(new InputStreamReader(is));
     }
 
     @Override
@@ -206,13 +191,13 @@ public class EBReportServerAction implements UserAwareServerAction, MetaServiceS
                             .replaceAll("<domain>", (String)cmdProperties.get("domain"))
                             .replaceAll("<password>", (String)cmdProperties.get("password"))
                             .replaceAll("<kassenzeichenId>", String.valueOf(kassenzeichenId))
-                            .replaceAll("<type>", type.name())
-                            .replaceAll("<mapFormat>", mapFormat.name())
+                            .replaceAll("<type>", type != null ? type.name() : "_null_")
+                            .replaceAll("<mapFormat>", mapFormat != null ? mapFormat.name() : "_null_")
                             .replaceAll("<hints>", hints)
                             .replaceAll("<scaleDenominator>", String.valueOf(scaleDenominator))
                             .replaceAll("<abflusswirksamkeitFlag>", String.valueOf(abflusswirksamkeitFlag));
-//                LOG.fatal(ebGeneratorCmd);
-                return executeCmd(ebGeneratorCmd);
+                final String response = executeCmd(ebGeneratorCmd);
+                return Base64.getMimeDecoder().decode(response);
             } finally {
             }
         } catch (final Exception ex) {
