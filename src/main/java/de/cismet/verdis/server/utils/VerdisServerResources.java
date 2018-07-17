@@ -33,12 +33,22 @@ public enum VerdisServerResources {
     EB_REPORT_PROPERTIES(new TextServerResource("/reports/eb_report.properties")),
 
     EB_FLAECHEN_JASPER(new JasperReportServerResource("/reports/feb_flaechen.jasper")),
-    EB_FRONTEN_JASPER(new JasperReportServerResource("/reports/fronten.jasper")),
+    EB_FLAECHEN_DACH_JASPER(new JasperReportServerResource("/reports/feb_dachflaechen.jasper")),
+    EB_FLAECHEN_VERSIEGELT_JASPER(new JasperReportServerResource("/reports/feb_versiegelteFlaechen.jasper")),
+    EB_FLAECHEN_HINWEISE_JASPER(new JasperReportServerResource("/reports/feb_hinweise.jasper")),
 
-    EB_MAP_A4LS_JASPER(new JasperReportServerResource("/reports/feb_mapA4LS.jasper")),
-    EB_MAP_A3LS_JASPER(new JasperReportServerResource("/reports/feb_mapA3LS.jasper")),
-    EB_MAP_A4P_JASPER(new JasperReportServerResource("/reports/feb_mapA4P.jasper")),
-    EB_MAP_A3P_JASPER(new JasperReportServerResource("/reports/feb_mapA3P.jasper")),
+    EB_FRONTEN_JASPER(new JasperReportServerResource("/reports/fronten.jasper")),
+    EB_FRONTEN_TABLE_JASPER(new JasperReportServerResource("/reports/fronten_table.jasper")),
+
+    MAP_FLAECHEN_A4LS_JASPER(new JasperReportServerResource("/reports/feb_mapA4LS.jasper")),
+    MAP_FLAECHEN_A3LS_JASPER(new JasperReportServerResource("/reports/feb_mapA3LS.jasper")),
+    MAP_FLAECHEN_A4P_JASPER(new JasperReportServerResource("/reports/feb_mapA4P.jasper")),
+    MAP_FLAECHEN_A3P_JASPER(new JasperReportServerResource("/reports/feb_mapA3P.jasper")),
+
+    MAP_FRONTEN_A4LS_JASPER(new JasperReportServerResource("/reports/fronten_mapA4LS.jasper")),
+    MAP_FRONTEN_A3LS_JASPER(new JasperReportServerResource("/reports/fronten_mapA3LS.jasper")),
+    MAP_FRONTEN_A4P_JASPER(new JasperReportServerResource("/reports/fronten_mapA4P.jasper")),
+    MAP_FRONTEN_A3P_JASPER(new JasperReportServerResource("/reports/fronten_mapA3P.jasper")),
 
     WEBDAV(new TextServerResource("/webdav/WebDav.properties"));
 
