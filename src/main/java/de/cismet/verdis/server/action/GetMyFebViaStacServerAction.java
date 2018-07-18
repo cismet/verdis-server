@@ -16,11 +16,15 @@ import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
 import Sirius.server.newuser.User;
 
+import de.cismet.cids.dynamics.CidsBean;
+
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.actions.UserAwareServerAction;
+
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextStore;
+import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 
 /**
  * DOCUMENT ME!
@@ -29,15 +33,43 @@ import de.cismet.connectioncontext.ConnectionContextStore;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = ServerAction.class)
-public class GetMyFebViaStacServerAction implements MetaServiceStore, UserAwareServerAction, ServerAction, ConnectionContextStore {
+public class GetMyFebViaStacServerAction implements MetaServiceStore,
+    UserAwareServerAction,
+    ServerAction,
+    ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(
             GetMyFebViaStacServerAction.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Enums ------------------------------------------------------------------
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public enum Parameter {
+
+        //~ Enum constants -----------------------------------------------------
+
+        BODY
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public enum Body {
+
+        //~ Enum constants -----------------------------------------------------
+
+        STRING, BYTE_ARRAY
+    }
+
+    //~ Instance fields --------------------------------------------------------
 
     private User user;
 
@@ -75,24 +107,7 @@ public class GetMyFebViaStacServerAction implements MetaServiceStore, UserAwareS
     @Override
     public ConnectionContext getConnectionContext() {
         return connectionContext;
-    }        
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @version $Revision$, $Date$
-     */
-    public enum Parameter {
-
-        BODY
     }
-    
-    public enum Body {
-
-        STRING, BYTE_ARRAY
-    }
-    
-    //~ Methods ----------------------------------------------------------------
 
     @Override
     public Object execute(final Object object, final ServerActionParameter... params) {
@@ -126,7 +141,7 @@ public class GetMyFebViaStacServerAction implements MetaServiceStore, UserAwareS
                     }
                 }
             }
-            
+
             if (stac == null) {
                 throw new Exception("STAC is null");
             } else {
@@ -135,11 +150,39 @@ public class GetMyFebViaStacServerAction implements MetaServiceStore, UserAwareS
         } catch (final Exception ex) {
             LOG.error(ex, ex);
             return ex;
-        }   
+        }
     }
-    
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   stac  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
     private byte[] createReport(final String stac) throws Exception {
-        return null;
+        final CidsBean kassenzeichenBean = StacUtils.getKassenzeichenBean(
+                stac,
+                getMetaService(),
+                getConnectionContext());
+        
+        final Integer kassenzeichenNummer = (Integer)kassenzeichenBean.getProperty(KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER);
+        final EBReportServerAction.Type type = EBReportServerAction.Type.FLAECHEN;
+        final EBReportServerAction.MapFormat mapFormat = EBReportServerAction.MapFormat.A4LS;
+        final String hints = "";
+        final Double mapScale = null;
+        final Boolean abflusswirksamkeit = false;
+        
+        return EBReportServerAction.createReport(
+                kassenzeichenNummer, 
+                type, 
+                mapFormat, 
+                hints, 
+                mapScale, 
+                abflusswirksamkeit
+        );
     }
 
     @Override
