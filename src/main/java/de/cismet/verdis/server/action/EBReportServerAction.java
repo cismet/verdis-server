@@ -184,7 +184,7 @@ public class EBReportServerAction implements UserAwareServerAction, MetaServiceS
                 }
             }
 
-            final Integer kassenzeichenId;
+            final Integer kassenzeichen;
             if (object == null) {
                 throw new Exception("body is null");
             } else if (body == null) {
@@ -192,23 +192,23 @@ public class EBReportServerAction implements UserAwareServerAction, MetaServiceS
             } else {
                 switch (body) {
                     case BYTE_ARRAY: {
-                        kassenzeichenId = new BigInteger((byte[])object).intValue();
+                        kassenzeichen = new BigInteger((byte[])object).intValue();
                     }
                     break;
                     case INTEGER: {
-                        kassenzeichenId = (Integer)object;
+                        kassenzeichen = (Integer)object;
                     }
                     break;
                     case STRING: {
-                        kassenzeichenId = Integer.parseInt((String)object);
+                        kassenzeichen = Integer.parseInt((String)object);
                     }
                     break;
                     default: {
-                        kassenzeichenId = null;
+                        kassenzeichen = null;
                     }
                 }
             }
-            return createReport(kassenzeichenId, type, mapFormat, hints, scaleDenominator, abflusswirksamkeit);
+            return createReport(kassenzeichen, type, mapFormat, hints, scaleDenominator, abflusswirksamkeit);
         } catch (final Exception ex) {
             LOG.error(ex, ex);
             return ex;
@@ -218,7 +218,7 @@ public class EBReportServerAction implements UserAwareServerAction, MetaServiceS
     /**
      * DOCUMENT ME!
      *
-     * @param   kassenzeichenId     DOCUMENT ME!
+     * @param   kassenzeichen     DOCUMENT ME!
      * @param   type                DOCUMENT ME!
      * @param   mapFormat           DOCUMENT ME!
      * @param   hints               DOCUMENT ME!
@@ -229,7 +229,7 @@ public class EBReportServerAction implements UserAwareServerAction, MetaServiceS
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    private byte[] createReport(final Integer kassenzeichenId,
+    private byte[] createReport(final Integer kassenzeichen,
             final Type type,
             final MapFormat mapFormat,
             final String hints,
@@ -256,7 +256,7 @@ public class EBReportServerAction implements UserAwareServerAction, MetaServiceS
                     .replaceAll("<group>", (String)cmdProperties.get("group"))
                     .replaceAll("<domain>", (String)cmdProperties.get("domain"))
                     .replaceAll("<password>", (String)cmdProperties.get("password"))
-                    .replaceAll("<kassenzeichenId>", String.valueOf(kassenzeichenId))
+                    .replaceAll("<kassenzeichen>", String.valueOf(kassenzeichen))
                     .replaceAll("<type>", (type != null) ? type.name() : "_null_")
                     .replaceAll("<mapFormat>", (mapFormat != null) ? mapFormat.name() : "_null_")
                     .replaceAll("<hints>", hints)
