@@ -168,7 +168,7 @@ public class EBReportServerAction implements UserAwareServerAction, MetaServiceS
         try {
             if (params != null) {
                 for (final ServerActionParameter sap : params) {
-                    if (sap.getKey().equals(Parameter.TYPE.toString())) {
+                    if (sap.getKey().equals(Parameter.BODY.toString())) {
                         body = Body.valueOf((String)sap.getValue());
                     } else if (sap.getKey().equals(Parameter.TYPE.toString())) {
                         type = Type.valueOf((String)sap.getValue());
