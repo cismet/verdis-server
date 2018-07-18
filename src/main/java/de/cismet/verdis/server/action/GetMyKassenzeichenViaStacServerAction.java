@@ -37,6 +37,8 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore, 
     private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(
             GetMyKassenzeichenViaStacServerAction.class);
 
+    public static final String TASKNAME = "getMyKassenzeichen";
+
     //~ Enums ------------------------------------------------------------------
 
     /**
@@ -112,6 +114,6 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore, 
 
     @Override
     public String getTaskName() {
-        return "getMyKassenzeichen";
+        return TASKNAME;
     }
 }

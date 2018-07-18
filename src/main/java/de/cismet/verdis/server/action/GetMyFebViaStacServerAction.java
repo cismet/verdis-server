@@ -24,6 +24,7 @@ import de.cismet.cids.server.actions.UserAwareServerAction;
 
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextStore;
+
 import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 
 /**
@@ -42,6 +43,8 @@ public class GetMyFebViaStacServerAction implements MetaServiceStore,
 
     private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(
             GetMyFebViaStacServerAction.class);
+
+    public static final String TASKNAME = "getMyFEB";
 
     //~ Enums ------------------------------------------------------------------
 
@@ -72,9 +75,7 @@ public class GetMyFebViaStacServerAction implements MetaServiceStore,
     //~ Instance fields --------------------------------------------------------
 
     private User user;
-
     private MetaService metaService;
-
     private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     //~ Methods ----------------------------------------------------------------
@@ -167,26 +168,26 @@ public class GetMyFebViaStacServerAction implements MetaServiceStore,
                 stac,
                 getMetaService(),
                 getConnectionContext());
-        
-        final Integer kassenzeichenNummer = (Integer)kassenzeichenBean.getProperty(KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER);
+
+        final Integer kassenzeichenNummer = (Integer)kassenzeichenBean.getProperty(
+                KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER);
         final EBReportServerAction.Type type = EBReportServerAction.Type.FLAECHEN;
         final EBReportServerAction.MapFormat mapFormat = EBReportServerAction.MapFormat.A4LS;
         final String hints = "";
         final Double mapScale = null;
         final Boolean abflusswirksamkeit = false;
-        
+
         return EBReportServerAction.createReport(
-                kassenzeichenNummer, 
-                type, 
-                mapFormat, 
-                hints, 
-                mapScale, 
-                abflusswirksamkeit
-        );
+                kassenzeichenNummer,
+                type,
+                mapFormat,
+                hints,
+                mapScale,
+                abflusswirksamkeit);
     }
 
     @Override
     public String getTaskName() {
-        return "getMyFEB";
+        return TASKNAME;
     }
 }
