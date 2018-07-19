@@ -25,6 +25,7 @@ import java.rmi.Naming;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 
 import java.util.HashMap;
 
@@ -42,10 +43,12 @@ public class StacUtils {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final String STAC_CHECK =
-        "select base_login_name, stac_options from cs_stac where md5(salt || ? || stac_options || base_login_name) = thehash and expiration > now();";
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(
-            StacUtils.class);
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(StacUtils.class);
+
+    private static final String PREPARED_STATEMENT__STAC_CHECK =
+        "SELECT base_login_name, stac_options FROM cs_stac WHERE md5(salt || ? || stac_options || base_login_name) = thehash AND expiration > now();";
+    private static final String PREPARED_STATEMENT__STAC_CREATE = "SELECT create_stac(?, ?, ?);";
+
     private static Connection CONNECTION = null;
 
     //~ Methods ----------------------------------------------------------------
@@ -67,6 +70,44 @@ public class StacUtils {
     /**
      * DOCUMENT ME!
      *
+     * @param   classId          DOCUMENT ME!
+     * @param   kassenzeichenId  DOCUMENT ME!
+     * @param   userName         DOCUMENT ME!
+     * @param   expiration       DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static String createStac(final Integer classId,
+            final Integer kassenzeichenId,
+            final String userName,
+            final Timestamp expiration) throws Exception {
+        final HashMap optionsHM = new HashMap();
+        optionsHM.put("kassenzeichenid", kassenzeichenId);
+        optionsHM.put("classId", classId);
+
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final String stacOptions = objectMapper.writeValueAsString(optionsHM);
+
+        final PreparedStatement ps = getConnection().prepareStatement(PREPARED_STATEMENT__STAC_CREATE);
+        ps.setString(1, userName);
+        ps.setTimestamp(2, expiration);
+        ps.setString(3, stacOptions);
+        final ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            final String stac = rs.getString(1);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("stac: " + stac);
+            }
+            return stac;
+        }
+        return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   stac               DOCUMENT ME!
      * @param   metaService        DOCUMENT ME!
      * @param   connectionContext  DOCUMENT ME!
@@ -78,7 +119,7 @@ public class StacUtils {
     public static CidsBean getKassenzeichenBean(final String stac,
             final MetaService metaService,
             final ConnectionContext connectionContext) throws Exception {
-        final PreparedStatement ps = getConnection().prepareStatement(STAC_CHECK);
+        final PreparedStatement ps = getConnection().prepareStatement(PREPARED_STATEMENT__STAC_CHECK);
         ps.setString(1, stac);
         final ResultSet rs = ps.executeQuery();
         if (rs.next()) {

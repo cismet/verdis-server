@@ -168,18 +168,20 @@ public class EBReportServerAction implements UserAwareServerAction, MetaServiceS
         try {
             if (params != null) {
                 for (final ServerActionParameter sap : params) {
+                    final Object value = sap.getValue();
                     if (sap.getKey().equals(Parameter.BODY.toString())) {
-                        body = Body.valueOf((String)sap.getValue());
+                        body = (value instanceof Body) ? (Body)value : Body.valueOf((String)value);
                     } else if (sap.getKey().equals(Parameter.TYPE.toString())) {
-                        type = Type.valueOf((String)sap.getValue());
+                        type = (value instanceof Type) ? (Type)value : Type.valueOf((String)value);
                     } else if (sap.getKey().equals(Parameter.MAP_FORMAT.toString())) {
-                        mapFormat = MapFormat.valueOf((String)sap.getValue());
+                        mapFormat = (value instanceof MapFormat) ? (MapFormat)value : MapFormat.valueOf((String)value);
                     } else if (sap.getKey().equals(Parameter.HINTS.toString())) {
                         hints = (String)sap.getValue();
                     } else if (sap.getKey().equals(Parameter.MAP_SCALE.toString())) {
-                        scaleDenominator = (Double)sap.getValue();
+                        scaleDenominator = (value instanceof Double) ? (Double)value : Double.valueOf((String)value);
                     } else if (sap.getKey().equals(Parameter.ABLUSSWIRKSAMKEIT.toString())) {
-                        abflusswirksamkeit = (Boolean)sap.getValue();
+                        abflusswirksamkeit = (value instanceof Boolean) ? (Boolean)sap.getValue()
+                                                                        : Boolean.valueOf((String)value);
                     }
                 }
             }
