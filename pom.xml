@@ -10,7 +10,7 @@
 
     <groupId>de.cismet.verdis</groupId>
     <artifactId>verdis-server</artifactId>
-    <version>6.2-SNAPSHOT</version>
+    <version>6.3-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -144,6 +144,13 @@
             <type>jar</type>
         </dependency>
 
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <scope>compile</scope>
+            <type>jar</type>
+        </dependency>
+        
         <dependency>
             <groupId>org.postgis</groupId>
             <artifactId>postgis-jdbc</artifactId>
