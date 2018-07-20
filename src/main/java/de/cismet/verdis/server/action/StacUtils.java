@@ -121,6 +121,9 @@ public class StacUtils {
             final ConnectionContext connectionContext) throws Exception {
         final PreparedStatement ps = getConnection().prepareStatement(PREPARED_STATEMENT__STAC_CHECK);
         ps.setString(1, stac);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(ps.toString());
+        }
         final ResultSet rs = ps.executeQuery();
         if (rs.next()) {
             final String baseUser = rs.getString("base_login_name");

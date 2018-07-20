@@ -16,16 +16,22 @@ import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
 import Sirius.server.newuser.User;
 
+import java.util.Properties;
+
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.actions.UserAwareServerAction;
 
+import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
+
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextStore;
 
 import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
+
+import de.cismet.verdis.server.utils.VerdisServerResources;
 
 /**
  * DOCUMENT ME!
@@ -128,6 +134,12 @@ public class GetMyFebViaStacServerAction implements MetaServiceStore,
             } else if (body == null) {
                 throw new Exception("body-type parameter is null");
             } else {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("object=" + object);
+                }
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("body=" + body);
+                }
                 switch (body) {
                     case BYTE_ARRAY: {
                         stac = new String((byte[])object);
@@ -143,15 +155,18 @@ public class GetMyFebViaStacServerAction implements MetaServiceStore,
                 }
             }
 
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("STAC=" + stac);
+            }
             if (stac == null) {
                 throw new Exception("STAC is null");
             } else {
                 return createReport(stac);
             }
         } catch (final Exception ex) {
-            LOG.error(ex, ex);
-            return ex;
+            LOG.error("Error during GetMyFebViaStacServerAction.execute()", ex);
         }
+        return "{\"nothing\":\"at all\"}";
     }
 
     /**
@@ -169,13 +184,20 @@ public class GetMyFebViaStacServerAction implements MetaServiceStore,
                 getMetaService(),
                 getConnectionContext());
 
+        final Properties properties = ServerResourcesLoader.getInstance()
+                    .loadProperties(VerdisServerResources.GET_MY_FEB_VIA_STAC_ACTION_PROPERTIES.getValue());
+
         final Integer kassenzeichenNummer = (Integer)kassenzeichenBean.getProperty(
                 KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER);
-        final EBReportServerAction.Type type = EBReportServerAction.Type.FLAECHEN;
-        final EBReportServerAction.MapFormat mapFormat = EBReportServerAction.MapFormat.A4LS;
-        final String hints = "";
-        final Double mapScale = null;
-        final Boolean abflusswirksamkeit = false;
+        final EBReportServerAction.Type type = (properties.getProperty("type") != null)
+            ? EBReportServerAction.Type.valueOf(properties.getProperty("type")) : null;
+        final EBReportServerAction.MapFormat mapFormat = (properties.getProperty("mapFormat") != null)
+            ? EBReportServerAction.MapFormat.valueOf(properties.getProperty("mapFormat")) : null;
+        final String hints = properties.getProperty("hints");
+        final Double mapScale = (properties.getProperty("mapScale") != null)
+            ? Double.valueOf(properties.getProperty("mapScale")) : null;
+        final Boolean abflusswirksamkeit = (properties.getProperty("abflusswirksamkeit") != null)
+            ? Boolean.valueOf(properties.getProperty("abflusswirksamkeit")) : null;
 
         return EBReportServerAction.createReport(
                 kassenzeichenNummer,
