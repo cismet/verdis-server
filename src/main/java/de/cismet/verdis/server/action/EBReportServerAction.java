@@ -238,10 +238,10 @@ public class EBReportServerAction implements UserAwareServerAction, MetaServiceS
             final Double scaleDenominator,
             final Boolean abflusswirksamkeit) throws Exception {
         final Properties properties = ServerResourcesLoader.getInstance()
-                    .loadProperties(VerdisServerResources.EB_REPORT_PROPERTIES.getValue());
+                    .loadProperties(VerdisServerResources.EB_REPORT_ACTION_PROPERTIES.getValue());
 
         final Properties cmdProperties = new Properties();
-        final InputStream inputStream = new FileInputStream((String)properties.get("ebGeneratorCmdProperties"));
+        final InputStream inputStream = new FileInputStream((String)properties.get("cmdProperties"));
         cmdProperties.load(inputStream);
 
         final String abflusswirksamkeitFlag;
@@ -264,6 +264,9 @@ public class EBReportServerAction implements UserAwareServerAction, MetaServiceS
                     .replaceAll("<hints>", (hints != null) ? hints : "")
                     .replaceAll("<scaleDenominator>", String.valueOf(scaleDenominator))
                     .replaceAll("<abflusswirksamkeitFlag>", String.valueOf(abflusswirksamkeitFlag));
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(ebGeneratorCmd);
+        }
         final String response = executeCmd(ebGeneratorCmd);
         return Base64.getMimeDecoder().decode(response);
     }

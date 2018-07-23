@@ -40,6 +40,9 @@ public enum VerdisServerResources {
     EB_FRONTEN_JASPER(new JasperReportServerResource("/reports/fronten.jasper")),
     EB_FRONTEN_TABLE_JASPER(new JasperReportServerResource("/reports/fronten_table.jasper")),
 
+    EB_REPORT_ACTION_PROPERTIES(new TextServerResource("/actions/ebReport.properties")),
+    GET_MY_FEB_VIA_STAC_ACTION_PROPERTIES(new TextServerResource("/actions/getMyFebViaStac.properties")),
+
     MAP_FLAECHEN_A4LS_JASPER(new JasperReportServerResource("/reports/feb_mapA4LS.jasper")),
     MAP_FLAECHEN_A3LS_JASPER(new JasperReportServerResource("/reports/feb_mapA3LS.jasper")),
     MAP_FLAECHEN_A4P_JASPER(new JasperReportServerResource("/reports/feb_mapA4P.jasper")),

@@ -104,12 +104,10 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore, 
                 final String json = kassenzeichenBean.toJSONString(false);
                 return json;
             }
-
-            return "{\"nothing\":\"at all\"}";
-        } catch (Exception exception) {
-            LOG.error("Error during STAC Check", exception);
-            return "{\"nothing\":\"at all\"}";
+        } catch (final Exception ex) {
+            LOG.error("Error during GetMyKassenzeichenViaStacServerAction.execute()", ex);
         }
+        return "{\"nothing\":\"at all\"}";
     }
 
     @Override
