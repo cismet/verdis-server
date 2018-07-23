@@ -63,7 +63,7 @@ public class GetMyFebViaStacServerAction implements MetaServiceStore,
 
         //~ Enum constants -----------------------------------------------------
 
-        BODY
+        BODY, RETURN, STAC
     }
 
     /**
@@ -77,7 +77,7 @@ public class GetMyFebViaStacServerAction implements MetaServiceStore,
 
         STRING, BYTE_ARRAY
     }
-
+    
     //~ Instance fields --------------------------------------------------------
 
     private User user;
@@ -118,29 +118,31 @@ public class GetMyFebViaStacServerAction implements MetaServiceStore,
 
     @Override
     public Object execute(final Object object, final ServerActionParameter... params) {
-        Body body = Body.BYTE_ARRAY;
+        Body bodyType = Body.BYTE_ARRAY;
+        String stac = "";
         try {
             if (params != null) {
                 for (final ServerActionParameter sap : params) {
                     if (sap.getKey().equals(Parameter.BODY.toString())) {
-                        body = Body.valueOf((String)sap.getValue());
+                        bodyType = Body.valueOf((String)sap.getValue());
+                    } else if (sap.getKey().equals(Parameter.STAC.toString())) {
+                        stac = (String)sap.getValue();
                     }
                 }
             }
 
-            final String stac;
-            if (object == null) {
-                throw new Exception("body is null");
-            } else if (body == null) {
+            if (stac == null && object == null) {
+                throw new Exception("no stac given");
+            } else if (bodyType == null) {
                 throw new Exception("body-type parameter is null");
             } else {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("object=" + object);
                 }
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("body=" + body);
+                    LOG.debug("body=" + bodyType);
                 }
-                switch (body) {
+                switch (bodyType) {
                     case BYTE_ARRAY: {
                         stac = new String((byte[])object);
                     }
