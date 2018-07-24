@@ -77,7 +77,7 @@ public class GetMyFebViaStacServerAction implements MetaServiceStore,
 
         STRING, BYTE_ARRAY
     }
-    
+
     //~ Instance fields --------------------------------------------------------
 
     private User user;
@@ -131,11 +131,11 @@ public class GetMyFebViaStacServerAction implements MetaServiceStore,
                 }
             }
 
-            if (stac == null && object == null) {
+            if ((stac == null) && (object == null)) {
                 throw new Exception("no stac given");
             } else if (bodyType == null) {
                 throw new Exception("body-type parameter is null");
-            } else {
+            } else if (object != null) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("object=" + object);
                 }
