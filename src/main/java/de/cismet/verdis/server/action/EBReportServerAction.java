@@ -78,7 +78,7 @@ public class EBReportServerAction implements UserAwareServerAction, MetaServiceS
 
         //~ Enum constants -----------------------------------------------------
 
-        A4LS, A3LS, A4P, A3P
+        A4, A3, LS, P, A4LS, A4P, A3LS, A3P
     }
 
     /**
