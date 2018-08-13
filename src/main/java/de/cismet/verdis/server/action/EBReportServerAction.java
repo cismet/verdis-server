@@ -54,6 +54,7 @@ public class EBReportServerAction implements UserAwareServerAction, MetaServiceS
 
     private static final Logger LOG = Logger.getLogger(EBReportServerAction.class);
     public static final String TASK_NAME = "EBReport";
+    public static final String NULL_VALUE = "_null_";
 
     //~ Enums ------------------------------------------------------------------
 
@@ -216,7 +217,7 @@ public class EBReportServerAction implements UserAwareServerAction, MetaServiceS
             return ex;
         }
     }
-
+    
     /**
      * DOCUMENT ME!
      *
@@ -259,10 +260,10 @@ public class EBReportServerAction implements UserAwareServerAction, MetaServiceS
                     .replaceAll("<domain>", (String)cmdProperties.get("domain"))
                     .replaceAll("<password>", (String)cmdProperties.get("password"))
                     .replaceAll("<kassenzeichen>", String.valueOf(kassenzeichen))
-                    .replaceAll("<type>", (type != null) ? type.name() : "_null_")
-                    .replaceAll("<mapFormat>", (mapFormat != null) ? mapFormat.name() : "_null_")
+                    .replaceAll("<type>", (type != null) ? type.name() : NULL_VALUE)
+                    .replaceAll("<mapFormat>", (mapFormat != null) ? mapFormat.name() : NULL_VALUE)
                     .replaceAll("<hints>", (hints != null) ? hints : "")
-                    .replaceAll("<scaleDenominator>", String.valueOf(scaleDenominator))
+                    .replaceAll("<scaleDenominator>", scaleDenominator != null ? String.valueOf(scaleDenominator) : NULL_VALUE)
                     .replaceAll("<abflusswirksamkeitFlag>", String.valueOf(abflusswirksamkeitFlag));
         if (LOG.isDebugEnabled()) {
             LOG.debug(ebGeneratorCmd);
