@@ -42,6 +42,8 @@ public enum VerdisServerResources {
 
     EB_REPORT_ACTION_PROPERTIES(new TextServerResource("/actions/ebReport.properties")),
     GET_MY_FEB_VIA_STAC_ACTION_PROPERTIES(new TextServerResource("/actions/getMyFebViaStac.properties")),
+    CREATE_STAC_FOR_A_KASSENZEICHEN_ACTION_PROPERTIES(new TextServerResource(
+            "/actions/createAStacForKassenzeichen.properties")),
 
     MAP_FLAECHEN_A4LS_JASPER(new JasperReportServerResource("/reports/feb_mapA4LS.jasper")),
     MAP_FLAECHEN_A3LS_JASPER(new JasperReportServerResource("/reports/feb_mapA3LS.jasper")),
