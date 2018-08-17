@@ -28,10 +28,13 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.actions.UserAwareServerAction;
+
+import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextStore;
@@ -40,6 +43,7 @@ import de.cismet.verdis.commons.constants.VerdisConstants;
 import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
 
 import de.cismet.verdis.server.search.KassenzeichenSearchStatement;
+import de.cismet.verdis.server.utils.VerdisServerResources;
 
 /**
  * DOCUMENT ME!
@@ -178,11 +182,19 @@ public class CreateAStacForKassenzeichenServerAction implements MetaServiceStore
                 userName = getUser().getName();
             }
 
+            final Properties properties = ServerResourcesLoader.getInstance()
+                        .loadProperties(VerdisServerResources.CREATE_STAC_FOR_A_KASSENZEICHEN_ACTION_PROPERTIES
+                            .getValue());
+
             final MetaClass mcKassenzeichen = getMetaService().getClassByTableName(
                     getUser(),
                     VerdisMetaClassConstants.MC_KASSENZEICHEN,
                     getConnectionContext());
-            return StacUtils.createStac(mcKassenzeichen.getId(), kassenzeichenId, userName, expiration);
+            return StacUtils.createStac(mcKassenzeichen.getId(),
+                    kassenzeichenId,
+                    properties.getProperty("baseLoginName", userName),
+                    userName,
+                    expiration);
         } catch (final Exception ex) {
             LOG.error(ex, ex);
             return ex;

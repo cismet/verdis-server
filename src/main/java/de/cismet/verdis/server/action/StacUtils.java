@@ -72,7 +72,8 @@ public class StacUtils {
      *
      * @param   classId          DOCUMENT ME!
      * @param   kassenzeichenId  DOCUMENT ME!
-     * @param   userName         DOCUMENT ME!
+     * @param   baseLoginName    DOCUMENT ME!
+     * @param   creatorUserName  DOCUMENT ME!
      * @param   expiration       DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -81,17 +82,19 @@ public class StacUtils {
      */
     public static String createStac(final Integer classId,
             final Integer kassenzeichenId,
-            final String userName,
+            final String baseLoginName,
+            final String creatorUserName,
             final Timestamp expiration) throws Exception {
         final HashMap optionsHM = new HashMap();
         optionsHM.put("kassenzeichenid", kassenzeichenId);
         optionsHM.put("classId", classId);
+        optionsHM.put("creatorUserName", creatorUserName);
 
         final ObjectMapper objectMapper = new ObjectMapper();
         final String stacOptions = objectMapper.writeValueAsString(optionsHM);
 
         final PreparedStatement ps = getConnection().prepareStatement(PREPARED_STATEMENT__STAC_CREATE);
-        ps.setString(1, userName);
+        ps.setString(1, baseLoginName);
         ps.setTimestamp(2, expiration);
         ps.setString(3, stacOptions);
         final ResultSet rs = ps.executeQuery();
@@ -150,7 +153,9 @@ public class StacUtils {
                     (Integer)(optionsHM.get("kassenzeichenid")),
                     (Integer)(optionsHM.get("classId")),
                     connectionContext);
-            return mo.getBean();
+            final CidsBean kassenzeichenBean = mo.getBean();
+            kassenzeichenBean.setProperty("stac_options", optionsHM);
+            return kassenzeichenBean;
         } else {
             return null;
         }
