@@ -12,9 +12,17 @@
  */
 package de.cismet.verdis.server.startup;
 
+import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.domainserver.DomainServerStartupHook;
 
 import org.apache.log4j.Logger;
+
+import org.openide.util.Exceptions;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
@@ -32,12 +40,30 @@ public class VerdisServerStartupHook implements DomainServerStartupHook {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger LOG = Logger.getLogger(VerdisServerStartupHook.class.getName());
+    private static final String PREPARED_STATEMENT__DELETE_OLD_STACS = "DELETE FROM cs_stac WHERE expiration < now()";
 
     //~ Methods ----------------------------------------------------------------
 
     @Override
     public void domainServerStarted() {
         loadAllServerResources();
+
+        new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    DomainServerImpl domainServer = null;
+                    while (domainServer == null) {
+                        domainServer = DomainServerImpl.getServerInstance();
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ex) {
+                        }
+                    }
+                    deleteOldStacs(domainServer);
+                }
+            }) {
+            }.start();
     }
 
     @Override
@@ -61,6 +87,21 @@ public class VerdisServerStartupHook implements DomainServerStartupHook {
 
         if (error) {
             LOG.error("!!! CAUTION !!! Not all server resources could be loaded !");
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  domainServer  DOCUMENT ME!
+     */
+    private void deleteOldStacs(final DomainServerImpl domainServer) {
+        try {
+            final Connection connection = domainServer.getConnectionPool().getConnection(true);
+            final PreparedStatement ps = connection.prepareStatement(PREPARED_STATEMENT__DELETE_OLD_STACS);
+            ps.executeUpdate();
+        } catch (final SQLException ex) {
+            LOG.error(ex, ex);
         }
     }
 }

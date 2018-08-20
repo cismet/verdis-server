@@ -45,6 +45,8 @@ public enum VerdisServerResources {
     CREATE_STAC_FOR_A_KASSENZEICHEN_ACTION_PROPERTIES(new TextServerResource(
             "/actions/createAStacForKassenzeichen.properties")),
 
+    STAC_CREATION_DIALOG_PROPERTIES(new TextServerResource("/client/stac_creation_dialog.properties")),
+
     MAP_FLAECHEN_A4LS_JASPER(new JasperReportServerResource("/reports/feb_mapA4LS.jasper")),
     MAP_FLAECHEN_A3LS_JASPER(new JasperReportServerResource("/reports/feb_mapA3LS.jasper")),
     MAP_FLAECHEN_A4P_JASPER(new JasperReportServerResource("/reports/feb_mapA4P.jasper")),
