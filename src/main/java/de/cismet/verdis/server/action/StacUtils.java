@@ -27,6 +27,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
+import java.util.Date;
 import java.util.HashMap;
 
 import de.cismet.cids.dynamics.CidsBean;
@@ -46,7 +47,7 @@ public class StacUtils {
     private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(StacUtils.class);
 
     private static final String PREPARED_STATEMENT__STAC_CHECK =
-        "SELECT base_login_name, stac_options FROM cs_stac WHERE md5(salt || ? || stac_options || base_login_name) = thehash AND expiration > now();";
+        "SELECT base_login_name, stac_options, expiration FROM cs_stac WHERE md5(salt || ? || stac_options || base_login_name) = thehash AND expiration > now();";
     private static final String PREPARED_STATEMENT__STAC_CREATE = "SELECT create_stac(?, ?, ?);";
 
     private static Connection CONNECTION = null;
@@ -137,6 +138,10 @@ public class StacUtils {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("options: " + options);
             }
+            final Timestamp expiration = rs.getTimestamp("expiration");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("expiration: " + expiration);
+            }
 
             final ObjectMapper objectMapper = new ObjectMapper();
             final HashMap optionsHM = objectMapper.readValue(options, HashMap.class);
@@ -155,6 +160,7 @@ public class StacUtils {
                     connectionContext);
             final CidsBean kassenzeichenBean = mo.getBean();
             kassenzeichenBean.setProperty("stac_options", optionsHM);
+            kassenzeichenBean.setProperty("stac_expiration", expiration);
             return kassenzeichenBean;
         } else {
             return null;
