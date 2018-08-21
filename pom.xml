@@ -152,6 +152,14 @@
         </dependency>
         
         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <scope>compile</scope>
+            <version>2.2.3</version> 
+           <type>jar</type>
+        </dependency>
+                
+        <dependency>
             <groupId>org.postgis</groupId>
             <artifactId>postgis-jdbc</artifactId>
             <!--
