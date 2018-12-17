@@ -28,7 +28,7 @@ public enum VerdisServerResources {
 
     //~ Enum constants ---------------------------------------------------------
 
-    MOTD_VERDIS_GRUNDIS_PROPERTIES(new TextServerResource("/motd/verdis_grundis.properties")),
+    MOTD_PROPERTIES(new TextServerResource("/motd/verdis_grundis.properties")),
 
     EB_REPORT_PROPERTIES(new TextServerResource("/reports/eb_report.properties")),
 
