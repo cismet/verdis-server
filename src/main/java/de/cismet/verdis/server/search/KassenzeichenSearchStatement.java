@@ -29,9 +29,7 @@ import de.cismet.cidsx.server.api.types.SearchInfo;
 import de.cismet.cidsx.server.api.types.SearchParameterInfo;
 import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
 
-import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
-import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
 
 /**
  * DOCUMENT ME!
@@ -110,16 +108,16 @@ public class KassenzeichenSearchStatement extends AbstractCidsServerSearch imple
 
             if (searchString.length() == 6) {
                 sql = "SELECT (select id from cs_class where table_name ilike '"
-                            + VerdisMetaClassConstants.MC_KASSENZEICHEN
+                            + VerdisConstants.MC.KASSENZEICHEN
                             + "') as cid, id as oid FROM kassenzeichen WHERE " // NOI18N
-                            + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER
+                            + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER
                             + "/10 = "                                         // NOI18N
                             + searchString;
             } else {
                 sql = "SELECT (select id from cs_class where table_name ilike '"
-                            + VerdisMetaClassConstants.MC_KASSENZEICHEN
+                            + VerdisConstants.MC.KASSENZEICHEN
                             + "') as cid, id as oid FROM kassenzeichen WHERE " // NOI18N
-                            + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER
+                            + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER
                             + " = "                                            // NOI18N
                             + searchString;
             }
