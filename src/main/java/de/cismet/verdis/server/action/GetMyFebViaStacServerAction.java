@@ -29,7 +29,7 @@ import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextStore;
 
-import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
+import de.cismet.verdis.commons.constants.VerdisConstants;
 
 import de.cismet.verdis.server.utils.VerdisServerResources;
 
@@ -190,7 +190,7 @@ public class GetMyFebViaStacServerAction implements MetaServiceStore,
                     .loadProperties(VerdisServerResources.GET_MY_FEB_VIA_STAC_ACTION_PROPERTIES.getValue());
 
         final Integer kassenzeichenNummer = (Integer)kassenzeichenBean.getProperty(
-                KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER);
+                VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER);
         final EBReportServerAction.Type type = (properties.getProperty("type") != null)
             ? EBReportServerAction.Type.valueOf(properties.getProperty("type")) : null;
         final EBReportServerAction.MapFormat mapFormat = (properties.getProperty("mapFormat") != null)

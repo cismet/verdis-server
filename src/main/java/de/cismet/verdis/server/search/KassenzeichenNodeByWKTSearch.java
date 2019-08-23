@@ -36,13 +36,7 @@ import de.cismet.cidsx.server.api.types.SearchInfo;
 import de.cismet.cidsx.server.api.types.SearchParameterInfo;
 import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
 
-import de.cismet.verdis.commons.constants.FlaecheninfoPropertyConstants;
-import de.cismet.verdis.commons.constants.FrontinfoPropertyConstants;
-import de.cismet.verdis.commons.constants.GeomPropertyConstants;
-import de.cismet.verdis.commons.constants.KassenzeichenGeometriePropertyConstants;
-import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
-import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
 
 import static de.cismet.verdis.server.search.KassenzeichenGeomSearch.implodeArray;
 
@@ -183,47 +177,47 @@ public class KassenzeichenNodeByWKTSearch extends KassenzeichenGeomSearch implem
                 final ArrayList<String> whereFilter = new ArrayList<String>();
 
                 if (flaecheFilter) {
-                    joinFilter.add(VerdisMetaClassConstants.MC_FLAECHENINFO + " AS flaecheninfo");
-                    whereFilter.add("flaecheninfo." + FlaecheninfoPropertyConstants.PROP__GEOMETRIE + " = geom."
-                                + GeomPropertyConstants.PROP__ID);
+                    joinFilter.add(VerdisConstants.MC.FLAECHENINFO + " AS flaecheninfo");
+                    whereFilter.add("flaecheninfo." + VerdisConstants.PROP.FLAECHENINFO.GEOMETRIE + " = geom."
+                                + VerdisConstants.PROP.GEOM.ID);
                 }
                 if (frontFilter) {
                     searchGeometry = searchGeometry.buffer(0.0010 * scaleDenominator);
 
-                    joinFilter.add(VerdisMetaClassConstants.MC_FRONTINFO + " AS frontinfo");
-                    whereFilter.add("frontinfo." + FrontinfoPropertyConstants.PROP__GEOMETRIE + " = geom."
-                                + GeomPropertyConstants.PROP__ID);
+                    joinFilter.add(VerdisConstants.MC.FRONTINFO + " AS frontinfo");
+                    whereFilter.add("frontinfo." + VerdisConstants.PROP.FRONTINFO.GEOMETRIE + " = geom."
+                                + VerdisConstants.PROP.GEOM.ID);
                 }
                 if (allgemeinFilter) {
-                    joinFilter.add(VerdisMetaClassConstants.MC_KASSENZEICHEN_GEOMETRIE + " AS kassenzeichen_geometrie");
-                    whereFilter.add("kassenzeichen_geometrie." + KassenzeichenGeometriePropertyConstants.PROP__GEOMETRIE
-                                + " = geom." + GeomPropertyConstants.PROP__ID);
+                    joinFilter.add(VerdisConstants.MC.KASSENZEICHEN_GEOMETRIE + " AS kassenzeichen_geometrie");
+                    whereFilter.add("kassenzeichen_geometrie." + VerdisConstants.PROP.KASSENZEICHEN_GEOMETRIE.GEOMETRIE
+                                + " = geom." + VerdisConstants.PROP.GEOM.ID);
                 }
 
                 final String geomFromText = "GeomFromText('" + searchGeometry.toText() + "', "
                             + searchGeometry.getSRID()
                             + ")";
                 final String sqlDerived = "SELECT DISTINCT " + KASSENZEICHEN_CLASS_ID + " as cid, "
-                            + VerdisMetaClassConstants.MC_KASSENZEICHEN + ".id"
+                            + VerdisConstants.MC.KASSENZEICHEN + ".id"
                             + " AS oid "
                             + "FROM "
                             + "    cs_attr_object_derived, "
-                            + "    " + VerdisMetaClassConstants.MC_KASSENZEICHEN + " AS kassenzeichen, "
+                            + "    " + VerdisConstants.MC.KASSENZEICHEN + " AS kassenzeichen, "
                             + ((joinFilter.isEmpty()) ? ""
                                                       : (implodeArray(joinFilter.toArray(new String[0]), ", ") + ", "))
-                            + "    " + VerdisMetaClassConstants.MC_GEOM + " AS geom "
+                            + "    " + VerdisConstants.MC.GEOM + " AS geom "
                             + "WHERE "
                             + ((whereFilter.isEmpty())
                                 ? " TRUE " : ("(" + implodeArray(whereFilter.toArray(new String[0]), " OR ") + ")"))
                             + "    AND cs_attr_object_derived.class_id = " + KASSENZEICHEN_CLASS_ID + " "
                             + "    AND cs_attr_object_derived.attr_class_id = 0 "
-                            + "    AND kassenzeichen." + KassenzeichenPropertyConstants.PROP__ID
+                            + "    AND kassenzeichen." + VerdisConstants.PROP.KASSENZEICHEN.ID
                             + " = cs_attr_object_derived.object_id "
-                            + "    AND kassenzeichen." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER
+                            + "    AND kassenzeichen." + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER
                             + " IS NOT NULL "
-                            + "    AND geom." + GeomPropertyConstants.PROP__ID
+                            + "    AND geom." + VerdisConstants.PROP.GEOM.ID
                             + " = cs_attr_object_derived.attr_object_id "
-                            + "    AND ST_Intersects(geom." + GeomPropertyConstants.PROP__GEO_FIELD + ", "
+                            + "    AND ST_Intersects(geom." + VerdisConstants.PROP.GEOM.GEO_FIELD + ", "
                             + "       " + geomFromText
                             + "    ) ORDER BY 2 ASC;";
 

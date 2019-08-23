@@ -40,7 +40,6 @@ import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextStore;
 
 import de.cismet.verdis.commons.constants.VerdisConstants;
-import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
 
 import de.cismet.verdis.server.search.KassenzeichenSearchStatement;
 import de.cismet.verdis.server.utils.VerdisServerResources;
@@ -188,7 +187,7 @@ public class CreateAStacForKassenzeichenServerAction implements MetaServiceStore
 
             final MetaClass mcKassenzeichen = getMetaService().getClassByTableName(
                     getUser(),
-                    VerdisMetaClassConstants.MC_KASSENZEICHEN,
+                    VerdisConstants.MC.KASSENZEICHEN,
                     getConnectionContext());
             return StacUtils.createStac(mcKassenzeichen.getId(),
                     kassenzeichenId,

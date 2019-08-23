@@ -18,13 +18,7 @@ import java.util.Collection;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 
-import de.cismet.verdis.commons.constants.BefreiungerlaubnisPropertyConstants;
-import de.cismet.verdis.commons.constants.FrontPropertyConstants;
-import de.cismet.verdis.commons.constants.FrontenPropertyConstants;
-import de.cismet.verdis.commons.constants.FrontinfoPropertyConstants;
-import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
-import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
 
 /**
  * DOCUMENT ME!
@@ -52,31 +46,31 @@ public class BefreiungerlaubnisCrossReferencesServerSearch extends AbstractCidsS
      */
     public BefreiungerlaubnisCrossReferencesServerSearch(final int kzNummer) {
         searchQuery = "SELECT  "
-                    + "   kassenzeichen1." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " AS kz1, "
-                    + "   befreiungerlaubnis." + BefreiungerlaubnisPropertyConstants.PROP__ID + " AS bid, "
-                    + "   befreiungerlaubnis." + BefreiungerlaubnisPropertyConstants.PROP__AKTENZEICHEN
+                    + "   kassenzeichen1." + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER + " AS kz1, "
+                    + "   befreiungerlaubnis." + VerdisConstants.PROP.BEFREIUNGERLAUBNIS.ID + " AS bid, "
+                    + "   befreiungerlaubnis." + VerdisConstants.PROP.BEFREIUNGERLAUBNIS.AKTENZEICHEN
                     + " AS aktenzeichen1, "
-                    + "   kassenzeichen2." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " AS kz2 "
+                    + "   kassenzeichen2." + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER + " AS kz2 "
                     + "FROM "
-                    + "   " + VerdisMetaClassConstants.MC_KASSENZEICHEN + " AS kassenzeichen1, "
-                    + "   " + VerdisMetaClassConstants.MC_KASSENZEICHEN + " AS kassenzeichen2, "
-                    + "   " + VerdisMetaClassConstants.MC_KANALANSCHLUSS + " AS kanalanschluss1, "
-                    + "   " + VerdisMetaClassConstants.MC_KANALANSCHLUSS + " AS kanalanschluss2, "
-                    + "   " + VerdisMetaClassConstants.MC_BEFREIUNGERLAUBNISARRAY + " AS befreiungerlaubnisarray1, "
-                    + "   " + VerdisMetaClassConstants.MC_BEFREIUNGERLAUBNISARRAY + " AS befreiungerlaubnisarray2, "
-                    + "   " + VerdisMetaClassConstants.MC_BEFREIUNGERLAUBNIS + " AS befreiungerlaubnis "
+                    + "   " + VerdisConstants.MC.KASSENZEICHEN + " AS kassenzeichen1, "
+                    + "   " + VerdisConstants.MC.KASSENZEICHEN + " AS kassenzeichen2, "
+                    + "   " + VerdisConstants.MC.KANALANSCHLUSS + " AS kanalanschluss1, "
+                    + "   " + VerdisConstants.MC.KANALANSCHLUSS + " AS kanalanschluss2, "
+                    + "   " + VerdisConstants.MC.BEFREIUNGERLAUBNISARRAY + " AS befreiungerlaubnisarray1, "
+                    + "   " + VerdisConstants.MC.BEFREIUNGERLAUBNISARRAY + " AS befreiungerlaubnisarray2, "
+                    + "   " + VerdisConstants.MC.BEFREIUNGERLAUBNIS + " AS befreiungerlaubnis "
                     + "WHERE  "
-                    + "       kassenzeichen1." + KassenzeichenPropertyConstants.PROP__KANALANSCHLUSS
+                    + "       kassenzeichen1." + VerdisConstants.PROP.KASSENZEICHEN.KANALANSCHLUSS
                     + " = kanalanschluss1.id "
-                    + "   AND kassenzeichen2." + KassenzeichenPropertyConstants.PROP__KANALANSCHLUSS
+                    + "   AND kassenzeichen2." + VerdisConstants.PROP.KASSENZEICHEN.KANALANSCHLUSS
                     + " = kanalanschluss2.id "
                     + "   AND befreiungerlaubnisarray1.kanalanschluss_reference = kanalanschluss1.id "
                     + "   AND befreiungerlaubnisarray2.kanalanschluss_reference = kanalanschluss2.id "
                     + "   AND befreiungerlaubnisarray2.befreiungerlaubnis = befreiungerlaubnisarray1.befreiungerlaubnis "
-                    + "   AND befreiungerlaubnis." + BefreiungerlaubnisPropertyConstants.PROP__ID
+                    + "   AND befreiungerlaubnis." + VerdisConstants.PROP.BEFREIUNGERLAUBNIS.ID
                     + " = befreiungerlaubnisarray1.befreiungerlaubnis "
                     + "   AND NOT befreiungerlaubnisarray2.kanalanschluss_reference = befreiungerlaubnisarray1.kanalanschluss_reference "
-                    + "   AND kassenzeichen1." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " ="
+                    + "   AND kassenzeichen1." + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER + " ="
                     + kzNummer;
     }
 

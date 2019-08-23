@@ -25,10 +25,7 @@ import de.cismet.cids.trigger.AbstractDBAwareCidsTrigger;
 import de.cismet.cids.trigger.CidsTrigger;
 import de.cismet.cids.trigger.CidsTriggerKey;
 
-import de.cismet.verdis.commons.constants.FlaechePropertyConstants;
-import de.cismet.verdis.commons.constants.FlaecheninfoPropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
-import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
 
 /**
  * DOCUMENT ME!
@@ -68,8 +65,8 @@ public class FlaecheDeleteTrigger extends AbstractDBAwareCidsTrigger {
     @Override
     public void afterDelete(final CidsBean cidsBean, final User user) {
         try {
-            final Object flaecheninfoId = cidsBean.getProperty(FlaechePropertyConstants.PROP__FLAECHENINFO + "."
-                            + FlaecheninfoPropertyConstants.PROP__ID);
+            final Object flaecheninfoId = cidsBean.getProperty(VerdisConstants.PROP.FLAECHE.FLAECHENINFO + "."
+                            + VerdisConstants.PROP.FLAECHENINFO.ID);
             final Statement s = getDbServer().getActiveDBConnection().getConnection().createStatement();
             final String sql = ""
                         + "DELETE FROM geom WHERE id IN ("
@@ -112,7 +109,7 @@ public class FlaecheDeleteTrigger extends AbstractDBAwareCidsTrigger {
 
     @Override
     public CidsTriggerKey getTriggerKey() {
-        return new CidsTriggerKey(VerdisConstants.DOMAIN, VerdisMetaClassConstants.MC_FLAECHE);
+        return new CidsTriggerKey(VerdisConstants.DOMAIN, VerdisConstants.MC.FLAECHE);
     }
 
     /**

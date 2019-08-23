@@ -18,12 +18,7 @@ import java.util.Collection;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 
-import de.cismet.verdis.commons.constants.FlaechePropertyConstants;
-import de.cismet.verdis.commons.constants.FlaechenPropertyConstants;
-import de.cismet.verdis.commons.constants.FlaecheninfoPropertyConstants;
-import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
-import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
 
 /**
  * DOCUMENT ME!
@@ -51,38 +46,38 @@ public class FlaechenCrossReferencesServerSearch extends AbstractCidsServerSearc
      */
     public FlaechenCrossReferencesServerSearch(final int kzNummer) {
         searchQuery = "SELECT "
-                    + "    kassenzeichen1." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " AS kz1, "
-                    + "    flaeche1." + FlaechePropertyConstants.PROP__ID + " AS fid, "
-                    + "    flaeche1." + FlaechePropertyConstants.PROP__FLAECHENBEZEICHNUNG + " AS f1, "
-                    + "    kassenzeichen2." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " AS kz2, "
-                    + "    flaeche2." + FlaechePropertyConstants.PROP__FLAECHENBEZEICHNUNG + " AS f2 "
+                    + "    kassenzeichen1." + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER + " AS kz1, "
+                    + "    flaeche1." + VerdisConstants.PROP.FLAECHE.ID + " AS fid, "
+                    + "    flaeche1." + VerdisConstants.PROP.FLAECHE.FLAECHENBEZEICHNUNG + " AS f1, "
+                    + "    kassenzeichen2." + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER + " AS kz2, "
+                    + "    flaeche2." + VerdisConstants.PROP.FLAECHE.FLAECHENBEZEICHNUNG + " AS f2 "
                     + "FROM "
-                    + "    " + VerdisMetaClassConstants.MC_KASSENZEICHEN + " AS kassenzeichen1, "
-                    + "    " + VerdisMetaClassConstants.MC_KASSENZEICHEN + " AS kassenzeichen2, "
-                    + "    " + VerdisMetaClassConstants.MC_FLAECHEN + " AS flaechen1, "
-                    + "    " + VerdisMetaClassConstants.MC_FLAECHEN + " AS flaechen2, "
-                    + "    " + VerdisMetaClassConstants.MC_FLAECHE + " AS flaeche1, "
-                    + "    " + VerdisMetaClassConstants.MC_FLAECHE + " AS flaeche2, "
-                    + "    " + VerdisMetaClassConstants.MC_FLAECHENINFO + " AS flaecheninfo1, "
-                    + "    " + VerdisMetaClassConstants.MC_FLAECHENINFO + " AS flaecheninfo2 "
+                    + "    " + VerdisConstants.MC.KASSENZEICHEN + " AS kassenzeichen1, "
+                    + "    " + VerdisConstants.MC.KASSENZEICHEN + " AS kassenzeichen2, "
+                    + "    " + VerdisConstants.MC.FLAECHEN + " AS flaechen1, "
+                    + "    " + VerdisConstants.MC.FLAECHEN + " AS flaechen2, "
+                    + "    " + VerdisConstants.MC.FLAECHE + " AS flaeche1, "
+                    + "    " + VerdisConstants.MC.FLAECHE + " AS flaeche2, "
+                    + "    " + VerdisConstants.MC.FLAECHENINFO + " AS flaecheninfo1, "
+                    + "    " + VerdisConstants.MC.FLAECHENINFO + " AS flaecheninfo2 "
                     + "WHERE "
-                    + "    kassenzeichen1." + KassenzeichenPropertyConstants.PROP__ID + " = flaechen1."
-                    + FlaechenPropertyConstants.PROP__KASSENZEICHEN_REFERENCE + " AND "
-                    + "    kassenzeichen2." + KassenzeichenPropertyConstants.PROP__ID + " = flaechen2."
-                    + FlaechenPropertyConstants.PROP__KASSENZEICHEN_REFERENCE + " AND "
-                    + "    flaechen1." + FlaechenPropertyConstants.PROP__FLAECHE + " = flaeche1."
-                    + FlaechePropertyConstants.PROP__ID + " AND "
-                    + "    flaechen2." + FlaechenPropertyConstants.PROP__FLAECHE + " = flaeche2."
-                    + FlaechePropertyConstants.PROP__ID + " AND "
-                    + "    flaeche1." + FlaechePropertyConstants.PROP__FLAECHENINFO + " = flaecheninfo1."
-                    + FlaecheninfoPropertyConstants.PROP__ID + " AND "
-                    + "    flaeche2." + FlaechePropertyConstants.PROP__FLAECHENINFO + " = flaecheninfo2."
-                    + FlaecheninfoPropertyConstants.PROP__ID + " AND "
-                    + "    flaecheninfo2." + FlaecheninfoPropertyConstants.PROP__ID + " = flaecheninfo1."
-                    + FlaecheninfoPropertyConstants.PROP__ID + " AND "
-                    + "    NOT flaechen2." + FlaechenPropertyConstants.PROP__KASSENZEICHEN_REFERENCE + " = flaechen1."
-                    + FlaechenPropertyConstants.PROP__KASSENZEICHEN_REFERENCE + " AND "
-                    + "    kassenzeichen1." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " = "
+                    + "    kassenzeichen1." + VerdisConstants.PROP.KASSENZEICHEN.ID + " = flaechen1."
+                    + VerdisConstants.PROP.FLAECHEN.KASSENZEICHEN_REFERENCE + " AND "
+                    + "    kassenzeichen2." + VerdisConstants.PROP.KASSENZEICHEN.ID + " = flaechen2."
+                    + VerdisConstants.PROP.FLAECHEN.KASSENZEICHEN_REFERENCE + " AND "
+                    + "    flaechen1." + VerdisConstants.PROP.FLAECHEN.FLAECHE + " = flaeche1."
+                    + VerdisConstants.PROP.FLAECHE.ID + " AND "
+                    + "    flaechen2." + VerdisConstants.PROP.FLAECHEN.FLAECHE + " = flaeche2."
+                    + VerdisConstants.PROP.FLAECHE.ID + " AND "
+                    + "    flaeche1." + VerdisConstants.PROP.FLAECHE.FLAECHENINFO + " = flaecheninfo1."
+                    + VerdisConstants.PROP.FLAECHENINFO.ID + " AND "
+                    + "    flaeche2." + VerdisConstants.PROP.FLAECHE.FLAECHENINFO + " = flaecheninfo2."
+                    + VerdisConstants.PROP.FLAECHENINFO.ID + " AND "
+                    + "    flaecheninfo2." + VerdisConstants.PROP.FLAECHENINFO.ID + " = flaecheninfo1."
+                    + VerdisConstants.PROP.FLAECHENINFO.ID + " AND "
+                    + "    NOT flaechen2." + VerdisConstants.PROP.FLAECHEN.KASSENZEICHEN_REFERENCE + " = flaechen1."
+                    + VerdisConstants.PROP.FLAECHEN.KASSENZEICHEN_REFERENCE + " AND "
+                    + "    kassenzeichen1." + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER + " = "
                     + kzNummer;
     }
 
