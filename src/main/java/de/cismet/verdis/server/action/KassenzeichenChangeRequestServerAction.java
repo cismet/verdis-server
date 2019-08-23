@@ -16,9 +16,16 @@ import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
 import Sirius.server.newuser.User;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,8 +33,14 @@ import lombok.Setter;
 
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
+
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
@@ -35,6 +48,8 @@ import de.cismet.cids.server.actions.UserAwareServerAction;
 
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextStore;
+
+import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 
 /**
  * DOCUMENT ME!
@@ -53,17 +68,118 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
     private static final Logger LOG = Logger.getLogger(KassenzeichenChangeRequestServerAction.class);
     public static final String TASKNAME = "kassenzeichenChangeRequest";
 
+    //~ Enums ------------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public enum Parameter {
+
+        //~ Enum constants -----------------------------------------------------
+
+        STAC_HASH {
+
+            @Override
+            public String toString() {
+                return "stacHash";
+            }
+        },
+        CHANGEREQUEST_JSON {
+
+            @Override
+            public String toString() {
+                return "changerequestJson";
+            }
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public enum Action {
+
+        //~ Enum constants -----------------------------------------------------
+
+        GET, PUT
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public enum Status {
+
+        //~ Enum constants -----------------------------------------------------
+
+        NONE, DRAFT, PENDING, PROCESSING, DONE, CLOSED
+    }
+
     //~ Instance fields --------------------------------------------------------
 
     private User user;
     private MetaService metaService;
     private ConnectionContext connectionContext = ConnectionContext.createDummy();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new KassenzeichenChangeRequestServerAction object.
+     */
+    public KassenzeichenChangeRequestServerAction() {
+        try {
+            final SimpleModule module = new SimpleModule();
+            module.addDeserializer(FlaecheJson.class, new FlaecheJsonDeserializer(objectMapper));
+            module.addDeserializer(BemerkungJson.class, new BemerkungJsonDeserializer(objectMapper));
+            module.addDeserializer(AnfrageJson.class, new AnfrageJsonDeserializer(objectMapper));
+            objectMapper.registerModule(module);
+            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        } catch (final Throwable t) {
+            LOG.fatal("this should never happen", t);
+        }
+    }
 
     //~ Methods ----------------------------------------------------------------
 
     @Override
     public Object execute(final Object object, final ServerActionParameter... params) {
-        return null;
+        String kassenzeichen = null;
+        String stacHash = null;
+        String changerequestJson = null;
+
+        try {
+            if (params != null) {
+                for (final ServerActionParameter sap : params) {
+                    final String key = sap.getKey();
+                    final Object value = sap.getValue();
+                    if (Parameter.STAC_HASH.toString().equals(key)) {
+                        stacHash = (String)value;
+                    } else if (Parameter.CHANGEREQUEST_JSON.toString().equals(key)) {
+                        changerequestJson = objectMapper.writeValueAsString(value);
+                    }
+                }
+            }
+
+            if ((stacHash != null) && (kassenzeichen != null) && (changerequestJson != null)) {
+                final AnfrageJson anfrage = objectMapper.readValue(changerequestJson, AnfrageJson.class);
+                final CidsBean kassenzeichenBean = StacUtils.getKassenzeichenBean(
+                        stacHash,
+                        getMetaService(),
+                        getConnectionContext());
+                final String kassenzeichenNummerFromBean = (String)kassenzeichenBean.getProperty(
+                        KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER);
+                final String kassenzeichenNummerFromJson = anfrage.getKassenzeichen();
+            }
+            return null;
+        } catch (final Exception ex) {
+            LOG.error(ex, ex);
+            return ex;
+        }
     }
 
     @Override
@@ -110,6 +226,11 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
         try {
             final ObjectMapper mapper = new ObjectMapper();
             mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            final SimpleModule module = new SimpleModule();
+            module.addDeserializer(FlaecheJson.class, new FlaecheJsonDeserializer(mapper));
+            module.addDeserializer(BemerkungJson.class, new BemerkungJsonDeserializer(mapper));
+            module.addDeserializer(AnfrageJson.class, new AnfrageJsonDeserializer(mapper));
+            mapper.registerModule(module);
 
             final Map<String, FlaecheJson> flaechen = new HashMap<>();
             flaechen.put("5", new FlaecheGroesseJson(12d));
@@ -130,11 +251,62 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                             "http://meine.domain.de/richtiges.pdf",
                             "Ach so, verstehe. Alles Klar !",
                             new BemerkungJson("Geht doch, danke.")));
+
             System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(anfrage));
-        } catch (final JsonProcessingException ex) {
+            mapper.readValue(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(anfrage), AnfrageJson.class);
+        } catch (final Exception ex) {
             System.err.println(ex.getMessage());
             LOG.error(ex, ex);
         }
+
+/*
+{
+  "kassenzeichen" : "60004629",
+  "flaechen" : {
+    "5" : {
+      "groesse" : 12.0
+    }
+  },
+  "bemerkung" : {
+    "buerger" : "Da passt was nicht weil isso, siehe lustiges pdf !",
+    "anhang" : "http://meine.domain.de/lustiges.pdf"
+  }
+}
+{
+  "kassenzeichen" : "60004629",
+  "flaechen" : {
+    "5" : {
+      "groesse" : 12.0
+    }
+  },
+  "bemerkung" : {
+    "buerger" : "Da passt was nicht weil isso, siehe lustiges pdf !",
+    "anhang" : "http://meine.domain.de/lustiges.pdf",
+    "sachbearbeiter" : "Konnte nichts feststellen, alles in Ordnung."
+  }
+}
+{
+  "kassenzeichen" : "60004629",
+  "flaechen" : {
+    "5" : {
+      "groesse" : 12.0
+    }
+  },
+  "bemerkung" : {
+    "buerger" : "Da passt was nicht weil isso, siehe lustiges pdf !",
+    "anhang" : "http://meine.domain.de/lustiges.pdf",
+    "sachbearbeiter" : "Konnte nichts feststellen, alles in Ordnung.",
+    "bemerkung" : {
+      "buerger" : "Oh, falsches PDF, siehe richtiges pdf.",
+      "anhang" : "http://meine.domain.de/richtiges.pdf",
+      "sachbearbeiter" : "Ach so, verstehe. Alles Klar !",
+      "bemerkung" : {
+        "buerger" : "Geht doch, danke."
+      }
+    }
+  }
+}
+*/
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -147,6 +319,8 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
     @Getter
     @Setter
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     public static class AnfrageJson {
 
         //~ Instance fields ----------------------------------------------------
@@ -249,6 +423,8 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
     @Getter
     @Setter
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     public static class FlaecheJson {
 
         //~ Instance fields ----------------------------------------------------
@@ -379,6 +555,149 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
          */
         public FlaecheArtJson(final String art, final BemerkungJson bemerkung, final String pruefungStatus) {
             super(null, null, art, bemerkung, pruefungStatus);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    static class AnfrageJsonDeserializer extends StdDeserializer<AnfrageJson> {
+
+        //~ Instance fields ----------------------------------------------------
+
+        private final ObjectMapper objectMapper;
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new AnfrageJsonDeserializer object.
+         *
+         * @param  objectMapper  DOCUMENT ME!
+         */
+        public AnfrageJsonDeserializer(final ObjectMapper objectMapper) {
+            super(AnfrageJson.class);
+            this.objectMapper = objectMapper;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public AnfrageJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
+            JsonProcessingException {
+            final ObjectNode on = jp.readValueAsTree();
+            final String kassenzeichen = on.has("kassenzeichen") ? on.get("kassenzeichen").textValue() : null;
+            final BemerkungJson bemerkung = on.has("bemerkung")
+                ? objectMapper.treeToValue(on.get("bemerkung"), BemerkungJson.class) : null;
+            final String pruefungStatus = on.has("pruefungStatus") ? on.get("pruefungStatus").textValue() : null;
+            final Map<String, FlaecheJson> flaechen;
+            if (on.has("flaechen") && on.get("flaechen").isObject()) {
+                flaechen = new HashMap<>();
+                final Iterator<Entry<String, JsonNode>> fieldIterator = on.get("flaechen").fields();
+                while (fieldIterator.hasNext()) {
+                    final Entry<String, JsonNode> fieldEntry = fieldIterator.next();
+                    final String bezeichnung = fieldEntry.getKey();
+                    // TODO: check for valid bezeichnung.
+                    flaechen.put(bezeichnung, objectMapper.treeToValue(fieldEntry.getValue(), FlaecheJson.class));
+                }
+            } else {
+                flaechen = null;
+            }
+
+            if (kassenzeichen == null) {
+                throw new RuntimeException("invalid AnfrageJson: kassenzeichen is missing");
+            }
+            return new AnfrageJson(kassenzeichen, flaechen, bemerkung, pruefungStatus);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    static class FlaecheJsonDeserializer extends StdDeserializer<FlaecheJson> {
+
+        //~ Instance fields ----------------------------------------------------
+
+        private final ObjectMapper objectMapper;
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new FlaecheJsonDeserializer object.
+         *
+         * @param  objectMapper  DOCUMENT ME!
+         */
+        public FlaecheJsonDeserializer(final ObjectMapper objectMapper) {
+            super(FlaecheJson.class);
+            this.objectMapper = objectMapper;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public FlaecheJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
+            JsonProcessingException {
+            final ObjectNode on = jp.readValueAsTree();
+            final String anschlussgrad = on.has("anschlussgrad") ? on.get("anschlussgrad").textValue() : null;
+            final String flaechenart = on.has("flaechenart") ? on.get("flaechenart").textValue() : null;
+            final Double groesse = on.has("groesse") ? on.get("groesse").doubleValue() : null;
+            final BemerkungJson bemerkung = on.has("bemerkung")
+                ? objectMapper.treeToValue(on.get("bemerkung"), BemerkungJson.class) : null;
+            final String pruefungStatus = on.has("pruefungStatus") ? on.get("pruefungStatus").textValue() : null;
+            if ((anschlussgrad == null) && (flaechenart == null) && (groesse == null)) {
+                throw new RuntimeException(
+                    "invalid BemerkungJson: neither anschlussgrad nor flaechenart nor groesse is set");
+            }
+            if ((groesse != null) && (groesse < 0)) {
+                throw new RuntimeException("invalid BemerkungJson: groesse can't be negative");
+            }
+            // TODO: check for valid anschlussgrad
+            // TODO: check for valid flaechenart
+            return new FlaecheJson(groesse, anschlussgrad, flaechenart, bemerkung, pruefungStatus);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    static class BemerkungJsonDeserializer extends StdDeserializer<BemerkungJson> {
+
+        //~ Instance fields ----------------------------------------------------
+
+        private final ObjectMapper objectMapper;
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new BemerkungJsonDeserializer object.
+         *
+         * @param  objectMapper  DOCUMENT ME!
+         */
+        public BemerkungJsonDeserializer(final ObjectMapper objectMapper) {
+            super(BemerkungJson.class);
+            this.objectMapper = objectMapper;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public BemerkungJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
+            JsonProcessingException {
+            final ObjectNode on = jp.readValueAsTree();
+            final String buerger = on.has("buerger") ? on.get("buerger").textValue() : null;
+            final String sachbearbeiter = on.has("sachbearbeiter") ? on.get("sachbearbeiter").textValue() : null;
+            final String anhang = on.has("anhang") ? on.get("anhang").textValue() : null;
+            final BemerkungJson bemerkung = on.has("bemerkung")
+                ? objectMapper.treeToValue(on.get("bemerkung"), BemerkungJson.class) : null;
+            if ((buerger == null) && (sachbearbeiter == null)) {
+                throw new RuntimeException("invalid BemerkungJson: neither buerger nor sachbearbeiter is set");
+            }
+            return new BemerkungJson(buerger, anhang, sachbearbeiter, bemerkung);
         }
     }
 }
