@@ -18,12 +18,7 @@ import java.util.Collection;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 
-import de.cismet.verdis.commons.constants.FrontPropertyConstants;
-import de.cismet.verdis.commons.constants.FrontenPropertyConstants;
-import de.cismet.verdis.commons.constants.FrontinfoPropertyConstants;
-import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
-import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
 
 /**
  * DOCUMENT ME!
@@ -51,38 +46,38 @@ public class FrontenCrossReferencesServerSearch extends AbstractCidsServerSearch
      */
     public FrontenCrossReferencesServerSearch(final int kzNummer) {
         searchQuery = "SELECT "
-                    + "    kassenzeichen1." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " AS kz1, "
-                    + "    front1." + FrontPropertyConstants.PROP__ID + " AS fid, "
-                    + "    front1." + FrontPropertyConstants.PROP__NUMMER + " AS f1, "
-                    + "    kassenzeichen2." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " AS kz2, "
-                    + "    front2." + FrontPropertyConstants.PROP__NUMMER + " AS f2 "
+                    + "    kassenzeichen1." + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER + " AS kz1, "
+                    + "    front1." + VerdisConstants.PROP.FRONT.ID + " AS fid, "
+                    + "    front1." + VerdisConstants.PROP.FRONT.NUMMER + " AS f1, "
+                    + "    kassenzeichen2." + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER + " AS kz2, "
+                    + "    front2." + VerdisConstants.PROP.FRONT.NUMMER + " AS f2 "
                     + "FROM "
-                    + "    " + VerdisMetaClassConstants.MC_KASSENZEICHEN + " AS kassenzeichen1, "
-                    + "    " + VerdisMetaClassConstants.MC_KASSENZEICHEN + " AS kassenzeichen2, "
-                    + "    " + VerdisMetaClassConstants.MC_FRONTEN + " AS fronten1, "
-                    + "    " + VerdisMetaClassConstants.MC_FRONTEN + " AS fronten2, "
-                    + "    " + VerdisMetaClassConstants.MC_FRONT + " AS front1, "
-                    + "    " + VerdisMetaClassConstants.MC_FRONT + " AS front2, "
-                    + "    " + VerdisMetaClassConstants.MC_FRONTINFO + " AS frontinfo1, "
-                    + "    " + VerdisMetaClassConstants.MC_FRONTINFO + " AS frontinfo2 "
+                    + "    " + VerdisConstants.MC.KASSENZEICHEN + " AS kassenzeichen1, "
+                    + "    " + VerdisConstants.MC.KASSENZEICHEN + " AS kassenzeichen2, "
+                    + "    " + VerdisConstants.MC.FRONTEN + " AS fronten1, "
+                    + "    " + VerdisConstants.MC.FRONTEN + " AS fronten2, "
+                    + "    " + VerdisConstants.MC.FRONT + " AS front1, "
+                    + "    " + VerdisConstants.MC.FRONT + " AS front2, "
+                    + "    " + VerdisConstants.MC.FRONTINFO + " AS frontinfo1, "
+                    + "    " + VerdisConstants.MC.FRONTINFO + " AS frontinfo2 "
                     + "WHERE "
-                    + "    kassenzeichen1." + KassenzeichenPropertyConstants.PROP__ID + " = fronten1."
-                    + FrontenPropertyConstants.PROP__KASSENZEICHEN_REFERENCE + " AND "
-                    + "    kassenzeichen2." + KassenzeichenPropertyConstants.PROP__ID + " = fronten2."
-                    + FrontenPropertyConstants.PROP__KASSENZEICHEN_REFERENCE + " AND "
-                    + "    fronten1." + FrontenPropertyConstants.PROP__FRONT + " = front1."
-                    + FrontPropertyConstants.PROP__ID + " AND "
-                    + "    fronten2." + FrontenPropertyConstants.PROP__FRONT + " = front2."
-                    + FrontPropertyConstants.PROP__ID + " AND "
-                    + "    front1." + FrontPropertyConstants.PROP__FRONTINFO + " = frontinfo1."
-                    + FrontinfoPropertyConstants.PROP__ID + " AND "
-                    + "    front2." + FrontPropertyConstants.PROP__FRONTINFO + " = frontinfo2."
-                    + FrontinfoPropertyConstants.PROP__ID + " AND "
-                    + "    frontinfo2." + FrontinfoPropertyConstants.PROP__ID + " = frontinfo1."
-                    + FrontinfoPropertyConstants.PROP__ID + " AND "
-                    + "    NOT fronten2." + FrontenPropertyConstants.PROP__KASSENZEICHEN_REFERENCE + " = fronten1."
-                    + FrontenPropertyConstants.PROP__KASSENZEICHEN_REFERENCE + " AND "
-                    + "    kassenzeichen1." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " = "
+                    + "    kassenzeichen1." + VerdisConstants.PROP.KASSENZEICHEN.ID + " = fronten1."
+                    + VerdisConstants.PROP.FRONTEN.KASSENZEICHEN_REFERENCE + " AND "
+                    + "    kassenzeichen2." + VerdisConstants.PROP.KASSENZEICHEN.ID + " = fronten2."
+                    + VerdisConstants.PROP.FRONTEN.KASSENZEICHEN_REFERENCE + " AND "
+                    + "    fronten1." + VerdisConstants.PROP.FRONTEN.FRONT + " = front1."
+                    + VerdisConstants.PROP.FRONT.ID + " AND "
+                    + "    fronten2." + VerdisConstants.PROP.FRONTEN.FRONT + " = front2."
+                    + VerdisConstants.PROP.FRONT.ID + " AND "
+                    + "    front1." + VerdisConstants.PROP.FRONT.FRONTINFO + " = frontinfo1."
+                    + VerdisConstants.PROP.FRONTINFO.ID + " AND "
+                    + "    front2." + VerdisConstants.PROP.FRONT.FRONTINFO + " = frontinfo2."
+                    + VerdisConstants.PROP.FRONTINFO.ID + " AND "
+                    + "    frontinfo2." + VerdisConstants.PROP.FRONTINFO.ID + " = frontinfo1."
+                    + VerdisConstants.PROP.FRONTINFO.ID + " AND "
+                    + "    NOT fronten2." + VerdisConstants.PROP.FRONTEN.KASSENZEICHEN_REFERENCE + " = fronten1."
+                    + VerdisConstants.PROP.FRONTEN.KASSENZEICHEN_REFERENCE + " AND "
+                    + "    kassenzeichen1." + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER + " = "
                     + kzNummer;
     }
 

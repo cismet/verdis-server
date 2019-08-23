@@ -16,9 +16,7 @@ import java.util.Collection;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 
-import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
-import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
 
 /**
  * DOCUMENT ME!
@@ -53,9 +51,9 @@ public class KassenzeichenlistSearchStatement extends AbstractCidsServerSearch {
     @Override
     public Collection<Integer> performServerSearch() {
         try {
-            final String sql = "SELECT " + VerdisMetaClassConstants.MC_KASSENZEICHEN + "."
-                        + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " "
-                        + "FROM " + VerdisMetaClassConstants.MC_KASSENZEICHEN + " WHERE " + " "
+            final String sql = "SELECT " + VerdisConstants.MC.KASSENZEICHEN + "."
+                        + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER + " "
+                        + "FROM " + VerdisConstants.MC.KASSENZEICHEN + " WHERE " + " "
                         + querySnippet;
 
             final MetaService ms = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);

@@ -21,13 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import de.cismet.verdis.commons.constants.FlaecheninfoPropertyConstants;
-import de.cismet.verdis.commons.constants.FrontinfoPropertyConstants;
-import de.cismet.verdis.commons.constants.GeomPropertyConstants;
-import de.cismet.verdis.commons.constants.KassenzeichenGeometriePropertyConstants;
-import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
-import de.cismet.verdis.commons.constants.VerdisMetaClassConstants;
 
 /**
  * DOCUMENT ME!
@@ -56,49 +50,49 @@ public class KassenzeichenGeomSearch extends GeomServerSearch {
         Geometry searchGeometry = getGeometry();
 
         if (searchGeometry != null) {
-            final ArrayList<String> joinFilter = new ArrayList<String>();
-            final ArrayList<String> whereFilter = new ArrayList<String>();
+            final ArrayList<String> joinFilter = new ArrayList<>();
+            final ArrayList<String> whereFilter = new ArrayList<>();
 
             if (flaecheFilter) {
-                joinFilter.add(VerdisMetaClassConstants.MC_FLAECHENINFO + " AS flaecheninfo");
-                whereFilter.add("flaecheninfo." + FlaecheninfoPropertyConstants.PROP__GEOMETRIE + " = geom."
-                            + GeomPropertyConstants.PROP__ID);
+                joinFilter.add(VerdisConstants.MC.FLAECHENINFO + " AS flaecheninfo");
+                whereFilter.add("flaecheninfo." + VerdisConstants.PROP.FLAECHENINFO.GEOMETRIE + " = geom."
+                            + VerdisConstants.PROP.GEOM.ID);
             }
             if (frontFilter) {
                 searchGeometry = searchGeometry.buffer(0.0010 * scaleDenominator);
 
-                joinFilter.add(VerdisMetaClassConstants.MC_FRONTINFO + " AS frontinfo");
-                whereFilter.add("frontinfo." + FrontinfoPropertyConstants.PROP__GEOMETRIE + " = geom."
-                            + GeomPropertyConstants.PROP__ID);
+                joinFilter.add(VerdisConstants.MC.FRONTINFO + " AS frontinfo");
+                whereFilter.add("frontinfo." + VerdisConstants.PROP.FRONTINFO.GEOMETRIE + " = geom."
+                            + VerdisConstants.PROP.GEOM.ID);
             }
             if (allgemeinFilter) {
-                joinFilter.add(VerdisMetaClassConstants.MC_KASSENZEICHEN_GEOMETRIE + " AS kassenzeichen_geometrie");
-                whereFilter.add("kassenzeichen_geometrie." + KassenzeichenGeometriePropertyConstants.PROP__GEOMETRIE
-                            + " = geom." + GeomPropertyConstants.PROP__ID);
+                joinFilter.add(VerdisConstants.MC.KASSENZEICHEN_GEOMETRIE + " AS kassenzeichen_geometrie");
+                whereFilter.add("kassenzeichen_geometrie." + VerdisConstants.PROP.KASSENZEICHEN_GEOMETRIE.GEOMETRIE
+                            + " = geom." + VerdisConstants.PROP.GEOM.ID);
             }
 
             final String geomFromText = "GeomFromText('" + searchGeometry.toText() + "', " + searchGeometry.getSRID()
                         + ")";
             final String sqlDerived = "SELECT "
-                        + "    DISTINCT " + VerdisMetaClassConstants.MC_KASSENZEICHEN + "."
-                        + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER + " AS kassenzeichennumer "
+                        + "    DISTINCT " + VerdisConstants.MC.KASSENZEICHEN + "."
+                        + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER + " AS kassenzeichennumer "
                         + "FROM "
                         + "    cs_attr_object_derived, "
-                        + "    " + VerdisMetaClassConstants.MC_KASSENZEICHEN + " AS kassenzeichen, "
+                        + "    " + VerdisConstants.MC.KASSENZEICHEN + " AS kassenzeichen, "
                         + ((joinFilter.isEmpty()) ? "" : (implodeArray(joinFilter.toArray(new String[0]), ", ") + ", "))
-                        + "    " + VerdisMetaClassConstants.MC_GEOM + " AS geom "
+                        + "    " + VerdisConstants.MC.GEOM + " AS geom "
                         + "WHERE "
                         + ((whereFilter.isEmpty())
                             ? " TRUE " : ("(" + implodeArray(whereFilter.toArray(new String[0]), " OR ") + ")"))
                         + "    AND cs_attr_object_derived.class_id = 11 "
                         + "    AND cs_attr_object_derived.attr_class_id = 0 "
-                        + "    AND kassenzeichen." + KassenzeichenPropertyConstants.PROP__ID
+                        + "    AND kassenzeichen." + VerdisConstants.PROP.KASSENZEICHEN.ID
                         + " = cs_attr_object_derived.object_id "
-                        + "    AND kassenzeichen." + KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER
+                        + "    AND kassenzeichen." + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER
                         + " IS NOT NULL "
-                        + "    AND geom." + GeomPropertyConstants.PROP__ID + " = cs_attr_object_derived.attr_object_id "
+                        + "    AND geom." + VerdisConstants.PROP.GEOM.ID + " = cs_attr_object_derived.attr_object_id "
                         + "    AND ST_Intersects("
-                        + "       (SELECT geom." + GeomPropertyConstants.PROP__GEO_FIELD + "), "
+                        + "       (SELECT geom." + VerdisConstants.PROP.GEOM.GEO_FIELD + "), "
                         + "       " + geomFromText
                         + "    ) ORDER BY kassenzeichennumer ASC;";
 
