@@ -18,9 +18,10 @@ public final class AenderungsanfragePropertyConstants extends PropertyConstants 
     //~ Static fields/initializers ---------------------------------------------
 
     public static final String CHANGES_JSON = "changes_json";
-    public static final String STAC_HASH = "stac_hash";
+    public static final String STAC_ID = "stac_id";
     public static final String EMAIL = "email";
     public static final String TIMESTAMP = "timestamp";
+    public static final String STATUS = "status";
 
     //~ Constructors -----------------------------------------------------------
 

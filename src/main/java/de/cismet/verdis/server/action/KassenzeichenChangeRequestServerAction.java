@@ -12,8 +12,10 @@
  */
 package de.cismet.verdis.server.action;
 
+import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
+import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -35,6 +37,9 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
+import java.sql.Timestamp;
+
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -49,7 +54,9 @@ import de.cismet.cids.server.actions.UserAwareServerAction;
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextStore;
 
-import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
+import de.cismet.verdis.commons.constants.VerdisConstants;
+
+import de.cismet.verdis.server.utils.StacUtils;
 
 /**
  * DOCUMENT ME!
@@ -79,11 +86,11 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
 
         //~ Enum constants -----------------------------------------------------
 
-        STAC_HASH {
+        STAC {
 
             @Override
             public String toString() {
-                return "stacHash";
+                return "stac";
             }
         },
         CHANGEREQUEST_JSON {
@@ -92,19 +99,14 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             public String toString() {
                 return "changerequestJson";
             }
+        },
+        EMAIL {
+
+            @Override
+            public String toString() {
+                return "email";
+            }
         }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @version  $Revision$, $Date$
-     */
-    public enum Action {
-
-        //~ Enum constants -----------------------------------------------------
-
-        GET, PUT
     }
 
     /**
@@ -148,8 +150,8 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
 
     @Override
     public Object execute(final Object object, final ServerActionParameter... params) {
-        String kassenzeichen = null;
-        String stacHash = null;
+        String stac = null;
+        String email = null;
         String changerequestJson = null;
 
         try {
@@ -157,25 +159,57 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                 for (final ServerActionParameter sap : params) {
                     final String key = sap.getKey();
                     final Object value = sap.getValue();
-                    if (Parameter.STAC_HASH.toString().equals(key)) {
-                        stacHash = (String)value;
+                    if (Parameter.STAC.toString().equals(key)) {
+                        stac = (String)value;
                     } else if (Parameter.CHANGEREQUEST_JSON.toString().equals(key)) {
                         changerequestJson = objectMapper.writeValueAsString(value);
+                    } else if (Parameter.EMAIL.toString().equals(key)) {
+                        email = (String)value;
                     }
                 }
             }
 
-            if ((stacHash != null) && (kassenzeichen != null) && (changerequestJson != null)) {
+            if ((stac != null) && (changerequestJson != null)) {
                 final AnfrageJson anfrage = objectMapper.readValue(changerequestJson, AnfrageJson.class);
-                final CidsBean kassenzeichenBean = StacUtils.getKassenzeichenBean(
-                        stacHash,
+                final StacUtils.StacEntry stacEntry = StacUtils.getStacEntry(
+                        stac,
                         getMetaService(),
                         getConnectionContext());
-                final String kassenzeichenNummerFromBean = (String)kassenzeichenBean.getProperty(
-                        KassenzeichenPropertyConstants.PROP__KASSENZEICHENNUMMER);
-                final String kassenzeichenNummerFromJson = anfrage.getKassenzeichen();
+                final CidsBean kassenzeichenBean = StacUtils.getKassenzeichenBean(
+                        stacEntry,
+                        getMetaService(),
+                        getConnectionContext());
+                final Integer kassenzeichenNummerFromBean = (Integer)kassenzeichenBean.getProperty(
+                        VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER);
+                final Integer kassenzeichenNummerFromJson = anfrage.getKassenzeichen();
+                final CidsBean aenderungsanfrageSearchBean = StacUtils.getAenderungsanfrageBean(
+                        stacEntry,
+                        getMetaService(),
+                        getConnectionContext());
+                final CidsBean aenderungsanfrageBean = (aenderungsanfrageSearchBean != null)
+                    ? aenderungsanfrageSearchBean
+                    : CidsBean.createNewCidsBeanFromTableName(
+                        VerdisConstants.DOMAIN,
+                        VerdisConstants.MC.AENDERUNGSANFRAGE,
+                        getConnectionContext());
+                aenderungsanfrageBean.setProperty(
+                    VerdisConstants.PROP.AENDERUNGSANFRAGE.CHANGES_JSON,
+                    objectMapper.writeValueAsString(anfrage));
+                aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID, stacEntry.getId());
+                aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.EMAIL, email);
+                aenderungsanfrageBean.setProperty(
+                    VerdisConstants.PROP.AENDERUNGSANFRAGE.TIMESTAMP,
+                    new Timestamp(new Date().getTime()));
+                aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS, "PENDING");
+                if (MetaObject.NEW == aenderungsanfrageBean.getMetaObject().getStatus()) {
+                    DomainServerImpl.getServerInstance()
+                            .insertMetaObject(getUser(), aenderungsanfrageBean.getMetaObject(), getConnectionContext());
+                } else {
+                    DomainServerImpl.getServerInstance()
+                            .updateMetaObject(getUser(), aenderungsanfrageBean.getMetaObject(), getConnectionContext());
+                }
             }
-            return null;
+            return true;
         } catch (final Exception ex) {
             LOG.error(ex, ex);
             return ex;
@@ -235,7 +269,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             final Map<String, FlaecheJson> flaechen = new HashMap<>();
             flaechen.put("5", new FlaecheGroesseJson(12d));
             final AnfrageJson anfrage = new AnfrageJson(
-                    "60004629",
+                    60004629,
                     flaechen,
                     new BemerkungJson(
                         "Da passt was nicht weil isso, siehe lustiges pdf !",
@@ -325,7 +359,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
 
         //~ Instance fields ----------------------------------------------------
 
-        private String kassenzeichen;
+        private Integer kassenzeichen;
         private Map<String, FlaecheJson> flaechen;
         private BemerkungJson bemerkung;
         private String pruefungStatus;
@@ -337,7 +371,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
          *
          * @param  kassenzeichen  DOCUMENT ME!
          */
-        public AnfrageJson(final String kassenzeichen) {
+        public AnfrageJson(final Integer kassenzeichen) {
             this(kassenzeichen, null, null, null);
         }
 
@@ -347,7 +381,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
          * @param  kassenzeichen  DOCUMENT ME!
          * @param  flaechen       DOCUMENT ME!
          */
-        public AnfrageJson(final String kassenzeichen, final Map<String, FlaecheJson> flaechen) {
+        public AnfrageJson(final Integer kassenzeichen, final Map<String, FlaecheJson> flaechen) {
             this(kassenzeichen, flaechen, null, null);
         }
 
@@ -358,7 +392,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
          * @param  flaechen       DOCUMENT ME!
          * @param  bemerkung      DOCUMENT ME!
          */
-        public AnfrageJson(final String kassenzeichen,
+        public AnfrageJson(final Integer kassenzeichen,
                 final Map<String, FlaecheJson> flaechen,
                 final BemerkungJson bemerkung) {
             this(kassenzeichen, flaechen, bemerkung, null);
@@ -587,7 +621,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
         public AnfrageJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
             JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
-            final String kassenzeichen = on.has("kassenzeichen") ? on.get("kassenzeichen").textValue() : null;
+            final Integer kassenzeichen = on.has("kassenzeichen") ? on.get("kassenzeichen").asInt() : null;
             final BemerkungJson bemerkung = on.has("bemerkung")
                 ? objectMapper.treeToValue(on.get("bemerkung"), BemerkungJson.class) : null;
             final String pruefungStatus = on.has("pruefungStatus") ? on.get("pruefungStatus").textValue() : null;
