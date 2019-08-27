@@ -43,9 +43,10 @@ import de.cismet.verdis.commons.constants.VerdisConstants;
 
 import de.cismet.verdis.server.utils.StacUtils;
 import de.cismet.verdis.server.utils.aenderungsanfrage.AnfrageJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.BemerkungJson;
+import de.cismet.verdis.server.utils.aenderungsanfrage.DialogJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheGroesseJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheJson;
+import de.cismet.verdis.server.utils.aenderungsanfrage.NachrichtJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.PruefungJson;
 
 /**
@@ -126,8 +127,10 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
     public KassenzeichenChangeRequestServerAction() {
         try {
             final SimpleModule module = new SimpleModule();
+            module.addDeserializer(PruefungJson.class, new PruefungJson.Deserializer(objectMapper));
             module.addDeserializer(FlaecheJson.class, new FlaecheJson.Deserializer(objectMapper));
-            module.addDeserializer(BemerkungJson.class, new BemerkungJson.Deserializer(objectMapper));
+            module.addDeserializer(NachrichtJson.class, new NachrichtJson.Deserializer(objectMapper));
+            module.addDeserializer(DialogJson.class, new DialogJson.Deserializer(objectMapper));
             module.addDeserializer(AnfrageJson.class, new AnfrageJson.Deserializer(objectMapper));
             objectMapper.registerModule(module);
             objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -186,7 +189,9 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                     VerdisConstants.PROP.AENDERUNGSANFRAGE.CHANGES_JSON,
                     objectMapper.writeValueAsString(anfrage));
                 aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID, stacEntry.getId());
-                aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.KASSENZEICHEN_ID, kassenzeichenBean.getMetaObject().getId());
+                aenderungsanfrageBean.setProperty(
+                    VerdisConstants.PROP.AENDERUNGSANFRAGE.KASSENZEICHEN_ID,
+                    kassenzeichenBean.getMetaObject().getId());
                 aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.EMAIL, email);
                 aenderungsanfrageBean.setProperty(
                     VerdisConstants.PROP.AENDERUNGSANFRAGE.TIMESTAMP,
@@ -253,7 +258,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
             final SimpleModule module = new SimpleModule();
             module.addDeserializer(FlaecheJson.class, new FlaecheJson.Deserializer(mapper));
-            module.addDeserializer(BemerkungJson.class, new BemerkungJson.Deserializer(mapper));
+            module.addDeserializer(DialogJson.class, new DialogJson.Deserializer(mapper));
             module.addDeserializer(AnfrageJson.class, new AnfrageJson.Deserializer(mapper));
             mapper.registerModule(module);
 
@@ -262,22 +267,31 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             final AnfrageJson anfrage = new AnfrageJson(
                     60004629,
                     flaechen,
-                    new BemerkungJson(
-                        "Da passt was nicht weil isso, siehe lustiges pdf !",
-                        "http://meine.domain.de/lustiges.pdf"));
+                    new DialogJson(
+                        new NachrichtJson(
+                            "Da passt was nicht weil isso, siehe lustiges pdf !",
+                            new Date(),
+                            "http://meine.domain.de/lustiges.pdf")));
             System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(anfrage));
 
-            anfrage.getBemerkung().setBemerkungSachbearbeiter("Konnte nichts feststellen, alles in Ordnung.");
+            anfrage.getNachrichten()
+                    .setSachbearbeiter(new NachrichtJson(
+                            "Konnte nichts feststellen, alles in Ordnung.",
+                            new Date()));
             anfrage.getFlaechen()
                     .get("5")
                     .addPruefung(new PruefungJson(PruefungJson.Status.REJECTED, "test", new Date()));
             System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(anfrage));
 
-            anfrage.addBemerkung(new BemerkungJson(
+            anfrage.addDialog(
+                new NachrichtJson(
                     "Oh, falsches PDF, siehe richtiges pdf.",
-                    "http://meine.domain.de/richtiges.pdf",
-                    "Ach so, verstehe. Alles Klar !",
-                    new BemerkungJson("Geht doch, danke.")));
+                    new Date(),
+                    "http://meine.domain.de/richtiges.pdf"),
+                new NachrichtJson("Ach so, verstehe. Alles Klar !", new Date()));
+            anfrage.addDialog(
+                new NachrichtJson("Geht doch, danke.", new Date()),
+                null);
             anfrage.getFlaechen()
                     .get("5")
                     .addPruefung(new PruefungJson(PruefungJson.Status.ACCEPTED, "test", new Date()));
@@ -297,13 +311,12 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
       "groesse" : 12.0
     }
   },
-  "bemerkung" : {
-    "bemerkungBuerger" : "Da passt was nicht weil isso, siehe lustiges pdf !",
-    "anhangBuerger" : "http://meine.domain.de/lustiges.pdf"
-  },
-  "lastBemerkung" : {
-    "bemerkungBuerger" : "Da passt was nicht weil isso, siehe lustiges pdf !",
-    "anhangBuerger" : "http://meine.domain.de/lustiges.pdf"
+  "nachrichten" : {
+    "buerger" : {
+      "nachricht" : "Da passt was nicht weil isso, siehe lustiges pdf !",
+      "timestamp" : 1566915257744,
+      "anhang" : "http://meine.domain.de/lustiges.pdf"
+    }
   }
 }
 {
@@ -314,24 +327,20 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
       "pruefung" : {
         "status" : "REJECTED",
         "von" : "test",
-        "timestamp" : 1566911577668
-      },
-      "lastPruefung" : {
-        "status" : "REJECTED",
-        "von" : "test",
-        "timestamp" : 1566911577668
+        "timestamp" : 1566915257854
       }
     }
   },
-  "bemerkung" : {
-    "bemerkungBuerger" : "Da passt was nicht weil isso, siehe lustiges pdf !",
-    "anhangBuerger" : "http://meine.domain.de/lustiges.pdf",
-    "bemerkungSachbearbeiter" : "Konnte nichts feststellen, alles in Ordnung."
-  },
-  "lastBemerkung" : {
-    "bemerkungBuerger" : "Da passt was nicht weil isso, siehe lustiges pdf !",
-    "anhangBuerger" : "http://meine.domain.de/lustiges.pdf",
-    "bemerkungSachbearbeiter" : "Konnte nichts feststellen, alles in Ordnung."
+  "nachrichten" : {
+    "buerger" : {
+      "nachricht" : "Da passt was nicht weil isso, siehe lustiges pdf !",
+      "timestamp" : 1566915257744,
+      "anhang" : "http://meine.domain.de/lustiges.pdf"
+    },
+    "sachbearbeiter" : {
+      "nachricht" : "Konnte nichts feststellen, alles in Ordnung.",
+      "timestamp" : 1566915257854
+    }
   }
 }
 {
@@ -342,35 +351,42 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
       "pruefung" : {
         "status" : "REJECTED",
         "von" : "test",
-        "timestamp" : 1566911577668,
+        "timestamp" : 1566915257854,
         "next" : {
           "status" : "ACCEPTED",
           "von" : "test",
-          "timestamp" : 1566911577677
+          "timestamp" : 1566915257858
         }
-      },
-      "lastPruefung" : {
-        "status" : "ACCEPTED",
-        "von" : "test",
-        "timestamp" : 1566911577677
       }
     }
   },
-  "bemerkung" : {
-    "bemerkungBuerger" : "Da passt was nicht weil isso, siehe lustiges pdf !",
-    "anhangBuerger" : "http://meine.domain.de/lustiges.pdf",
-    "bemerkungSachbearbeiter" : "Konnte nichts feststellen, alles in Ordnung.",
+  "nachrichten" : {
+    "buerger" : {
+      "nachricht" : "Da passt was nicht weil isso, siehe lustiges pdf !",
+      "timestamp" : 1566915257744,
+      "anhang" : "http://meine.domain.de/lustiges.pdf"
+    },
+    "sachbearbeiter" : {
+      "nachricht" : "Konnte nichts feststellen, alles in Ordnung.",
+      "timestamp" : 1566915257854
+    },
     "next" : {
-      "bemerkungBuerger" : "Oh, falsches PDF, siehe richtiges pdf.",
-      "anhangBuerger" : "http://meine.domain.de/richtiges.pdf",
-      "bemerkungSachbearbeiter" : "Ach so, verstehe. Alles Klar !",
+      "buerger" : {
+        "nachricht" : "Oh, falsches PDF, siehe richtiges pdf.",
+        "timestamp" : 1566915257858,
+        "anhang" : "http://meine.domain.de/richtiges.pdf"
+      },
+      "sachbearbeiter" : {
+        "nachricht" : "Ach so, verstehe. Alles Klar !",
+        "timestamp" : 1566915257858
+      },
       "next" : {
-        "bemerkungBuerger" : "Geht doch, danke."
+        "buerger" : {
+          "nachricht" : "Geht doch, danke.",
+          "timestamp" : 1566915257858
+        }
       }
     }
-  },
-  "lastBemerkung" : {
-    "bemerkungBuerger" : "Geht doch, danke."
   }
 }
 */

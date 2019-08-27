@@ -33,45 +33,33 @@ import java.io.IOException;
 @Getter
 @Setter
 @AllArgsConstructor
-public class BemerkungJson {
+public class DialogJson {
 
     //~ Instance fields --------------------------------------------------------
 
-    private String bemerkungBuerger;
-    private String anhangBuerger;
-    private String bemerkungSachbearbeiter;
-    private BemerkungJson next;
+    private NachrichtJson buerger;
+    private NachrichtJson sachbearbeiter;
+    private DialogJson next;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Creates a new BemerkungJson object.
+     * Creates a new DialogJson object.
      *
      * @param  buerger  DOCUMENT ME!
      */
-    public BemerkungJson(final String buerger) {
-        this(buerger, null, null, null);
+    public DialogJson(final NachrichtJson buerger) {
+        this(buerger, null, null);
     }
 
     /**
-     * Creates a new BemerkungJson object.
-     *
-     * @param  buerger  DOCUMENT ME!
-     * @param  anhang   DOCUMENT ME!
-     */
-    public BemerkungJson(final String buerger, final String anhang) {
-        this(buerger, anhang, null, null);
-    }
-
-    /**
-     * Creates a new BemerkungJson object.
+     * Creates a new DialogJson object.
      *
      * @param  buerger         DOCUMENT ME!
-     * @param  anhang          DOCUMENT ME!
      * @param  sachbearbeiter  DOCUMENT ME!
      */
-    public BemerkungJson(final String buerger, final String anhang, final String sachbearbeiter) {
-        this(buerger, anhang, sachbearbeiter, null);
+    public DialogJson(final NachrichtJson buerger, final NachrichtJson sachbearbeiter) {
+        this(buerger, sachbearbeiter, null);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -81,7 +69,7 @@ public class BemerkungJson {
      *
      * @version  $Revision$, $Date$
      */
-    public static class Deserializer extends StdDeserializer<BemerkungJson> {
+    public static class Deserializer extends StdDeserializer<DialogJson> {
 
         //~ Instance fields ----------------------------------------------------
 
@@ -90,32 +78,31 @@ public class BemerkungJson {
         //~ Constructors -------------------------------------------------------
 
         /**
-         * Creates a new BemerkungJsonDeserializer object.
+         * Creates a new Deserializer object.
          *
          * @param  objectMapper  DOCUMENT ME!
          */
         public Deserializer(final ObjectMapper objectMapper) {
-            super(BemerkungJson.class);
+            super(DialogJson.class);
             this.objectMapper = objectMapper;
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public BemerkungJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
+        public DialogJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
             JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
-            final String bemerkungBuerger = on.has("bemerkungBuerger") ? on.get("bemerkungBuerger").textValue() : null;
-            final String bemerkungSachbearbeiter = on.has("bemerkungSachbearbeiter")
-                ? on.get("bemerkungSachbearbeiter").textValue() : null;
-            final String anhangBuerger = on.has("anhangBuerger") ? on.get("anhangBuerger").textValue() : null;
-            final BemerkungJson next = on.has("next") ? objectMapper.treeToValue(on.get("next"), BemerkungJson.class)
-                                                      : null;
-            if ((bemerkungBuerger == null) && (bemerkungSachbearbeiter == null)) {
+            final NachrichtJson buerger = on.has("buerger")
+                ? objectMapper.treeToValue(on.get("buerger"), NachrichtJson.class) : null;
+            final NachrichtJson sachbearbeiter = on.has("sachbearbeiter")
+                ? objectMapper.treeToValue(on.get("sachbearbeiter"), NachrichtJson.class) : null;
+            final DialogJson next = on.has("next") ? objectMapper.treeToValue(on.get("next"), DialogJson.class) : null;
+            if ((buerger == null) && (sachbearbeiter == null)) {
                 throw new RuntimeException(
                     "invalid BemerkungJson: neither bemerkungBuerger nor bemerkungSachbearbeiter is set");
             }
-            return new BemerkungJson(bemerkungBuerger, anhangBuerger, bemerkungSachbearbeiter, next);
+            return new DialogJson(buerger, sachbearbeiter, next);
         }
     }
 }

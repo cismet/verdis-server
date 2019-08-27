@@ -12,6 +12,7 @@
  */
 package de.cismet.verdis.server.utils.aenderungsanfrage;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
@@ -67,6 +68,7 @@ public class FlaecheJson {
      *
      * @return  DOCUMENT ME!
      */
+    @JsonIgnore
     public PruefungJson getLastPruefung() {
         PruefungJson lastPruefung = getPruefung();
         if (lastPruefung != null) {

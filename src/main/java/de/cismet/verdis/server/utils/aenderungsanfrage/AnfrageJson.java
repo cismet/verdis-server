@@ -12,6 +12,7 @@
  */
 package de.cismet.verdis.server.utils.aenderungsanfrage;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
@@ -54,7 +55,7 @@ public class AnfrageJson {
 
     private Integer kassenzeichen;
     private Map<String, FlaecheJson> flaechen;
-    private BemerkungJson bemerkung;
+    private DialogJson nachrichten;
     private PruefungJson pruefung;
 
     //~ Constructors -----------------------------------------------------------
@@ -87,7 +88,7 @@ public class AnfrageJson {
      */
     public AnfrageJson(final Integer kassenzeichen,
             final Map<String, FlaecheJson> flaechen,
-            final BemerkungJson bemerkung) {
+            final DialogJson bemerkung) {
         this(kassenzeichen, flaechen, bemerkung, null);
     }
 
@@ -115,6 +116,7 @@ public class AnfrageJson {
      *
      * @return  DOCUMENT ME!
      */
+    @JsonIgnore
     public PruefungJson getLastPruefung() {
         PruefungJson lastPruefung = getPruefung();
         if (lastPruefung != null) {
@@ -128,15 +130,25 @@ public class AnfrageJson {
     /**
      * DOCUMENT ME!
      *
-     * @param  bemerkung  DOCUMENT ME!
+     * @param  dialog  DOCUMENT ME!
      */
-    public void addBemerkung(final BemerkungJson bemerkung) {
-        final BemerkungJson lastBemerkung = getLastBemerkung();
-        if (lastBemerkung == null) {
-            setBemerkung(bemerkung);
+    public void addDialog(final DialogJson dialog) {
+        final DialogJson lastDialog = getLastDialog();
+        if (lastDialog == null) {
+            setNachrichten(dialog);
         } else {
-            lastBemerkung.setNext(bemerkung);
+            lastDialog.setNext(dialog);
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  buerger         DOCUMENT ME!
+     * @param  sachbearbeiter  DOCUMENT ME!
+     */
+    public void addDialog(final NachrichtJson buerger, final NachrichtJson sachbearbeiter) {
+        addDialog(new DialogJson(buerger, sachbearbeiter));
     }
 
     /**
@@ -144,14 +156,15 @@ public class AnfrageJson {
      *
      * @return  DOCUMENT ME!
      */
-    public BemerkungJson getLastBemerkung() {
-        BemerkungJson lastBemerkung = getBemerkung();
-        if (lastBemerkung != null) {
-            while (lastBemerkung.getNext() != null) {
-                lastBemerkung = lastBemerkung.getNext();
+    @JsonIgnore
+    public DialogJson getLastDialog() {
+        DialogJson lastDialog = getNachrichten();
+        if (lastDialog != null) {
+            while (lastDialog.getNext() != null) {
+                lastDialog = lastDialog.getNext();
             }
         }
-        return lastBemerkung;
+        return lastDialog;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -186,8 +199,8 @@ public class AnfrageJson {
             JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
             final Integer kassenzeichen = on.has("kassenzeichen") ? on.get("kassenzeichen").asInt() : null;
-            final BemerkungJson bemerkung = on.has("bemerkung")
-                ? objectMapper.treeToValue(on.get("bemerkung"), BemerkungJson.class) : null;
+            final DialogJson bemerkung = on.has("nachrichten")
+                ? objectMapper.treeToValue(on.get("nachrichten"), DialogJson.class) : null;
             final PruefungJson pruefung = on.has("pruefung")
                 ? objectMapper.treeToValue(on.get("pruefung"), PruefungJson.class) : null;
             final Map<String, FlaecheJson> flaechen;
