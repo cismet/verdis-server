@@ -22,9 +22,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
-
 import org.apache.log4j.Logger;
-
 
 import java.sql.Timestamp;
 
@@ -48,6 +46,7 @@ import de.cismet.verdis.server.utils.aenderungsanfrage.AnfrageJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.BemerkungJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheGroesseJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheJson;
+import de.cismet.verdis.server.utils.aenderungsanfrage.PruefungJson;
 
 /**
  * DOCUMENT ME!
@@ -267,68 +266,110 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                         "http://meine.domain.de/lustiges.pdf"));
             System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(anfrage));
 
-            anfrage.getBemerkung().setSachbearbeiter("Konnte nichts feststellen, alles in Ordnung.");
+            anfrage.getBemerkung().setBemerkungSachbearbeiter("Konnte nichts feststellen, alles in Ordnung.");
+            anfrage.getFlaechen()
+                    .get("5")
+                    .addPruefung(new PruefungJson(PruefungJson.Status.REJECTED, "test", new Date()));
             System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(anfrage));
 
-            anfrage.getBemerkung()
-                    .setBemerkung(new BemerkungJson(
-                            "Oh, falsches PDF, siehe richtiges pdf.",
-                            "http://meine.domain.de/richtiges.pdf",
-                            "Ach so, verstehe. Alles Klar !",
-                            new BemerkungJson("Geht doch, danke.")));
+            anfrage.addBemerkung(new BemerkungJson(
+                    "Oh, falsches PDF, siehe richtiges pdf.",
+                    "http://meine.domain.de/richtiges.pdf",
+                    "Ach so, verstehe. Alles Klar !",
+                    new BemerkungJson("Geht doch, danke.")));
+            anfrage.getFlaechen()
+                    .get("5")
+                    .addPruefung(new PruefungJson(PruefungJson.Status.ACCEPTED, "test", new Date()));
 
             System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(anfrage));
             mapper.readValue(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(anfrage), AnfrageJson.class);
         } catch (final Exception ex) {
-            System.err.println(ex.getMessage());
+            System.out.println(ex.getMessage());
             LOG.error(ex, ex);
         }
 
 /*
 {
-  "kassenzeichen" : "60004629",
+  "kassenzeichen" : 60004629,
   "flaechen" : {
     "5" : {
       "groesse" : 12.0
     }
   },
   "bemerkung" : {
-    "buerger" : "Da passt was nicht weil isso, siehe lustiges pdf !",
-    "anhang" : "http://meine.domain.de/lustiges.pdf"
+    "bemerkungBuerger" : "Da passt was nicht weil isso, siehe lustiges pdf !",
+    "anhangBuerger" : "http://meine.domain.de/lustiges.pdf"
+  },
+  "lastBemerkung" : {
+    "bemerkungBuerger" : "Da passt was nicht weil isso, siehe lustiges pdf !",
+    "anhangBuerger" : "http://meine.domain.de/lustiges.pdf"
   }
 }
 {
-  "kassenzeichen" : "60004629",
+  "kassenzeichen" : 60004629,
   "flaechen" : {
     "5" : {
-      "groesse" : 12.0
-    }
-  },
-  "bemerkung" : {
-    "buerger" : "Da passt was nicht weil isso, siehe lustiges pdf !",
-    "anhang" : "http://meine.domain.de/lustiges.pdf",
-    "sachbearbeiter" : "Konnte nichts feststellen, alles in Ordnung."
-  }
-}
-{
-  "kassenzeichen" : "60004629",
-  "flaechen" : {
-    "5" : {
-      "groesse" : 12.0
-    }
-  },
-  "bemerkung" : {
-    "buerger" : "Da passt was nicht weil isso, siehe lustiges pdf !",
-    "anhang" : "http://meine.domain.de/lustiges.pdf",
-    "sachbearbeiter" : "Konnte nichts feststellen, alles in Ordnung.",
-    "bemerkung" : {
-      "buerger" : "Oh, falsches PDF, siehe richtiges pdf.",
-      "anhang" : "http://meine.domain.de/richtiges.pdf",
-      "sachbearbeiter" : "Ach so, verstehe. Alles Klar !",
-      "bemerkung" : {
-        "buerger" : "Geht doch, danke."
+      "groesse" : 12.0,
+      "pruefung" : {
+        "status" : "REJECTED",
+        "von" : "test",
+        "timestamp" : 1566911577668
+      },
+      "lastPruefung" : {
+        "status" : "REJECTED",
+        "von" : "test",
+        "timestamp" : 1566911577668
       }
     }
+  },
+  "bemerkung" : {
+    "bemerkungBuerger" : "Da passt was nicht weil isso, siehe lustiges pdf !",
+    "anhangBuerger" : "http://meine.domain.de/lustiges.pdf",
+    "bemerkungSachbearbeiter" : "Konnte nichts feststellen, alles in Ordnung."
+  },
+  "lastBemerkung" : {
+    "bemerkungBuerger" : "Da passt was nicht weil isso, siehe lustiges pdf !",
+    "anhangBuerger" : "http://meine.domain.de/lustiges.pdf",
+    "bemerkungSachbearbeiter" : "Konnte nichts feststellen, alles in Ordnung."
+  }
+}
+{
+  "kassenzeichen" : 60004629,
+  "flaechen" : {
+    "5" : {
+      "groesse" : 12.0,
+      "pruefung" : {
+        "status" : "REJECTED",
+        "von" : "test",
+        "timestamp" : 1566911577668,
+        "next" : {
+          "status" : "ACCEPTED",
+          "von" : "test",
+          "timestamp" : 1566911577677
+        }
+      },
+      "lastPruefung" : {
+        "status" : "ACCEPTED",
+        "von" : "test",
+        "timestamp" : 1566911577677
+      }
+    }
+  },
+  "bemerkung" : {
+    "bemerkungBuerger" : "Da passt was nicht weil isso, siehe lustiges pdf !",
+    "anhangBuerger" : "http://meine.domain.de/lustiges.pdf",
+    "bemerkungSachbearbeiter" : "Konnte nichts feststellen, alles in Ordnung.",
+    "next" : {
+      "bemerkungBuerger" : "Oh, falsches PDF, siehe richtiges pdf.",
+      "anhangBuerger" : "http://meine.domain.de/richtiges.pdf",
+      "bemerkungSachbearbeiter" : "Ach so, verstehe. Alles Klar !",
+      "next" : {
+        "bemerkungBuerger" : "Geht doch, danke."
+      }
+    }
+  },
+  "lastBemerkung" : {
+    "bemerkungBuerger" : "Geht doch, danke."
   }
 }
 */

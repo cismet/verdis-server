@@ -1,3 +1,10 @@
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -14,72 +21,147 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.IOException;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 /**
+ * DOCUMENT ME!
  *
- * @author jruiz
+ * @author   jruiz
+ * @version  $Revision$, $Date$
  */
+/**
+ * DOCUMENT ME!
+ *
+ * @version  $Revision$, $Date$
+ */
+@Getter
+@Setter
+@AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class AnfrageJson {
+
+    //~ Instance fields --------------------------------------------------------
+
+    private Integer kassenzeichen;
+    private Map<String, FlaecheJson> flaechen;
+    private BemerkungJson bemerkung;
+    private PruefungJson pruefung;
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new AnfrageJson object.
+     *
+     * @param  kassenzeichen  DOCUMENT ME!
+     */
+    public AnfrageJson(final Integer kassenzeichen) {
+        this(kassenzeichen, null, null, null);
+    }
+
+    /**
+     * Creates a new AnfrageJson object.
+     *
+     * @param  kassenzeichen  DOCUMENT ME!
+     * @param  flaechen       DOCUMENT ME!
+     */
+    public AnfrageJson(final Integer kassenzeichen, final Map<String, FlaecheJson> flaechen) {
+        this(kassenzeichen, flaechen, null, null);
+    }
+
+    /**
+     * Creates a new AnfrageJson object.
+     *
+     * @param  kassenzeichen  DOCUMENT ME!
+     * @param  flaechen       DOCUMENT ME!
+     * @param  bemerkung      DOCUMENT ME!
+     */
+    public AnfrageJson(final Integer kassenzeichen,
+            final Map<String, FlaecheJson> flaechen,
+            final BemerkungJson bemerkung) {
+        this(kassenzeichen, flaechen, bemerkung, null);
+    }
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  pruefung  DOCUMENT ME!
+     */
+    public void addPruefung(final PruefungJson pruefung) {
+        if (pruefung == null) {
+            setPruefung(pruefung);
+        } else {
+            PruefungJson lastPruefungJson = getPruefung();
+            while (lastPruefungJson.getNext() != null) {
+                lastPruefungJson = lastPruefungJson.getNext();
+            }
+            lastPruefungJson.setNext(pruefung);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public PruefungJson getLastPruefung() {
+        PruefungJson lastPruefung = getPruefung();
+        if (lastPruefung != null) {
+            while (lastPruefung.getNext() != null) {
+                lastPruefung = lastPruefung.getNext();
+            }
+        }
+        return lastPruefung;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  bemerkung  DOCUMENT ME!
+     */
+    public void addBemerkung(final BemerkungJson bemerkung) {
+        final BemerkungJson lastBemerkung = getLastBemerkung();
+        if (lastBemerkung == null) {
+            setBemerkung(bemerkung);
+        } else {
+            lastBemerkung.setNext(bemerkung);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public BemerkungJson getLastBemerkung() {
+        BemerkungJson lastBemerkung = getBemerkung();
+        if (lastBemerkung != null) {
+            while (lastBemerkung.getNext() != null) {
+                lastBemerkung = lastBemerkung.getNext();
+            }
+        }
+        return lastBemerkung;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
     /**
      * DOCUMENT ME!
      *
      * @version  $Revision$, $Date$
      */
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    public class AnfrageJson {
-
-        //~ Instance fields ----------------------------------------------------
-
-        private Integer kassenzeichen;
-        private Map<String, FlaecheJson> flaechen;
-        private BemerkungJson bemerkung;
-        private String pruefungStatus;
-
-        //~ Constructors -------------------------------------------------------
-
-        /**
-         * Creates a new AnfrageJson object.
-         *
-         * @param  kassenzeichen  DOCUMENT ME!
-         */
-        public AnfrageJson(final Integer kassenzeichen) {
-            this(kassenzeichen, null, null, null);
-        }
-
-        /**
-         * Creates a new AnfrageJson object.
-         *
-         * @param  kassenzeichen  DOCUMENT ME!
-         * @param  flaechen       DOCUMENT ME!
-         */
-        public AnfrageJson(final Integer kassenzeichen, final Map<String, FlaecheJson> flaechen) {
-            this(kassenzeichen, flaechen, null, null);
-        }
-
-        /**
-         * Creates a new AnfrageJson object.
-         *
-         * @param  kassenzeichen  DOCUMENT ME!
-         * @param  flaechen       DOCUMENT ME!
-         * @param  bemerkung      DOCUMENT ME!
-         */
-        public AnfrageJson(final Integer kassenzeichen,
-                final Map<String, FlaecheJson> flaechen,
-                final BemerkungJson bemerkung) {
-            this(kassenzeichen, flaechen, bemerkung, null);
-        }
-        
-        public static class Deserializer extends StdDeserializer<AnfrageJson> {
+    public static class Deserializer extends StdDeserializer<AnfrageJson> {
 
         //~ Instance fields ----------------------------------------------------
 
@@ -106,7 +188,8 @@ import lombok.Setter;
             final Integer kassenzeichen = on.has("kassenzeichen") ? on.get("kassenzeichen").asInt() : null;
             final BemerkungJson bemerkung = on.has("bemerkung")
                 ? objectMapper.treeToValue(on.get("bemerkung"), BemerkungJson.class) : null;
-            final String pruefungStatus = on.has("pruefungStatus") ? on.get("pruefungStatus").textValue() : null;
+            final PruefungJson pruefung = on.has("pruefung")
+                ? objectMapper.treeToValue(on.get("pruefung"), PruefungJson.class) : null;
             final Map<String, FlaecheJson> flaechen;
             if (on.has("flaechen") && on.get("flaechen").isObject()) {
                 flaechen = new HashMap<>();
@@ -124,7 +207,7 @@ import lombok.Setter;
             if (kassenzeichen == null) {
                 throw new RuntimeException("invalid AnfrageJson: kassenzeichen is missing");
             }
-            return new AnfrageJson(kassenzeichen, flaechen, bemerkung, pruefungStatus);
+            return new AnfrageJson(kassenzeichen, flaechen, bemerkung, pruefung);
         }
     }
-    } 
+}
