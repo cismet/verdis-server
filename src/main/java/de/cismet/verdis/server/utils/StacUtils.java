@@ -62,6 +62,20 @@ public class StacUtils {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
+    //~ Enums ------------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public enum AenderungsanfrageStatus {
+
+        //~ Enum constants -----------------------------------------------------
+
+        PENDING, PROCESSING, PROCESSED, CLOSED
+    }
+
     //~ Methods ----------------------------------------------------------------
 
     /**

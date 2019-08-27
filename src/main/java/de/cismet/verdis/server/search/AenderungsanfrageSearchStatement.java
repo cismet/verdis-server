@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 
@@ -48,6 +49,8 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
 
     @Getter @Setter private String stacHash;
 
+    @Getter @Setter private Set<String> statii;
+
     @Getter private final SearchInfo searchInfo;
 
     //~ Constructors -----------------------------------------------------------
@@ -66,6 +69,12 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
 
         searchParameterInfo = new SearchParameterInfo();
         searchParameterInfo.setKey("stacHash");
+        searchParameterInfo.setType(Type.STRING);
+        parameterDescription.add(searchParameterInfo);
+
+        searchInfo.setParameterDescription(parameterDescription);
+
+        searchParameterInfo.setKey("statii");
         searchParameterInfo.setType(Type.STRING);
         parameterDescription.add(searchParameterInfo);
 
@@ -93,33 +102,34 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
     @Override
     public Collection<MetaObjectNode> performServerSearch() {
         try {
-            if (stacHash == null) {
-                return null;
-            } else {
-                final String cidSubQuery = "SELECT id "
-                            + "FROM cs_class "
-                            + "WHERE table_name ILIKE '" + VerdisConstants.MC.AENDERUNGSANFRAGE + "'";
-                final String query = "SELECT (" + cidSubQuery + ") as cid, a.id as oid "
-                            + "FROM " + VerdisConstants.MC.AENDERUNGSANFRAGE + " AS a "
-                            + "LEFT JOIN cs_stac ON a." + VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID
-                            + " = cs_stac.id "
-                            + "WHERE cs_stac.thehash LIKE '" + stacHash + "'";
-
-                final MetaService ms = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);
-                final List<MetaObjectNode> result = new ArrayList<>();
-                final ArrayList<ArrayList> searchResult = ms.performCustomSearch(query + ";");
-                LOG.info(query);
-                for (final ArrayList al : searchResult) {
-                    result.add(new MetaObjectNode(
-                            VerdisConstants.DOMAIN,
-                            (Integer)al.get(1),
-                            (Integer)al.get(0),
-                            "",
-                            null,
-                            null));
-                }
-                return result;
+            final String where = (stacHash == null) ? "" : ("WHERE cs_stac.thehash LIKE '" + stacHash + "'");
+            if (statii != null) {
+                // ...
             }
+
+            final String cidSubQuery = "SELECT id "
+                        + "FROM cs_class "
+                        + "WHERE table_name ILIKE '" + VerdisConstants.MC.AENDERUNGSANFRAGE + "'";
+            final String query = "SELECT (" + cidSubQuery + ") as cid, a.id as oid "
+                        + "FROM " + VerdisConstants.MC.AENDERUNGSANFRAGE + " AS a "
+                        + "LEFT JOIN cs_stac ON a." + VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID
+                        + " = cs_stac.id "
+                        + where;
+
+            final MetaService ms = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);
+            final List<MetaObjectNode> result = new ArrayList<>();
+            final ArrayList<ArrayList> searchResult = ms.performCustomSearch(query + ";");
+            LOG.info(query);
+            for (final ArrayList al : searchResult) {
+                result.add(new MetaObjectNode(
+                        VerdisConstants.DOMAIN,
+                        (Integer)al.get(1),
+                        (Integer)al.get(0),
+                        "",
+                        null,
+                        null));
+            }
+            return result;
         } catch (final Exception ex) {
             LOG.error("problem during Aenderungsanfrage search", ex); // NOI18N
             return null;
