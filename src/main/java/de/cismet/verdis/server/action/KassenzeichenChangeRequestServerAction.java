@@ -190,8 +190,8 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                     objectMapper.writeValueAsString(anfrage));
                 aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID, stacEntry.getId());
                 aenderungsanfrageBean.setProperty(
-                    VerdisConstants.PROP.AENDERUNGSANFRAGE.KASSENZEICHEN_ID,
-                    kassenzeichenBean.getMetaObject().getId());
+                    VerdisConstants.PROP.AENDERUNGSANFRAGE.KASSENZEICHEN_NUMMER,
+                    (Integer)kassenzeichenBean.getProperty(VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER));
                 aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.EMAIL, email);
                 aenderungsanfrageBean.setProperty(
                     VerdisConstants.PROP.AENDERUNGSANFRAGE.TIMESTAMP,

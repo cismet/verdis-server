@@ -45,11 +45,29 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
     /** LOGGER. */
     private static final transient Logger LOG = Logger.getLogger(AenderungsanfrageSearchStatement.class);
 
+    //~ Enums ------------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public enum SearchMode {
+
+        //~ Enum constants -----------------------------------------------------
+
+        AND, OR,
+    }
+
     //~ Instance fields --------------------------------------------------------
 
     @Getter @Setter private String stacHash;
 
+    @Getter @Setter private Integer kassenzeichennummer;
+
     @Getter @Setter private Set<String> statii;
+
+    @Getter @Setter private SearchMode searchMode = SearchMode.AND;
 
     @Getter private final SearchInfo searchInfo;
 
@@ -65,19 +83,21 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
         searchInfo.setDescription("Search for Aenderungsanfrage");
 
         final List<SearchParameterInfo> parameterDescription = new LinkedList<>();
-        final SearchParameterInfo searchParameterInfo;
+        final SearchParameterInfo searchParameterInfo = new SearchParameterInfo();
 
-        searchParameterInfo = new SearchParameterInfo();
         searchParameterInfo.setKey("stacHash");
         searchParameterInfo.setType(Type.STRING);
         parameterDescription.add(searchParameterInfo);
+        searchInfo.setParameterDescription(parameterDescription);
 
+        searchParameterInfo.setKey("kassenzeichenNummer");
+        searchParameterInfo.setType(Type.INTEGER);
+        parameterDescription.add(searchParameterInfo);
         searchInfo.setParameterDescription(parameterDescription);
 
         searchParameterInfo.setKey("statii");
         searchParameterInfo.setType(Type.STRING);
         parameterDescription.add(searchParameterInfo);
-
         searchInfo.setParameterDescription(parameterDescription);
 
         final SearchParameterInfo resultParameterInfo = new SearchParameterInfo();
@@ -102,9 +122,49 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
     @Override
     public Collection<MetaObjectNode> performServerSearch() {
         try {
-            final String where = (stacHash == null) ? "" : ("WHERE cs_stac.thehash LIKE '" + stacHash + "'");
-            if (statii != null) {
-                // ...
+            final Collection<String> joins = new ArrayList<>();
+            final Collection<String> wheres = new ArrayList<>();
+
+            boolean joinKassenzeichen = false;
+            boolean joinStacHash = false;
+            if (stacHash != null) {
+                wheres.add("cs_stac.thehash LIKE '" + stacHash + "'");
+                joinStacHash = true;
+            }
+            if (kassenzeichennummer != null) {
+                joinKassenzeichen = true;
+                wheres.add("k." + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER + " = " + kassenzeichennummer);
+            }
+
+            if (joinStacHash) {
+                joins.add("cs_stac ON a." + VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID + " = cs_stac.id");
+            }
+            if (joinKassenzeichen) {
+                joins.add(VerdisConstants.MC.KASSENZEICHEN + " AS k ON a."
+                            + VerdisConstants.PROP.AENDERUNGSANFRAGE.KASSENZEICHEN_NUMMER + " = k."
+                            + VerdisConstants.PROP.KASSENZEICHEN.ID);
+            }
+            final String join = joins.isEmpty() ? "" : String.join(" LEFT JOIN ", joins);
+            final String where;
+            if (wheres.isEmpty()) {
+                where = "WHERE true";
+            } else {
+                switch (searchMode) {
+                    case AND: {
+                        wheres.add("TRUE");
+                        where = "WHERE " + String.join(" AND ", wheres);
+                        break;
+                    }
+                    case OR: {
+                        wheres.add("FALSE");
+                        where = "WHERE " + String.join(" OR ", wheres);
+                        break;
+                    }
+                    default: {
+                        where = "WHERE false";
+                        break;
+                    }
+                }
             }
 
             final String cidSubQuery = "SELECT id "
@@ -112,8 +172,7 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
                         + "WHERE table_name ILIKE '" + VerdisConstants.MC.AENDERUNGSANFRAGE + "'";
             final String query = "SELECT (" + cidSubQuery + ") as cid, a.id as oid "
                         + "FROM " + VerdisConstants.MC.AENDERUNGSANFRAGE + " AS a "
-                        + "LEFT JOIN cs_stac ON a." + VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID
-                        + " = cs_stac.id "
+                        + join
                         + where;
 
             final MetaService ms = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);

@@ -19,7 +19,7 @@ public final class AenderungsanfragePropertyConstants extends PropertyConstants 
 
     public static final String CHANGES_JSON = "changes_json";
     public static final String STAC_ID = "stac_id";
-    public static final String KASSENZEICHEN_ID = "kassenzeichen_id";
+    public static final String KASSENZEICHEN_NUMMER = "kassenzeichen_nummer";
     public static final String EMAIL = "email";
     public static final String TIMESTAMP = "timestamp";
     public static final String STATUS = "status";
