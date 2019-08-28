@@ -122,7 +122,7 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
     @Override
     public Collection<MetaObjectNode> performServerSearch() {
         try {
-            final Collection<String> joins = new ArrayList<>();
+            final Collection<String> froms = new ArrayList<>();
             final Collection<String> wheres = new ArrayList<>();
 
             boolean joinKassenzeichen = false;
@@ -136,15 +136,16 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
                 wheres.add("k." + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER + " = " + kassenzeichennummer);
             }
 
+            froms.add(VerdisConstants.MC.AENDERUNGSANFRAGE + " AS a");
             if (joinStacHash) {
-                joins.add("cs_stac ON a." + VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID + " = cs_stac.id");
+                froms.add("cs_stac ON a." + VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID + " = cs_stac.id");
             }
             if (joinKassenzeichen) {
-                joins.add(VerdisConstants.MC.KASSENZEICHEN + " AS k ON a."
+                froms.add(VerdisConstants.MC.KASSENZEICHEN + " AS k ON a."
                             + VerdisConstants.PROP.AENDERUNGSANFRAGE.KASSENZEICHEN_NUMMER + " = k."
-                            + VerdisConstants.PROP.KASSENZEICHEN.ID);
+                            + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER);
             }
-            final String join = joins.isEmpty() ? "" : String.join(" LEFT JOIN ", joins);
+            final String from = String.join(" LEFT JOIN ", froms);
             final String where;
             if (wheres.isEmpty()) {
                 where = "WHERE true";
@@ -171,8 +172,7 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
                         + "FROM cs_class "
                         + "WHERE table_name ILIKE '" + VerdisConstants.MC.AENDERUNGSANFRAGE + "'";
             final String query = "SELECT (" + cidSubQuery + ") as cid, a.id as oid "
-                        + "FROM " + VerdisConstants.MC.AENDERUNGSANFRAGE + " AS a "
-                        + join
+                        + "FROM " + from + " "
                         + where;
 
             final MetaService ms = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);

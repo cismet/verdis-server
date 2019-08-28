@@ -115,10 +115,12 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore, 
                         getMetaService(),
                         getConnectionContext());
 
-                kassenzeichenBean.setProperty("stac_options", stacEntry.getOptions());
-                kassenzeichenBean.setProperty("stac_expiration", stacEntry.getExpiration());
+                kassenzeichenBean.setProperty(VerdisConstants.PROP.KASSENZEICHEN.STAC_OPTION, stacEntry.getOptions());
                 kassenzeichenBean.setProperty(
-                    "aenderungsanfrage",
+                    VerdisConstants.PROP.KASSENZEICHEN.STAC_EXPIRATION,
+                    stacEntry.getExpiration());
+                kassenzeichenBean.setProperty(
+                    VerdisConstants.PROP.KASSENZEICHEN.AENDERUNGSANFRAGE,
                     (aenderungsanfrageBean != null)
                         ? StacUtils.asMap(
                             (String)aenderungsanfrageBean.getProperty(
