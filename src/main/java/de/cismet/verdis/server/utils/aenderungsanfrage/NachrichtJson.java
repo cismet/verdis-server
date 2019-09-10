@@ -37,10 +37,26 @@ import java.util.Date;
 @AllArgsConstructor
 public class NachrichtJson {
 
+    //~ Enums ------------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public enum Typ {
+
+        //~ Enum constants -----------------------------------------------------
+
+        CHAT, SYSTEM
+    }
+
     //~ Instance fields --------------------------------------------------------
 
-    private String nachricht;
+    private Typ typ;
     private Date timestamp;
+    private String absender;
+    private String nachricht;
     private String anhang;
 
     //~ Constructors -----------------------------------------------------------
@@ -48,11 +64,57 @@ public class NachrichtJson {
     /**
      * Creates a new NachrichtJson object.
      *
-     * @param  nachricht  DOCUMENT ME!
      * @param  timestamp  DOCUMENT ME!
+     * @param  nachricht  DOCUMENT ME!
      */
-    public NachrichtJson(final String nachricht, final Date timestamp) {
-        this(nachricht, timestamp, null);
+    public NachrichtJson(final Date timestamp, final String nachricht) {
+        this(Typ.SYSTEM, timestamp, null, nachricht, null);
+    }
+
+    /**
+     * Creates a new NachrichtJson object.
+     *
+     * @param  typ        DOCUMENT ME!
+     * @param  timestamp  DOCUMENT ME!
+     * @param  nachricht  DOCUMENT ME!
+     */
+    public NachrichtJson(final Typ typ, final Date timestamp, final String nachricht) {
+        this(typ, timestamp, null, nachricht, null);
+    }
+
+    /**
+     * Creates a new NachrichtJson object.
+     *
+     * @param  timestamp  DOCUMENT ME!
+     * @param  absender   DOCUMENT ME!
+     * @param  nachricht  DOCUMENT ME!
+     */
+    public NachrichtJson(final Date timestamp, final String absender, final String nachricht) {
+        this(Typ.CHAT, timestamp, absender, nachricht, null);
+    }
+
+    /**
+     * Creates a new NachrichtJson object.
+     *
+     * @param  timestamp  DOCUMENT ME!
+     * @param  absender   DOCUMENT ME!
+     * @param  nachricht  DOCUMENT ME!
+     * @param  anhang     DOCUMENT ME!
+     */
+    public NachrichtJson(final Date timestamp, final String absender, final String nachricht, final String anhang) {
+        this(Typ.CHAT, timestamp, absender, nachricht, anhang);
+    }
+
+    /**
+     * Creates a new NachrichtJson object.
+     *
+     * @param  typ        DOCUMENT ME!
+     * @param  timestamp  DOCUMENT ME!
+     * @param  absender   DOCUMENT ME!
+     * @param  nachricht  DOCUMENT ME!
+     */
+    public NachrichtJson(final Typ typ, final Date timestamp, final String absender, final String nachricht) {
+        this(typ, timestamp, absender, nachricht, null);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -64,10 +126,6 @@ public class NachrichtJson {
      */
     public static class Deserializer extends StdDeserializer<NachrichtJson> {
 
-        //~ Instance fields ----------------------------------------------------
-
-        private final ObjectMapper objectMapper;
-
         //~ Constructors -------------------------------------------------------
 
         /**
@@ -77,7 +135,6 @@ public class NachrichtJson {
          */
         public Deserializer(final ObjectMapper objectMapper) {
             super(NachrichtJson.class);
-            this.objectMapper = objectMapper;
         }
 
         //~ Methods ------------------------------------------------------------
@@ -86,14 +143,16 @@ public class NachrichtJson {
         public NachrichtJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
             JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
+            final Typ typ = on.has("typ") ? Typ.valueOf(on.get("typ").textValue()) : null;
             final String nachricht = on.has("nachricht") ? on.get("nachricht").textValue() : null;
+            final String absender = on.has("absender") ? on.get("absender").textValue() : null;
             final Date timestamp = on.has("timestamp") ? new Date(on.get("timestamp").longValue()) : null;
             final String anhang = on.has("anhang") ? on.get("anhang").textValue() : null;
             if ((nachricht == null) && (timestamp == null)) {
                 throw new RuntimeException(
                     "invalid NachrichtJson: neither nachricht nor timestamp is set");
             }
-            return new NachrichtJson(nachricht, timestamp, anhang);
+            return new NachrichtJson(typ, timestamp, absender, nachricht, anhang);
         }
     }
 }

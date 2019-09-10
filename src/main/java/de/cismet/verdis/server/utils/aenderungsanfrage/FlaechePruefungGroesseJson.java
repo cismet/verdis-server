@@ -12,31 +12,26 @@
  */
 package de.cismet.verdis.server.utils.aenderungsanfrage;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  * DOCUMENT ME!
  *
  * @version  $Revision$, $Date$
  */
-public class FlaecheGroesseJson extends FlaecheJson {
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class FlaechePruefungGroesseJson extends FlaechePruefungJson {
 
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Creates a new FlaecheGroesseJson object.
+     * Creates a new FlaechePruefungGroesseJson object.
      *
-     * @param  groesse  DOCUMENT ME!
-     */
-    public FlaecheGroesseJson(final Integer groesse) {
-        super(groesse, null, null, null);
-    }
-
-    /**
-     * Creates a new FlaecheGroesseJson object.
-     *
-     * @param  groesse   DOCUMENT ME!
      * @param  pruefung  DOCUMENT ME!
      */
-    public FlaecheGroesseJson(final Integer groesse, final FlaechePruefungJson pruefung) {
-        super(groesse, null, null, pruefung);
+    public FlaechePruefungGroesseJson(final PruefungJson pruefung) {
+        super(pruefung, null, null);
     }
 }

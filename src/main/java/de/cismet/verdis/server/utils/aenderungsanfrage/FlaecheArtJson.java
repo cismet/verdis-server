@@ -36,7 +36,7 @@ public class FlaecheArtJson extends FlaecheJson {
      * @param  art       DOCUMENT ME!
      * @param  pruefung  DOCUMENT ME!
      */
-    public FlaecheArtJson(final String art, final PruefungJson pruefung) {
+    public FlaecheArtJson(final String art, final FlaechePruefungJson pruefung) {
         super(null, null, art, pruefung);
     }
 }

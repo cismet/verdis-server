@@ -1,0 +1,43 @@
+{
+  "kassenzeichen" : 60004629,
+  "flaechen" : {
+    "5" : {
+      "groesse" : 12,
+      "pruefung" : {
+        "groesse" : {
+          "status" : "ACCEPTED",
+          "von" : "test",
+          "timestamp" : 47110815
+        }
+      }
+    }
+  },
+  "nachrichten" : [ {
+    "typ" : "CHAT",
+    "timestamp" : 47110815,
+    "absender" : "Bürger",
+    "nachricht" : "Da passt was nicht weil isso, siehe lustiges pdf !",
+    "anhang" : "http://meine.domain.de/lustiges.pdf"
+  }, {
+    "typ" : "CHAT",
+    "timestamp" : 47110815,
+    "absender" : "Dirk Steinbacher",
+    "nachricht" : "Konnte nichts feststellen, alles in Ordnung."
+  }, {
+    "typ" : "CHAT",
+    "timestamp" : 47110815,
+    "absender" : "Bürger",
+    "nachricht" : "Oh, falsches PDF, siehe richtiges pdf.",
+    "anhang" : "http://meine.domain.de/richtiges.pdf"
+  }, {
+    "typ" : "CHAT",
+    "timestamp" : 47110815,
+    "absender" : "Dirk Steinbacher",
+    "nachricht" : "Ach so, verstehe. Alles Klar !"
+  }, {
+    "typ" : "CHAT",
+    "timestamp" : 47110815,
+    "absender" : "Bürger",
+    "nachricht" : "Geht doch, danke."
+  } ]
+}

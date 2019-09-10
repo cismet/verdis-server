@@ -56,20 +56,6 @@ public class PruefungJson {
     private Status status;
     private String von;
     private Date timestamp;
-    private PruefungJson next;
-
-    //~ Constructors -----------------------------------------------------------
-
-    /**
-     * Creates a new StatusJson object.
-     *
-     * @param  status     DOCUMENT ME!
-     * @param  von        DOCUMENT ME!
-     * @param  timestamp  DOCUMENT ME!
-     */
-    public PruefungJson(final Status status, final String von, final Date timestamp) {
-        this(status, von, timestamp, null);
-    }
 
     //~ Inner Classes ----------------------------------------------------------
 
@@ -80,10 +66,6 @@ public class PruefungJson {
      */
     public static class Deserializer extends StdDeserializer<PruefungJson> {
 
-        //~ Instance fields ----------------------------------------------------
-
-        private final ObjectMapper objectMapper;
-
         //~ Constructors -------------------------------------------------------
 
         /**
@@ -93,7 +75,6 @@ public class PruefungJson {
          */
         public Deserializer(final ObjectMapper objectMapper) {
             super(PruefungJson.class);
-            this.objectMapper = objectMapper;
         }
 
         //~ Methods ------------------------------------------------------------
@@ -105,12 +86,10 @@ public class PruefungJson {
             final Status status = on.has("status") ? Status.valueOf(on.get("status").textValue()) : null;
             final String von = on.has("von") ? on.get("von").textValue() : null;
             final Date timestamp = on.has("timestamp") ? new Date(on.get("timestamp").longValue()) : null;
-            final PruefungJson next = on.has("next") ? objectMapper.treeToValue(on.get("next"), PruefungJson.class)
-                                                     : null;
             if ((status == null)) {
                 throw new RuntimeException("invalid StatusJson: status is not set");
             }
-            return new PruefungJson(status, von, timestamp, next);
+            return new PruefungJson(status, von, timestamp);
         }
     }
 }

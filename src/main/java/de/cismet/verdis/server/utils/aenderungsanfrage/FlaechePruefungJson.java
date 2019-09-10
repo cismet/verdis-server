@@ -12,6 +12,8 @@
  */
 package de.cismet.verdis.server.utils.aenderungsanfrage;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -33,34 +35,15 @@ import java.io.IOException;
 @Getter
 @Setter
 @AllArgsConstructor
-public class DialogJson {
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class FlaechePruefungJson {
 
     //~ Instance fields --------------------------------------------------------
 
-    private NachrichtJson buerger;
-    private NachrichtJson sachbearbeiter;
-    private DialogJson next;
-
-    //~ Constructors -----------------------------------------------------------
-
-    /**
-     * Creates a new DialogJson object.
-     *
-     * @param  buerger  DOCUMENT ME!
-     */
-    public DialogJson(final NachrichtJson buerger) {
-        this(buerger, null, null);
-    }
-
-    /**
-     * Creates a new DialogJson object.
-     *
-     * @param  buerger         DOCUMENT ME!
-     * @param  sachbearbeiter  DOCUMENT ME!
-     */
-    public DialogJson(final NachrichtJson buerger, final NachrichtJson sachbearbeiter) {
-        this(buerger, sachbearbeiter, null);
-    }
+    private PruefungJson groesse;
+    private PruefungJson flaechenart;
+    private PruefungJson anschlussgrad;
 
     //~ Inner Classes ----------------------------------------------------------
 
@@ -69,7 +52,7 @@ public class DialogJson {
      *
      * @version  $Revision$, $Date$
      */
-    public static class Deserializer extends StdDeserializer<DialogJson> {
+    public static class Deserializer extends StdDeserializer<FlaechePruefungJson> {
 
         //~ Instance fields ----------------------------------------------------
 
@@ -78,31 +61,32 @@ public class DialogJson {
         //~ Constructors -------------------------------------------------------
 
         /**
-         * Creates a new Deserializer object.
+         * Creates a new FlaecheJsonDeserializer object.
          *
          * @param  objectMapper  DOCUMENT ME!
          */
         public Deserializer(final ObjectMapper objectMapper) {
-            super(DialogJson.class);
+            super(FlaechePruefungJson.class);
             this.objectMapper = objectMapper;
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public DialogJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
+        public FlaechePruefungJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
             JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
-            final NachrichtJson buerger = on.has("buerger")
-                ? objectMapper.treeToValue(on.get("buerger"), NachrichtJson.class) : null;
-            final NachrichtJson sachbearbeiter = on.has("sachbearbeiter")
-                ? objectMapper.treeToValue(on.get("sachbearbeiter"), NachrichtJson.class) : null;
-            final DialogJson next = on.has("next") ? objectMapper.treeToValue(on.get("next"), DialogJson.class) : null;
-            if ((buerger == null) && (sachbearbeiter == null)) {
+            final PruefungJson pruefungGroesse = on.has("groesse")
+                ? objectMapper.treeToValue(on.get("groesse"), PruefungJson.class) : null;
+            final PruefungJson pruefungFlaechenart = on.has("flaechenart")
+                ? objectMapper.treeToValue(on.get("flaechenart"), PruefungJson.class) : null;
+            final PruefungJson pruefungAnschlussgrad = on.has("anschlussgrad")
+                ? objectMapper.treeToValue(on.get("anschlussgrad"), PruefungJson.class) : null;
+            if ((pruefungGroesse == null) && (pruefungFlaechenart == null) && (pruefungAnschlussgrad == null)) {
                 throw new RuntimeException(
-                    "invalid BemerkungJson: neither bemerkungBuerger nor bemerkungSachbearbeiter is set");
+                    "invalid FlaechePruefungJson: neither anschlussgrad nor flaechenart nor groesse is set");
             }
-            return new DialogJson(buerger, sachbearbeiter, next);
+            return new FlaechePruefungJson(pruefungGroesse, pruefungFlaechenart, pruefungAnschlussgrad);
         }
     }
 }

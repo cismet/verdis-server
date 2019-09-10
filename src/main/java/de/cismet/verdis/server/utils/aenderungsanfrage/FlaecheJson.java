@@ -12,7 +12,6 @@
  */
 package de.cismet.verdis.server.utils.aenderungsanfrage;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
@@ -42,42 +41,10 @@ public class FlaecheJson {
 
     //~ Instance fields --------------------------------------------------------
 
-    private Double groesse;
+    private Integer groesse;
     private String anschlussgrad;
     private String flaechenart;
-    private PruefungJson pruefung;
-
-    //~ Methods ----------------------------------------------------------------
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  pruefung  DOCUMENT ME!
-     */
-    public void addPruefung(final PruefungJson pruefung) {
-        final PruefungJson lastPruefung = getLastPruefung();
-        if (lastPruefung == null) {
-            setPruefung(pruefung);
-        } else {
-            lastPruefung.setNext(pruefung);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    @JsonIgnore
-    public PruefungJson getLastPruefung() {
-        PruefungJson lastPruefung = getPruefung();
-        if (lastPruefung != null) {
-            while (lastPruefung.getNext() != null) {
-                lastPruefung = lastPruefung.getNext();
-            }
-        }
-        return lastPruefung;
-    }
+    private FlaechePruefungJson pruefung;
 
     //~ Inner Classes ----------------------------------------------------------
 
@@ -112,15 +79,15 @@ public class FlaecheJson {
             final ObjectNode on = jp.readValueAsTree();
             final String anschlussgrad = on.has("anschlussgrad") ? on.get("anschlussgrad").textValue() : null;
             final String flaechenart = on.has("flaechenart") ? on.get("flaechenart").textValue() : null;
-            final Double groesse = on.has("groesse") ? on.get("groesse").doubleValue() : null;
-            final PruefungJson pruefung = on.has("pruefung")
-                ? objectMapper.treeToValue(on.get("pruefung"), PruefungJson.class) : null;
+            final Integer groesse = on.has("groesse") ? on.get("groesse").intValue() : null;
+            final FlaechePruefungJson pruefung = on.has("pruefung")
+                ? objectMapper.treeToValue(on.get("pruefung"), FlaechePruefungJson.class) : null;
             if ((anschlussgrad == null) && (flaechenart == null) && (groesse == null)) {
                 throw new RuntimeException(
-                    "invalid BemerkungJson: neither anschlussgrad nor flaechenart nor groesse is set");
+                    "invalid FlaecheJson: neither anschlussgrad nor flaechenart nor groesse is set");
             }
             if ((groesse != null) && (groesse < 0)) {
-                throw new RuntimeException("invalid BemerkungJson: groesse can't be negative");
+                throw new RuntimeException("invalid FlaecheJson: groesse can't be negative");
             }
             // TODO: check for valid anschlussgrad
             // TODO: check for valid flaechenart

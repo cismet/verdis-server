@@ -1,0 +1,15 @@
+{
+  "kassenzeichen" : 60004629,
+  "flaechen" : {
+    "5" : {
+      "groesse" : 12
+    }
+  },
+  "nachrichten" : [ {
+    "typ" : "CHAT",
+    "timestamp" : 47110815,
+    "absender" : "Bürger",
+    "nachricht" : "Da passt was nicht weil isso, siehe lustiges pdf !",
+    "anhang" : "http://meine.domain.de/lustiges.pdf"
+  } ]
+}

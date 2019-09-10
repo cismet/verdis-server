@@ -175,6 +175,12 @@
         </dependency>                
         <!-- END: Runtime dependencies -->
        
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+       
         <!--<dependency>
             <groupId>de.cismet.cids.custom.wupp.server</groupId>
             <artifactId>cids-custom-server-wuppertal</artifactId>

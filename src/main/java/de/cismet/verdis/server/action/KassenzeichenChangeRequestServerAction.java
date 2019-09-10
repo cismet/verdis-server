@@ -20,12 +20,15 @@ import Sirius.server.newuser.User;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import org.apache.log4j.Logger;
 
+import org.openide.util.Exceptions;
+
 import java.sql.Timestamp;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +46,6 @@ import de.cismet.verdis.commons.constants.VerdisConstants;
 
 import de.cismet.verdis.server.utils.StacUtils;
 import de.cismet.verdis.server.utils.aenderungsanfrage.AnfrageJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.DialogJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheGroesseJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.NachrichtJson;
@@ -126,13 +128,6 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
      */
     public KassenzeichenChangeRequestServerAction() {
         try {
-            final SimpleModule module = new SimpleModule();
-            module.addDeserializer(PruefungJson.class, new PruefungJson.Deserializer(objectMapper));
-            module.addDeserializer(FlaecheJson.class, new FlaecheJson.Deserializer(objectMapper));
-            module.addDeserializer(NachrichtJson.class, new NachrichtJson.Deserializer(objectMapper));
-            module.addDeserializer(DialogJson.class, new DialogJson.Deserializer(objectMapper));
-            module.addDeserializer(AnfrageJson.class, new AnfrageJson.Deserializer(objectMapper));
-            objectMapper.registerModule(module);
             objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         } catch (final Throwable t) {
             LOG.fatal("this should never happen", t);
@@ -163,7 +158,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             }
 
             if ((stac != null) && (changerequestJson != null)) {
-                final AnfrageJson anfrage = objectMapper.readValue(changerequestJson, AnfrageJson.class);
+                final AnfrageJson anfrage = AnfrageJson.readValue(changerequestJson);
                 final StacUtils.StacEntry stacEntry = StacUtils.getStacEntry(
                         stac,
                         getMetaService(),
@@ -247,68 +242,12 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
         return TASKNAME;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  args  DOCUMENT ME!
-     */
-    public static void main(final String[] args) {
-        try {
-            final ObjectMapper mapper = new ObjectMapper();
-            mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-            final SimpleModule module = new SimpleModule();
-            module.addDeserializer(FlaecheJson.class, new FlaecheJson.Deserializer(mapper));
-            module.addDeserializer(DialogJson.class, new DialogJson.Deserializer(mapper));
-            module.addDeserializer(AnfrageJson.class, new AnfrageJson.Deserializer(mapper));
-            mapper.registerModule(module);
-
-            final Map<String, FlaecheJson> flaechen = new HashMap<>();
-            flaechen.put("5", new FlaecheGroesseJson(12d));
-            final AnfrageJson anfrage = new AnfrageJson(
-                    60004629,
-                    flaechen,
-                    new DialogJson(
-                        new NachrichtJson(
-                            "Da passt was nicht weil isso, siehe lustiges pdf !",
-                            new Date(),
-                            "http://meine.domain.de/lustiges.pdf")));
-            System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(anfrage));
-
-            anfrage.getNachrichten()
-                    .setSachbearbeiter(new NachrichtJson(
-                            "Konnte nichts feststellen, alles in Ordnung.",
-                            new Date()));
-            anfrage.getFlaechen()
-                    .get("5")
-                    .addPruefung(new PruefungJson(PruefungJson.Status.REJECTED, "test", new Date()));
-            System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(anfrage));
-
-            anfrage.addDialog(
-                new NachrichtJson(
-                    "Oh, falsches PDF, siehe richtiges pdf.",
-                    new Date(),
-                    "http://meine.domain.de/richtiges.pdf"),
-                new NachrichtJson("Ach so, verstehe. Alles Klar !", new Date()));
-            anfrage.addDialog(
-                new NachrichtJson("Geht doch, danke.", new Date()),
-                null);
-            anfrage.getFlaechen()
-                    .get("5")
-                    .addPruefung(new PruefungJson(PruefungJson.Status.ACCEPTED, "test", new Date()));
-
-            System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(anfrage));
-            mapper.readValue(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(anfrage), AnfrageJson.class);
-        } catch (final Exception ex) {
-            System.out.println(ex.getMessage());
-            LOG.error(ex, ex);
-        }
-
 /*
 {
   "kassenzeichen" : 60004629,
   "flaechen" : {
     "5" : {
-      "groesse" : 12.0
+      "groesse" : 12
     }
   },
   "nachrichten" : {
@@ -323,7 +262,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
   "kassenzeichen" : 60004629,
   "flaechen" : {
     "5" : {
-      "groesse" : 12.0,
+      "groesse" : 12,
       "pruefung" : {
         "status" : "REJECTED",
         "von" : "test",
@@ -347,7 +286,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
   "kassenzeichen" : 60004629,
   "flaechen" : {
     "5" : {
-      "groesse" : 12.0,
+      "groesse" : 12,
       "pruefung" : {
         "status" : "REJECTED",
         "von" : "test",
@@ -390,5 +329,4 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
   }
 }
 */
-    }
 }

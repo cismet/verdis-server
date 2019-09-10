@@ -12,7 +12,6 @@
  */
 package de.cismet.verdis.server.utils.aenderungsanfrage;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
@@ -21,6 +20,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.AllArgsConstructor;
@@ -29,8 +29,10 @@ import lombok.Setter;
 
 import java.io.IOException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -55,7 +57,7 @@ public class AnfrageJson {
 
     private Integer kassenzeichen;
     private Map<String, FlaecheJson> flaechen;
-    private DialogJson nachrichten;
+    private List<NachrichtJson> nachrichten = new ArrayList<>();
     private PruefungJson pruefung;
 
     //~ Constructors -----------------------------------------------------------
@@ -84,12 +86,12 @@ public class AnfrageJson {
      *
      * @param  kassenzeichen  DOCUMENT ME!
      * @param  flaechen       DOCUMENT ME!
-     * @param  bemerkung      DOCUMENT ME!
+     * @param  nachrichten    DOCUMENT ME!
      */
     public AnfrageJson(final Integer kassenzeichen,
             final Map<String, FlaecheJson> flaechen,
-            final DialogJson bemerkung) {
-        this(kassenzeichen, flaechen, bemerkung, null);
+            final List<NachrichtJson> nachrichten) {
+        this(kassenzeichen, flaechen, nachrichten, null);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -97,74 +99,24 @@ public class AnfrageJson {
     /**
      * DOCUMENT ME!
      *
-     * @param  pruefung  DOCUMENT ME!
-     */
-    public void addPruefung(final PruefungJson pruefung) {
-        if (pruefung == null) {
-            setPruefung(pruefung);
-        } else {
-            PruefungJson lastPruefungJson = getPruefung();
-            while (lastPruefungJson.getNext() != null) {
-                lastPruefungJson = lastPruefungJson.getNext();
-            }
-            lastPruefungJson.setNext(pruefung);
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
+     * @param   json  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
-     */
-    @JsonIgnore
-    public PruefungJson getLastPruefung() {
-        PruefungJson lastPruefung = getPruefung();
-        if (lastPruefung != null) {
-            while (lastPruefung.getNext() != null) {
-                lastPruefung = lastPruefung.getNext();
-            }
-        }
-        return lastPruefung;
-    }
-
-    /**
-     * DOCUMENT ME!
      *
-     * @param  dialog  DOCUMENT ME!
+     * @throws  Exception  DOCUMENT ME!
      */
-    public void addDialog(final DialogJson dialog) {
-        final DialogJson lastDialog = getLastDialog();
-        if (lastDialog == null) {
-            setNachrichten(dialog);
-        } else {
-            lastDialog.setNext(dialog);
-        }
-    }
+    public static AnfrageJson readValue(final String json) throws Exception {
+        final ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        final SimpleModule module = new SimpleModule();
+        module.addDeserializer(PruefungJson.class, new PruefungJson.Deserializer(mapper));
+        module.addDeserializer(FlaechePruefungJson.class, new FlaechePruefungJson.Deserializer(mapper));
+        module.addDeserializer(FlaecheJson.class, new FlaecheJson.Deserializer(mapper));
+        module.addDeserializer(NachrichtJson.class, new NachrichtJson.Deserializer(mapper));
+        module.addDeserializer(AnfrageJson.class, new AnfrageJson.Deserializer(mapper));
+        mapper.registerModule(module);
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  buerger         DOCUMENT ME!
-     * @param  sachbearbeiter  DOCUMENT ME!
-     */
-    public void addDialog(final NachrichtJson buerger, final NachrichtJson sachbearbeiter) {
-        addDialog(new DialogJson(buerger, sachbearbeiter));
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    @JsonIgnore
-    public DialogJson getLastDialog() {
-        DialogJson lastDialog = getNachrichten();
-        if (lastDialog != null) {
-            while (lastDialog.getNext() != null) {
-                lastDialog = lastDialog.getNext();
-            }
-        }
-        return lastDialog;
+        return mapper.readValue(json, AnfrageJson.class);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -199,8 +151,13 @@ public class AnfrageJson {
             JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
             final Integer kassenzeichen = on.has("kassenzeichen") ? on.get("kassenzeichen").asInt() : null;
-            final DialogJson bemerkung = on.has("nachrichten")
-                ? objectMapper.treeToValue(on.get("nachrichten"), DialogJson.class) : null;
+            final List<NachrichtJson> nachrichten = new ArrayList<>();
+            if (on.has("nachrichten") && on.get("nachrichten").isArray()) {
+                final Iterator<JsonNode> iterator = on.get("nachrichten").iterator();
+                while (iterator.hasNext()) {
+                    nachrichten.add(objectMapper.treeToValue(iterator.next(), NachrichtJson.class));
+                }
+            }
             final PruefungJson pruefung = on.has("pruefung")
                 ? objectMapper.treeToValue(on.get("pruefung"), PruefungJson.class) : null;
             final Map<String, FlaecheJson> flaechen;
@@ -220,7 +177,7 @@ public class AnfrageJson {
             if (kassenzeichen == null) {
                 throw new RuntimeException("invalid AnfrageJson: kassenzeichen is missing");
             }
-            return new AnfrageJson(kassenzeichen, flaechen, bemerkung, pruefung);
+            return new AnfrageJson(kassenzeichen, flaechen, nachrichten, pruefung);
         }
     }
 }

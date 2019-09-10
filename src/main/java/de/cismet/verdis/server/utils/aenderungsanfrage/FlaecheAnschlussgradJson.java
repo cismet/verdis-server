@@ -37,7 +37,7 @@ public class FlaecheAnschlussgradJson extends FlaecheJson {
      * @param  pruefung       bemerkung DOCUMENT ME!
      */
     public FlaecheAnschlussgradJson(final String anschlussgrad,
-            final PruefungJson pruefung) {
+            final FlaechePruefungJson pruefung) {
         super(null, anschlussgrad, null, pruefung);
     }
 }
