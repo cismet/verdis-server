@@ -112,6 +112,8 @@ public class AnfrageJson {
         module.addDeserializer(PruefungJson.class, new PruefungJson.Deserializer(mapper));
         module.addDeserializer(FlaechePruefungJson.class, new FlaechePruefungJson.Deserializer(mapper));
         module.addDeserializer(FlaecheJson.class, new FlaecheJson.Deserializer(mapper));
+        module.addDeserializer(FlaecheAnschlussgradJson.class, new FlaecheAnschlussgradJson.Deserializer(mapper));
+        module.addDeserializer(FlaecheFlaechenartJson.class, new FlaecheFlaechenartJson.Deserializer(mapper));
         module.addDeserializer(NachrichtJson.class, new NachrichtJson.Deserializer(mapper));
         module.addDeserializer(AnfrageJson.class, new AnfrageJson.Deserializer(mapper));
         mapper.registerModule(module);

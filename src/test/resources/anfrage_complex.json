@@ -3,9 +3,27 @@
   "flaechen" : {
     "5" : {
       "groesse" : 12,
+      "flaechenart" : {
+        "art" : "Gründach",
+        "art_abkuerzung" : "GDF"
+      },
+      "anschlussgrad" : {
+        "grad" : "versickernd",
+        "grad_abkuerzung" : "vers."
+      },
       "pruefung" : {
         "groesse" : {
           "status" : "ACCEPTED",
+          "von" : "test",
+          "timestamp" : 47110815
+        },
+        "flaechenart" : {
+          "status" : "REJECTED",
+          "von" : "test",
+          "timestamp" : 47110815
+        },
+        "anschlussgrad" : {
+          "status" : "NONE",
           "von" : "test",
           "timestamp" : 47110815
         }
@@ -13,31 +31,31 @@
     }
   },
   "nachrichten" : [ {
-    "typ" : "CHAT",
+    "typ" : "CITIZEN",
     "timestamp" : 47110815,
-    "absender" : "Bürger",
     "nachricht" : "Da passt was nicht weil isso, siehe lustiges pdf !",
+    "absender" : "Bürger",
     "anhang" : "http://meine.domain.de/lustiges.pdf"
   }, {
-    "typ" : "CHAT",
+    "typ" : "CLERK",
     "timestamp" : 47110815,
-    "absender" : "Dirk Steinbacher",
-    "nachricht" : "Konnte nichts feststellen, alles in Ordnung."
+    "nachricht" : "Konnte nichts feststellen, alles in Ordnung.",
+    "absender" : "Dirk Steinbacher"
   }, {
-    "typ" : "CHAT",
+    "typ" : "CITIZEN",
     "timestamp" : 47110815,
-    "absender" : "Bürger",
     "nachricht" : "Oh, falsches PDF, siehe richtiges pdf.",
+    "absender" : "Bürger",
     "anhang" : "http://meine.domain.de/richtiges.pdf"
   }, {
-    "typ" : "CHAT",
+    "typ" : "CLERK",
     "timestamp" : 47110815,
-    "absender" : "Dirk Steinbacher",
-    "nachricht" : "Ach so, verstehe. Alles Klar !"
+    "nachricht" : "Ach so, verstehe. Alles Klar !",
+    "absender" : "Dirk Steinbacher"
   }, {
-    "typ" : "CHAT",
+    "typ" : "CITIZEN",
     "timestamp" : 47110815,
-    "absender" : "Bürger",
-    "nachricht" : "Geht doch, danke."
+    "nachricht" : "Geht doch, danke.",
+    "absender" : "Bürger"
   } ]
 }

@@ -48,15 +48,15 @@ public class NachrichtJson {
 
         //~ Enum constants -----------------------------------------------------
 
-        CHAT, SYSTEM
+        CLERK, CITIZEN, SYSTEM
     }
 
     //~ Instance fields --------------------------------------------------------
 
     private Typ typ;
     private Date timestamp;
-    private String absender;
     private String nachricht;
+    private String absender;
     private String anhang;
 
     //~ Constructors -----------------------------------------------------------
@@ -68,7 +68,7 @@ public class NachrichtJson {
      * @param  nachricht  DOCUMENT ME!
      */
     public NachrichtJson(final Date timestamp, final String nachricht) {
-        this(Typ.SYSTEM, timestamp, null, nachricht, null);
+        this(Typ.SYSTEM, timestamp, nachricht, null, null);
     }
 
     /**
@@ -77,44 +77,10 @@ public class NachrichtJson {
      * @param  typ        DOCUMENT ME!
      * @param  timestamp  DOCUMENT ME!
      * @param  nachricht  DOCUMENT ME!
-     */
-    public NachrichtJson(final Typ typ, final Date timestamp, final String nachricht) {
-        this(typ, timestamp, null, nachricht, null);
-    }
-
-    /**
-     * Creates a new NachrichtJson object.
-     *
-     * @param  timestamp  DOCUMENT ME!
      * @param  absender   DOCUMENT ME!
-     * @param  nachricht  DOCUMENT ME!
      */
-    public NachrichtJson(final Date timestamp, final String absender, final String nachricht) {
-        this(Typ.CHAT, timestamp, absender, nachricht, null);
-    }
-
-    /**
-     * Creates a new NachrichtJson object.
-     *
-     * @param  timestamp  DOCUMENT ME!
-     * @param  absender   DOCUMENT ME!
-     * @param  nachricht  DOCUMENT ME!
-     * @param  anhang     DOCUMENT ME!
-     */
-    public NachrichtJson(final Date timestamp, final String absender, final String nachricht, final String anhang) {
-        this(Typ.CHAT, timestamp, absender, nachricht, anhang);
-    }
-
-    /**
-     * Creates a new NachrichtJson object.
-     *
-     * @param  typ        DOCUMENT ME!
-     * @param  timestamp  DOCUMENT ME!
-     * @param  absender   DOCUMENT ME!
-     * @param  nachricht  DOCUMENT ME!
-     */
-    public NachrichtJson(final Typ typ, final Date timestamp, final String absender, final String nachricht) {
-        this(typ, timestamp, absender, nachricht, null);
+    public NachrichtJson(final Typ typ, final Date timestamp, final String nachricht, final String absender) {
+        this(typ, timestamp, nachricht, absender, null);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -144,15 +110,15 @@ public class NachrichtJson {
             JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
             final Typ typ = on.has("typ") ? Typ.valueOf(on.get("typ").textValue()) : null;
-            final String nachricht = on.has("nachricht") ? on.get("nachricht").textValue() : null;
-            final String absender = on.has("absender") ? on.get("absender").textValue() : null;
             final Date timestamp = on.has("timestamp") ? new Date(on.get("timestamp").longValue()) : null;
+            final String absender = on.has("absender") ? on.get("absender").textValue() : null;
+            final String nachricht = on.has("nachricht") ? on.get("nachricht").textValue() : null;
             final String anhang = on.has("anhang") ? on.get("anhang").textValue() : null;
             if ((nachricht == null) && (timestamp == null)) {
                 throw new RuntimeException(
                     "invalid NachrichtJson: neither nachricht nor timestamp is set");
             }
-            return new NachrichtJson(typ, timestamp, absender, nachricht, anhang);
+            return new NachrichtJson(typ, timestamp, nachricht, absender, anhang);
         }
     }
 }

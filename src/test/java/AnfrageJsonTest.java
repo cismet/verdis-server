@@ -9,9 +9,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.cismet.verdis.server.utils.aenderungsanfrage.AnfrageJson;
+import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheAnschlussgradJson;
+import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheFlaechenartJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheGroesseJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.FlaechePruefungGroesseJson;
+import de.cismet.verdis.server.utils.aenderungsanfrage.FlaechePruefungJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.NachrichtJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.PruefungJson;
 import java.util.ArrayList;
@@ -63,33 +66,38 @@ public class AnfrageJsonTest {
                     flaechen,
                     new ArrayList<>(
                         Arrays.asList(
-                            new NachrichtJson(
+                            new NachrichtJson(NachrichtJson.Typ.CITIZEN,
                                 new Date(47110815),
-                                "Bürger",
                                 "Da passt was nicht weil isso, siehe lustiges pdf !",
+                                "Bürger",
                                 "http://meine.domain.de/lustiges.pdf"))));
             return anfrageJson;
     }
 
     private AnfrageJson getComplexAnfrageJson() {
         final AnfrageJson anfrageJson = getSimpleAnfrageJson();        
-        anfrageJson.getNachrichten().add(new NachrichtJson(
-            new Date(47110815), "Dirk Steinbacher",
-            "Konnte nichts feststellen, alles in Ordnung."));
-        anfrageJson.getFlaechen().get("5")
-                .setPruefung(new FlaechePruefungGroesseJson(new PruefungJson(PruefungJson.Status.REJECTED, "test", new Date(47110815))));
-        anfrageJson.getNachrichten().add(new NachrichtJson(
-            new Date(47110815), "Bürger",
-            "Oh, falsches PDF, siehe richtiges pdf.",
+        anfrageJson.getNachrichten().add(new NachrichtJson(NachrichtJson.Typ.CLERK,
+            new Date(47110815),
+            "Konnte nichts feststellen, alles in Ordnung.", "Dirk Steinbacher"));
+        anfrageJson.getFlaechen().get("5").setFlaechenart(new FlaecheFlaechenartJson("Gründach", "GDF"));
+        anfrageJson.getFlaechen().get("5").setAnschlussgrad(new FlaecheAnschlussgradJson("versickernd", "vers."));
+        anfrageJson.getNachrichten().add(new NachrichtJson(NachrichtJson.Typ.CITIZEN,
+            new Date(47110815),
+            "Oh, falsches PDF, siehe richtiges pdf.", 
+            "Bürger",
             "http://meine.domain.de/richtiges.pdf"));
-        anfrageJson.getNachrichten().add(new NachrichtJson(
-            new Date(47110815), "Dirk Steinbacher", 
-            "Ach so, verstehe. Alles Klar !"));
-        anfrageJson.getNachrichten().add(new NachrichtJson(
-                new Date(47110815), "Bürger", 
-                "Geht doch, danke."));
-        anfrageJson.getFlaechen().get("5")
-                .setPruefung(new FlaechePruefungGroesseJson(new PruefungJson(PruefungJson.Status.ACCEPTED, "test", new Date(47110815))));
+        anfrageJson.getNachrichten().add(new NachrichtJson(NachrichtJson.Typ.CLERK,
+            new Date(47110815), 
+            "Ach so, verstehe. Alles Klar !", "Dirk Steinbacher"));
+        anfrageJson.getNachrichten().add(new NachrichtJson(NachrichtJson.Typ.CITIZEN,
+                new Date(47110815), 
+                "Geht doch, danke.", "Bürger"));
+        anfrageJson.getFlaechen().get("5").setPruefung(new FlaechePruefungJson(
+                new PruefungJson(PruefungJson.Status.ACCEPTED, "test", new Date(47110815)),
+                new PruefungJson(PruefungJson.Status.REJECTED, "test", new Date(47110815)),
+                new PruefungJson(PruefungJson.Status.NONE, "test", new Date(47110815))
+            )
+        );
 
         return anfrageJson;
     }

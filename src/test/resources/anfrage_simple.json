@@ -6,10 +6,10 @@
     }
   },
   "nachrichten" : [ {
-    "typ" : "CHAT",
+    "typ" : "CITIZEN",
     "timestamp" : 47110815,
-    "absender" : "Bürger",
     "nachricht" : "Da passt was nicht weil isso, siehe lustiges pdf !",
+    "absender" : "Bürger",
     "anhang" : "http://meine.domain.de/lustiges.pdf"
   } ]
 }
