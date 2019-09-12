@@ -9,14 +9,16 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.cismet.verdis.server.utils.aenderungsanfrage.AnfrageJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheAnschlussgradJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheFlaechenartJson;
+import de.cismet.verdis.server.utils.aenderungsanfrage.AnschlussgradJson;
+import de.cismet.verdis.server.utils.aenderungsanfrage.FlaechenartJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheGroesseJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.FlaechePruefungJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.NachrichtAnhangJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.NachrichtJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.PruefungJson;
+import de.cismet.verdis.server.utils.aenderungsanfrage.PruefungAnschlussgradJson;
+import de.cismet.verdis.server.utils.aenderungsanfrage.PruefungFlaechenartJson;
+import de.cismet.verdis.server.utils.aenderungsanfrage.PruefungGroesseJson;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -101,12 +103,12 @@ public class AnfrageJsonTest {
                 new Date(47110815), 
                 "Geht doch, danke.", "Bürger"));
 
-        anfrageJson.getFlaechen().get("5").setFlaechenart(new FlaecheFlaechenartJson("Gründach", "GDF"));
-        anfrageJson.getFlaechen().get("5").setAnschlussgrad(new FlaecheAnschlussgradJson("versickernd", "vers."));
+        anfrageJson.getFlaechen().get("5").setFlaechenart(new FlaechenartJson("Gründach", "GDF"));
+        anfrageJson.getFlaechen().get("5").setAnschlussgrad(new AnschlussgradJson("versickernd", "vers."));
         anfrageJson.getFlaechen().get("5").setPruefung(new FlaechePruefungJson(
-                new PruefungJson(PruefungJson.Status.ACCEPTED, "test", new Date(47110815)),
-                new PruefungJson(PruefungJson.Status.REJECTED, "test", new Date(47110815)),
-                new PruefungJson(PruefungJson.Status.NONE, "test", new Date(47110815))
+                new PruefungGroesseJson(12, "test", new Date(47110815)),
+                new PruefungFlaechenartJson(new FlaechenartJson("Dachfläche", "DGF"), "test", new Date(47110815)),
+                new PruefungAnschlussgradJson(new AnschlussgradJson("versickernd", "vers."), "test", new Date(47110815))
             )
         );
 

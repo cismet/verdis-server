@@ -42,8 +42,8 @@ public class FlaecheJson {
     //~ Instance fields --------------------------------------------------------
 
     private Integer groesse;
-    private FlaecheFlaechenartJson flaechenart;
-    private FlaecheAnschlussgradJson anschlussgrad;
+    private FlaechenartJson flaechenart;
+    private AnschlussgradJson anschlussgrad;
     private FlaechePruefungJson pruefung;
 
     //~ Inner Classes ----------------------------------------------------------
@@ -78,10 +78,10 @@ public class FlaecheJson {
             JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
             final Integer groesse = on.has("groesse") ? on.get("groesse").intValue() : null;
-            final FlaecheFlaechenartJson flaechenart = on.has("flaechenart")
-                ? objectMapper.treeToValue(on.get("flaechenart"), FlaecheFlaechenartJson.class) : null;
-            final FlaecheAnschlussgradJson anschlussgrad = on.has("anschlussgrad")
-                ? objectMapper.treeToValue(on.get("anschlussgrad"), FlaecheAnschlussgradJson.class) : null;
+            final FlaechenartJson flaechenart = on.has("flaechenart")
+                ? objectMapper.treeToValue(on.get("flaechenart"), FlaechenartJson.class) : null;
+            final AnschlussgradJson anschlussgrad = on.has("anschlussgrad")
+                ? objectMapper.treeToValue(on.get("anschlussgrad"), AnschlussgradJson.class) : null;
             final FlaechePruefungJson pruefung = on.has("pruefung")
                 ? objectMapper.treeToValue(on.get("pruefung"), FlaechePruefungJson.class) : null;
             if ((anschlussgrad == null) && (flaechenart == null) && (groesse == null)) {

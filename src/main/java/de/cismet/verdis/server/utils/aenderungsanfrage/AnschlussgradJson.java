@@ -38,7 +38,7 @@ import java.io.IOException;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class FlaecheAnschlussgradJson {
+public class AnschlussgradJson {
 
     //~ Instance fields --------------------------------------------------------
 
@@ -53,7 +53,7 @@ public class FlaecheAnschlussgradJson {
      *
      * @version  $Revision$, $Date$
      */
-    public static class Deserializer extends StdDeserializer<FlaecheAnschlussgradJson> {
+    public static class Deserializer extends StdDeserializer<AnschlussgradJson> {
 
         //~ Constructors -------------------------------------------------------
 
@@ -63,14 +63,14 @@ public class FlaecheAnschlussgradJson {
          * @param  objectMapper  DOCUMENT ME!
          */
         public Deserializer(final ObjectMapper objectMapper) {
-            super(FlaecheAnschlussgradJson.class);
+            super(AnschlussgradJson.class);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public FlaecheAnschlussgradJson deserialize(final JsonParser jp, final DeserializationContext dc)
-                throws IOException, JsonProcessingException {
+        public AnschlussgradJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
+            JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
             final String grad = on.has("grad") ? on.get("grad").asText() : null;
             final String gradAbkuerzung = on.has("grad_abkuerzung") ? on.get("grad_abkuerzung").asText() : null;
@@ -78,7 +78,7 @@ public class FlaecheAnschlussgradJson {
                 throw new RuntimeException(
                     "invalid FlaecheAnschlussgradJson: grad or gradAbkuerzung can't be null");
             }
-            return new FlaecheAnschlussgradJson(grad, gradAbkuerzung);
+            return new AnschlussgradJson(grad, gradAbkuerzung);
         }
     }
 }

@@ -38,7 +38,7 @@ import java.io.IOException;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class FlaecheFlaechenartJson {
+public class FlaechenartJson {
 
     //~ Instance fields --------------------------------------------------------
 
@@ -53,7 +53,7 @@ public class FlaecheFlaechenartJson {
      *
      * @version  $Revision$, $Date$
      */
-    public static class Deserializer extends StdDeserializer<FlaecheFlaechenartJson> {
+    public static class Deserializer extends StdDeserializer<FlaechenartJson> {
 
         //~ Constructors -------------------------------------------------------
 
@@ -63,14 +63,14 @@ public class FlaecheFlaechenartJson {
          * @param  objectMapper  DOCUMENT ME!
          */
         public Deserializer(final ObjectMapper objectMapper) {
-            super(FlaecheFlaechenartJson.class);
+            super(FlaechenartJson.class);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public FlaecheFlaechenartJson deserialize(final JsonParser jp, final DeserializationContext dc)
-                throws IOException, JsonProcessingException {
+        public FlaechenartJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
+            JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
             final String art = on.has("art") ? on.get("art").asText() : null;
             final String artAbkuerzung = on.has("art_abkuerzung") ? on.get("art_abkuerzung").asText() : null;
@@ -78,7 +78,7 @@ public class FlaecheFlaechenartJson {
                 throw new RuntimeException(
                     "invalid FlaecheFlaechenartJson: art or artAbkuerzung can't be null");
             }
-            return new FlaecheFlaechenartJson(art, artAbkuerzung);
+            return new FlaechenartJson(art, artAbkuerzung);
         }
     }
 }
