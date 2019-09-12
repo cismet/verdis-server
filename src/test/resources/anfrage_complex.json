@@ -13,17 +13,23 @@
       },
       "pruefung" : {
         "groesse" : {
-          "status" : "ACCEPTED",
+          "anfrage" : 12,
           "von" : "test",
           "timestamp" : 47110815
         },
         "flaechenart" : {
-          "status" : "REJECTED",
+          "anfrage" : {
+            "art" : "Dachfläche",
+            "art_abkuerzung" : "DGF"
+          },
           "von" : "test",
           "timestamp" : 47110815
         },
         "anschlussgrad" : {
-          "status" : "NONE",
+          "anfrage" : {
+            "grad" : "versickernd",
+            "grad_abkuerzung" : "vers."
+          },
           "von" : "test",
           "timestamp" : 47110815
         }

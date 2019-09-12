@@ -12,6 +12,7 @@
  */
 package de.cismet.verdis.server.utils.aenderungsanfrage;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -35,6 +36,7 @@ import java.util.Date;
 @Getter
 @Setter
 @AllArgsConstructor
+@JsonIgnoreProperties({ "pending" })
 public class NachrichtJson {
 
     //~ Enums ------------------------------------------------------------------
@@ -53,6 +55,7 @@ public class NachrichtJson {
 
     //~ Instance fields --------------------------------------------------------
 
+    private transient boolean pending;
     private Typ typ;
     private Date timestamp;
     private String nachricht;
@@ -81,6 +84,40 @@ public class NachrichtJson {
      */
     public NachrichtJson(final Typ typ, final Date timestamp, final String nachricht, final String absender) {
         this(typ, timestamp, nachricht, absender, null);
+    }
+
+    /**
+     * Creates a new NachrichtJson object.
+     *
+     * @param  pending    DOCUMENT ME!
+     * @param  typ        DOCUMENT ME!
+     * @param  timestamp  DOCUMENT ME!
+     * @param  nachricht  DOCUMENT ME!
+     * @param  absender   DOCUMENT ME!
+     */
+    public NachrichtJson(final boolean pending,
+            final Typ typ,
+            final Date timestamp,
+            final String nachricht,
+            final String absender) {
+        this(pending, typ, timestamp, nachricht, absender, null);
+    }
+
+    /**
+     * Creates a new NachrichtJson object.
+     *
+     * @param  typ        DOCUMENT ME!
+     * @param  timestamp  DOCUMENT ME!
+     * @param  nachricht  DOCUMENT ME!
+     * @param  absender   DOCUMENT ME!
+     * @param  anhang     DOCUMENT ME!
+     */
+    public NachrichtJson(final Typ typ,
+            final Date timestamp,
+            final String nachricht,
+            final String absender,
+            final NachrichtAnhangJson anhang) {
+        this(false, typ, timestamp, nachricht, absender, anhang);
     }
 
     //~ Inner Classes ----------------------------------------------------------

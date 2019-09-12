@@ -31,7 +31,7 @@ public class FlaechePruefungFlaechenartJson extends FlaechePruefungJson {
      *
      * @param  pruefung  DOCUMENT ME!
      */
-    public FlaechePruefungFlaechenartJson(final PruefungJson pruefung) {
+    public FlaechePruefungFlaechenartJson(final PruefungFlaechenartJson pruefung) {
         super(null, pruefung, null);
     }
 }

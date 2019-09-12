@@ -23,15 +23,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.log4j.Logger;
 
-import org.openide.util.Exceptions;
-
 import java.sql.Timestamp;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import de.cismet.cids.dynamics.CidsBean;
 
@@ -46,10 +40,6 @@ import de.cismet.verdis.commons.constants.VerdisConstants;
 
 import de.cismet.verdis.server.utils.StacUtils;
 import de.cismet.verdis.server.utils.aenderungsanfrage.AnfrageJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheGroesseJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.NachrichtJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.PruefungJson;
 
 /**
  * DOCUMENT ME!

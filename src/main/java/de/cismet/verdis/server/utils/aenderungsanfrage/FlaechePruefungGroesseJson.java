@@ -31,7 +31,7 @@ public class FlaechePruefungGroesseJson extends FlaechePruefungJson {
      *
      * @param  pruefung  DOCUMENT ME!
      */
-    public FlaechePruefungGroesseJson(final PruefungJson pruefung) {
+    public FlaechePruefungGroesseJson(final PruefungGroesseJson pruefung) {
         super(pruefung, null, null);
     }
 }

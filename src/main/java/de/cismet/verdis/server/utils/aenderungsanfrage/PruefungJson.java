@@ -12,18 +12,11 @@
  */
 package de.cismet.verdis.server.utils.aenderungsanfrage;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.io.IOException;
 
 import java.util.Date;
 
@@ -35,61 +28,13 @@ import java.util.Date;
 @Getter
 @Setter
 @AllArgsConstructor
-public class PruefungJson {
-
-    //~ Enums ------------------------------------------------------------------
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @version  $Revision$, $Date$
-     */
-    public enum Status {
-
-        //~ Enum constants -----------------------------------------------------
-
-        NONE, ACCEPTED, REJECTED
-    }
+@JsonIgnoreProperties({ "pending" })
+public abstract class PruefungJson {
 
     //~ Instance fields --------------------------------------------------------
 
-    private Status status;
+    @JsonIgnore private transient boolean pending;
+    private Object anfrage;
     private String von;
     private Date timestamp;
-
-    //~ Inner Classes ----------------------------------------------------------
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @version  $Revision$, $Date$
-     */
-    public static class Deserializer extends StdDeserializer<PruefungJson> {
-
-        //~ Constructors -------------------------------------------------------
-
-        /**
-         * Creates a new Deserializer object.
-         *
-         * @param  objectMapper  DOCUMENT ME!
-         */
-        public Deserializer(final ObjectMapper objectMapper) {
-            super(PruefungJson.class);
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public PruefungJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
-            JsonProcessingException {
-            final ObjectNode on = jp.readValueAsTree();
-            final Status status = on.has("status") ? Status.valueOf(on.get("status").textValue()) : null;
-            final String von = on.has("von") ? on.get("von").textValue() : null;
-            final Date timestamp = on.has("timestamp") ? new Date(on.get("timestamp").longValue()) : null;
-            if ((status == null)) {
-                throw new RuntimeException("invalid StatusJson: status is not set");
-            }
-            return new PruefungJson(status, von, timestamp);
-        }
-    }
 }

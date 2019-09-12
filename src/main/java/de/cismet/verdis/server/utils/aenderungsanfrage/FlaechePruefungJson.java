@@ -41,9 +41,9 @@ public class FlaechePruefungJson {
 
     //~ Instance fields --------------------------------------------------------
 
-    private PruefungJson groesse;
-    private PruefungJson flaechenart;
-    private PruefungJson anschlussgrad;
+    private PruefungGroesseJson groesse;
+    private PruefungFlaechenartJson flaechenart;
+    private PruefungAnschlussgradJson anschlussgrad;
 
     //~ Inner Classes ----------------------------------------------------------
 
@@ -76,12 +76,12 @@ public class FlaechePruefungJson {
         public FlaechePruefungJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
             JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
-            final PruefungJson pruefungGroesse = on.has("groesse")
-                ? objectMapper.treeToValue(on.get("groesse"), PruefungJson.class) : null;
-            final PruefungJson pruefungFlaechenart = on.has("flaechenart")
-                ? objectMapper.treeToValue(on.get("flaechenart"), PruefungJson.class) : null;
-            final PruefungJson pruefungAnschlussgrad = on.has("anschlussgrad")
-                ? objectMapper.treeToValue(on.get("anschlussgrad"), PruefungJson.class) : null;
+            final PruefungGroesseJson pruefungGroesse = on.has("groesse")
+                ? objectMapper.treeToValue(on.get("groesse"), PruefungGroesseJson.class) : null;
+            final PruefungFlaechenartJson pruefungFlaechenart = on.has("flaechenart")
+                ? objectMapper.treeToValue(on.get("flaechenart"), PruefungFlaechenartJson.class) : null;
+            final PruefungAnschlussgradJson pruefungAnschlussgrad = on.has("anschlussgrad")
+                ? objectMapper.treeToValue(on.get("anschlussgrad"), PruefungAnschlussgradJson.class) : null;
             if ((pruefungGroesse == null) && (pruefungFlaechenart == null) && (pruefungAnschlussgrad == null)) {
                 throw new RuntimeException(
                     "invalid FlaechePruefungJson: neither anschlussgrad nor flaechenart nor groesse is set");

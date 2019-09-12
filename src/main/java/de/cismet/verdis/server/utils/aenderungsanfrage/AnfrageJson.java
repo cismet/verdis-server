@@ -58,7 +58,6 @@ public class AnfrageJson {
     private Integer kassenzeichen;
     private Map<String, FlaecheJson> flaechen;
     private List<NachrichtJson> nachrichten = new ArrayList<>();
-    private PruefungJson pruefung;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -68,7 +67,7 @@ public class AnfrageJson {
      * @param  kassenzeichen  DOCUMENT ME!
      */
     public AnfrageJson(final Integer kassenzeichen) {
-        this(kassenzeichen, null, null, null);
+        this(kassenzeichen, null, null);
     }
 
     /**
@@ -78,20 +77,7 @@ public class AnfrageJson {
      * @param  flaechen       DOCUMENT ME!
      */
     public AnfrageJson(final Integer kassenzeichen, final Map<String, FlaecheJson> flaechen) {
-        this(kassenzeichen, flaechen, null, null);
-    }
-
-    /**
-     * Creates a new AnfrageJson object.
-     *
-     * @param  kassenzeichen  DOCUMENT ME!
-     * @param  flaechen       DOCUMENT ME!
-     * @param  nachrichten    DOCUMENT ME!
-     */
-    public AnfrageJson(final Integer kassenzeichen,
-            final Map<String, FlaecheJson> flaechen,
-            final List<NachrichtJson> nachrichten) {
-        this(kassenzeichen, flaechen, nachrichten, null);
+        this(kassenzeichen, flaechen, null);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -109,11 +95,14 @@ public class AnfrageJson {
         final ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         final SimpleModule module = new SimpleModule();
-        module.addDeserializer(PruefungJson.class, new PruefungJson.Deserializer(mapper));
+        module.addDeserializer(PruefungGroesseJson.class, new PruefungGroesseJson.Deserializer(mapper));
+        module.addDeserializer(PruefungFlaechenartJson.class, new PruefungFlaechenartJson.Deserializer(mapper));
+        module.addDeserializer(PruefungAnschlussgradJson.class, new PruefungAnschlussgradJson.Deserializer(mapper));
+        module.addDeserializer(PruefungGroesseJson.class, new PruefungGroesseJson.Deserializer(mapper));
         module.addDeserializer(FlaechePruefungJson.class, new FlaechePruefungJson.Deserializer(mapper));
         module.addDeserializer(FlaecheJson.class, new FlaecheJson.Deserializer(mapper));
-        module.addDeserializer(FlaecheAnschlussgradJson.class, new FlaecheAnschlussgradJson.Deserializer(mapper));
-        module.addDeserializer(FlaecheFlaechenartJson.class, new FlaecheFlaechenartJson.Deserializer(mapper));
+        module.addDeserializer(AnschlussgradJson.class, new AnschlussgradJson.Deserializer(mapper));
+        module.addDeserializer(FlaechenartJson.class, new FlaechenartJson.Deserializer(mapper));
         module.addDeserializer(NachrichtAnhangJson.class, new NachrichtAnhangJson.Deserializer(mapper));
         module.addDeserializer(NachrichtJson.class, new NachrichtJson.Deserializer(mapper));
         module.addDeserializer(AnfrageJson.class, new AnfrageJson.Deserializer(mapper));
@@ -161,8 +150,6 @@ public class AnfrageJson {
                     nachrichten.add(objectMapper.treeToValue(iterator.next(), NachrichtJson.class));
                 }
             }
-            final PruefungJson pruefung = on.has("pruefung")
-                ? objectMapper.treeToValue(on.get("pruefung"), PruefungJson.class) : null;
             final Map<String, FlaecheJson> flaechen;
             if (on.has("flaechen") && on.get("flaechen").isObject()) {
                 flaechen = new HashMap<>();
@@ -180,7 +167,7 @@ public class AnfrageJson {
             if (kassenzeichen == null) {
                 throw new RuntimeException("invalid AnfrageJson: kassenzeichen is missing");
             }
-            return new AnfrageJson(kassenzeichen, flaechen, nachrichten, pruefung);
+            return new AnfrageJson(kassenzeichen, flaechen, nachrichten);
         }
     }
 }
