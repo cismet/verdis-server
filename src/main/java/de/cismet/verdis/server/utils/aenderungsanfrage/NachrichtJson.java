@@ -57,7 +57,7 @@ public class NachrichtJson {
     private Date timestamp;
     private String nachricht;
     private String absender;
-    private String anhang;
+    private NachrichtAnhangJson anhang;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -92,6 +92,10 @@ public class NachrichtJson {
      */
     public static class Deserializer extends StdDeserializer<NachrichtJson> {
 
+        //~ Instance fields ----------------------------------------------------
+
+        private final ObjectMapper objectMapper;
+
         //~ Constructors -------------------------------------------------------
 
         /**
@@ -101,6 +105,7 @@ public class NachrichtJson {
          */
         public Deserializer(final ObjectMapper objectMapper) {
             super(NachrichtJson.class);
+            this.objectMapper = objectMapper;
         }
 
         //~ Methods ------------------------------------------------------------
@@ -113,7 +118,8 @@ public class NachrichtJson {
             final Date timestamp = on.has("timestamp") ? new Date(on.get("timestamp").longValue()) : null;
             final String absender = on.has("absender") ? on.get("absender").textValue() : null;
             final String nachricht = on.has("nachricht") ? on.get("nachricht").textValue() : null;
-            final String anhang = on.has("anhang") ? on.get("anhang").textValue() : null;
+            final NachrichtAnhangJson anhang = on.has("anhang")
+                ? objectMapper.treeToValue(on.get("anhang"), NachrichtAnhangJson.class) : null;
             if ((nachricht == null) && (timestamp == null)) {
                 throw new RuntimeException(
                     "invalid NachrichtJson: neither nachricht nor timestamp is set");

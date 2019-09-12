@@ -13,8 +13,8 @@ import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheAnschlussgradJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheFlaechenartJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheGroesseJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.FlaechePruefungGroesseJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.FlaechePruefungJson;
+import de.cismet.verdis.server.utils.aenderungsanfrage.NachrichtAnhangJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.NachrichtJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.PruefungJson;
 import java.util.ArrayList;
@@ -70,7 +70,11 @@ public class AnfrageJsonTest {
                                 new Date(47110815),
                                 "Da passt was nicht weil isso, siehe lustiges pdf !",
                                 "Bürger",
-                                "http://meine.domain.de/lustiges.pdf"))));
+                                new NachrichtAnhangJson("lustiges.pdf", "aaa-bbb-ccc")
+                            )
+                        )
+                    )
+            );
             return anfrageJson;
     }
 
@@ -79,19 +83,26 @@ public class AnfrageJsonTest {
         anfrageJson.getNachrichten().add(new NachrichtJson(NachrichtJson.Typ.CLERK,
             new Date(47110815),
             "Konnte nichts feststellen, alles in Ordnung.", "Dirk Steinbacher"));
-        anfrageJson.getFlaechen().get("5").setFlaechenart(new FlaecheFlaechenartJson("Gründach", "GDF"));
-        anfrageJson.getFlaechen().get("5").setAnschlussgrad(new FlaecheAnschlussgradJson("versickernd", "vers."));
+        anfrageJson.getNachrichten().add(new NachrichtJson(
+            new Date(47110815),
+            "REJECT_GROESSE(5, 12)"));
         anfrageJson.getNachrichten().add(new NachrichtJson(NachrichtJson.Typ.CITIZEN,
             new Date(47110815),
             "Oh, falsches PDF, siehe richtiges pdf.", 
             "Bürger",
-            "http://meine.domain.de/richtiges.pdf"));
+            new NachrichtAnhangJson("richtiges.pdf", "ddd-eee-fff")));
         anfrageJson.getNachrichten().add(new NachrichtJson(NachrichtJson.Typ.CLERK,
             new Date(47110815), 
             "Ach so, verstehe. Alles Klar !", "Dirk Steinbacher"));
+        anfrageJson.getNachrichten().add(new NachrichtJson(
+            new Date(47110815),
+            "ACCEPT_GROESSE(5, 12)"));
         anfrageJson.getNachrichten().add(new NachrichtJson(NachrichtJson.Typ.CITIZEN,
                 new Date(47110815), 
                 "Geht doch, danke.", "Bürger"));
+
+        anfrageJson.getFlaechen().get("5").setFlaechenart(new FlaecheFlaechenartJson("Gründach", "GDF"));
+        anfrageJson.getFlaechen().get("5").setAnschlussgrad(new FlaecheAnschlussgradJson("versickernd", "vers."));
         anfrageJson.getFlaechen().get("5").setPruefung(new FlaechePruefungJson(
                 new PruefungJson(PruefungJson.Status.ACCEPTED, "test", new Date(47110815)),
                 new PruefungJson(PruefungJson.Status.REJECTED, "test", new Date(47110815)),
