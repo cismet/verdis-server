@@ -104,11 +104,11 @@ public class AnfrageJsonTest {
                 "Geht doch, danke.", "Bürger"));
 
         anfrageJson.getFlaechen().get("5").setFlaechenart(new FlaechenartJson("Gründach", "GDF"));
-        anfrageJson.getFlaechen().get("5").setAnschlussgrad(new AnschlussgradJson("versickernd", "vers."));
+        anfrageJson.getFlaechen().get("5").setAnschlussgrad(new AnschlussgradJson("Am Kanal angeschlossen", "angeschl."));
         anfrageJson.getFlaechen().get("5").setPruefung(new FlaechePruefungJson(
                 new PruefungGroesseJson(12, "test", new Date(47110815)),
                 new PruefungFlaechenartJson(new FlaechenartJson("Dachfläche", "DGF"), "test", new Date(47110815)),
-                new PruefungAnschlussgradJson(new AnschlussgradJson("versickernd", "vers."), "test", new Date(47110815))
+                null
             )
         );
 
