@@ -23,6 +23,10 @@ import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextStore;
 
+import de.cismet.verdis.commons.constants.VerdisConstants;
+
+import de.cismet.verdis.server.utils.StacUtils;
+
 /**
  * DOCUMENT ME!
  *
@@ -97,12 +101,31 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore, 
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("STAC=" + stac);
                 }
-                final CidsBean kassenzeichenBean = StacUtils.getKassenzeichenBean(
+
+                final StacUtils.StacEntry stacEntry = StacUtils.getStacEntry(
                         stac,
                         getMetaService(),
                         getConnectionContext());
-                final String json = kassenzeichenBean.toJSONString(false);
-                return json;
+                final CidsBean kassenzeichenBean = StacUtils.getKassenzeichenBean(
+                        stacEntry,
+                        getMetaService(),
+                        getConnectionContext());
+                final CidsBean aenderungsanfrageBean = StacUtils.getAenderungsanfrageBean(
+                        stacEntry,
+                        getMetaService(),
+                        getConnectionContext());
+
+                kassenzeichenBean.setProperty(VerdisConstants.PROP.KASSENZEICHEN.STAC_OPTION, stacEntry.getOptions());
+                kassenzeichenBean.setProperty(
+                    VerdisConstants.PROP.KASSENZEICHEN.STAC_EXPIRATION,
+                    stacEntry.getExpiration());
+                kassenzeichenBean.setProperty(
+                    VerdisConstants.PROP.KASSENZEICHEN.AENDERUNGSANFRAGE,
+                    (aenderungsanfrageBean != null)
+                        ? StacUtils.asMap(
+                            (String)aenderungsanfrageBean.getProperty(
+                                VerdisConstants.PROP.AENDERUNGSANFRAGE.CHANGES_JSON)) : null);
+                return kassenzeichenBean.toJSONString(false);
             }
         } catch (final Exception ex) {
             LOG.error("Error during GetMyKassenzeichenViaStacServerAction.execute()", ex);
