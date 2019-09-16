@@ -34,7 +34,7 @@ public abstract class PruefungJson {
 
     //~ Instance fields --------------------------------------------------------
 
-    @JsonIgnore private transient boolean pending;
+    @JsonIgnore private transient Boolean pending;
     private Object anfrage;
     private String von;
     private Date timestamp;

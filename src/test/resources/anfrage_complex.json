@@ -8,27 +8,19 @@
         "art_abkuerzung" : "GDF"
       },
       "anschlussgrad" : {
-        "grad" : "versickernd",
-        "grad_abkuerzung" : "vers."
+        "grad" : "Am Kanal angeschlossen",
+        "grad_abkuerzung" : "angeschl."
       },
       "pruefung" : {
         "groesse" : {
           "anfrage" : 12,
           "von" : "test",
-          "timestamp" : 47110815
+          "timestamp" : 47110815 
         },
         "flaechenart" : {
           "anfrage" : {
             "art" : "Dachfläche",
             "art_abkuerzung" : "DGF"
-          },
-          "von" : "test",
-          "timestamp" : 47110815
-        },
-        "anschlussgrad" : {
-          "anfrage" : {
-            "grad" : "versickernd",
-            "grad_abkuerzung" : "vers."
           },
           "von" : "test",
           "timestamp" : 47110815
