@@ -42,6 +42,7 @@ import de.cismet.connectioncontext.ConnectionContextStore;
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
 import de.cismet.verdis.server.search.KassenzeichenSearchStatement;
+import de.cismet.verdis.server.utils.StacUtils;
 import de.cismet.verdis.server.utils.VerdisServerResources;
 
 /**

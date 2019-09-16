@@ -1,0 +1,18 @@
+{
+  "kassenzeichen" : 60004629,
+  "flaechen" : {
+    "5" : {
+      "groesse" : 12
+    }
+  },
+  "nachrichten" : [ {
+    "typ" : "CITIZEN",
+    "timestamp" : 47110815,
+    "nachricht" : "Da passt was nicht weil isso, siehe lustiges pdf !",
+    "absender" : "Bürger",
+    "anhang" : {
+      "name" : "lustiges.pdf",
+      "uid" : "aaa-bbb-ccc"
+    }
+  } ]
+}

@@ -10,7 +10,7 @@
 
     <groupId>de.cismet.verdis</groupId>
     <artifactId>verdis-server</artifactId>
-    <version>6.8-SNAPSHOT</version>
+    <version>6.9-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -157,6 +157,12 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
+        
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>        
+        
         <!-- END: Provided dependencies -->
        
         
@@ -168,6 +174,12 @@
             <optional>true</optional>
         </dependency>                
         <!-- END: Runtime dependencies -->
+       
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
        
         <!--<dependency>
             <groupId>de.cismet.cids.custom.wupp.server</groupId>
