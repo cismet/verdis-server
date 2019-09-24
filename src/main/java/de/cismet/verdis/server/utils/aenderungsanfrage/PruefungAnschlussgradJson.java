@@ -28,7 +28,7 @@ import java.util.Date;
  *
  * @version  $Revision$, $Date$
  */
-public class PruefungAnschlussgradJson extends PruefungJson {
+public class PruefungAnschlussgradJson extends PruefungJson<AnschlussgradJson> {
 
     //~ Constructors -----------------------------------------------------------
 

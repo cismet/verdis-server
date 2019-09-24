@@ -16,7 +16,6 @@ import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.FlaechePruefungJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.NachrichtAnhangJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.NachrichtJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.PruefungAnschlussgradJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.PruefungFlaechenartJson;
 import de.cismet.verdis.server.utils.aenderungsanfrage.PruefungGroesseJson;
 import java.util.ArrayList;
@@ -54,6 +53,7 @@ public class AnfrageJsonTest {
     public void setUp() {
         mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);        
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
     }
     
     @After
@@ -72,7 +72,7 @@ public class AnfrageJsonTest {
                                 new Date(47110815),
                                 "Da passt was nicht weil isso, siehe lustiges pdf !",
                                 "Bürger",
-                                new NachrichtAnhangJson("lustiges.pdf", "aaa-bbb-ccc")
+                                Arrays.asList(new NachrichtAnhangJson("lustiges.pdf", "aaa-bbb-ccc"))
                             )
                         )
                     )
@@ -92,7 +92,7 @@ public class AnfrageJsonTest {
             new Date(47110815),
             "Oh, falsches PDF, siehe richtiges pdf.", 
             "Bürger",
-            new NachrichtAnhangJson("richtiges.pdf", "ddd-eee-fff")));
+            Arrays.asList(new NachrichtAnhangJson("richtiges.pdf", "ddd-eee-fff"))));
         anfrageJson.getNachrichten().add(new NachrichtJson(NachrichtJson.Typ.CLERK,
             new Date(47110815), 
             "Ach so, verstehe. Alles Klar !", "Dirk Steinbacher"));

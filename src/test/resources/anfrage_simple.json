@@ -10,9 +10,9 @@
     "timestamp" : 47110815,
     "nachricht" : "Da passt was nicht weil isso, siehe lustiges pdf !",
     "absender" : "Bürger",
-    "anhang" : {
+    "anhang" : [ {
       "name" : "lustiges.pdf",
-      "uid" : "aaa-bbb-ccc"
-    }
+      "uuid" : "aaa-bbb-ccc"
+    } ]
   } ]
 }

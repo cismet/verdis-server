@@ -39,6 +39,7 @@ import de.cismet.connectioncontext.ConnectionContextStore;
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
 import de.cismet.verdis.server.utils.StacUtils;
+import de.cismet.verdis.server.utils.aenderungsanfrage.AenderungsanfrageUtils;
 import de.cismet.verdis.server.utils.aenderungsanfrage.AnfrageJson;
 
 /**
@@ -127,7 +128,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public Object execute(final Object object, final ServerActionParameter... params) {
+    public Object execute(final Object boxy, final ServerActionParameter... params) {
         String stac = null;
         String email = null;
         String changerequestJson = null;
@@ -157,13 +158,16 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                         stacEntry,
                         getMetaService(),
                         getConnectionContext());
+
                 final Integer kassenzeichenNummerFromBean = (Integer)kassenzeichenBean.getProperty(
                         VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER);
                 final Integer kassenzeichenNummerFromJson = anfrage.getKassenzeichen();
-                final CidsBean aenderungsanfrageSearchBean = StacUtils.getAenderungsanfrageBean(
+
+                final CidsBean aenderungsanfrageSearchBean = AenderungsanfrageUtils.getAenderungsanfrageBean(
                         stacEntry,
                         getMetaService(),
                         getConnectionContext());
+
                 final CidsBean aenderungsanfrageBean = (aenderungsanfrageSearchBean != null)
                     ? aenderungsanfrageSearchBean
                     : CidsBean.createNewCidsBeanFromTableName(
@@ -231,92 +235,4 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
     public String getTaskName() {
         return TASKNAME;
     }
-
-/*
-{
-  "kassenzeichen" : 60004629,
-  "flaechen" : {
-    "5" : {
-      "groesse" : 12
-    }
-  },
-  "nachrichten" : {
-    "buerger" : {
-      "nachricht" : "Da passt was nicht weil isso, siehe lustiges pdf !",
-      "timestamp" : 1566915257744,
-      "anhang" : "http://meine.domain.de/lustiges.pdf"
-    }
-  }
-}
-{
-  "kassenzeichen" : 60004629,
-  "flaechen" : {
-    "5" : {
-      "groesse" : 12,
-      "pruefung" : {
-        "status" : "REJECTED",
-        "von" : "test",
-        "timestamp" : 1566915257854
-      }
-    }
-  },
-  "nachrichten" : {
-    "buerger" : {
-      "nachricht" : "Da passt was nicht weil isso, siehe lustiges pdf !",
-      "timestamp" : 1566915257744,
-      "anhang" : "http://meine.domain.de/lustiges.pdf"
-    },
-    "sachbearbeiter" : {
-      "nachricht" : "Konnte nichts feststellen, alles in Ordnung.",
-      "timestamp" : 1566915257854
-    }
-  }
-}
-{
-  "kassenzeichen" : 60004629,
-  "flaechen" : {
-    "5" : {
-      "groesse" : 12,
-      "pruefung" : {
-        "status" : "REJECTED",
-        "von" : "test",
-        "timestamp" : 1566915257854,
-        "next" : {
-          "status" : "ACCEPTED",
-          "von" : "test",
-          "timestamp" : 1566915257858
-        }
-      }
-    }
-  },
-  "nachrichten" : {
-    "buerger" : {
-      "nachricht" : "Da passt was nicht weil isso, siehe lustiges pdf !",
-      "timestamp" : 1566915257744,
-      "anhang" : "http://meine.domain.de/lustiges.pdf"
-    },
-    "sachbearbeiter" : {
-      "nachricht" : "Konnte nichts feststellen, alles in Ordnung.",
-      "timestamp" : 1566915257854
-    },
-    "next" : {
-      "buerger" : {
-        "nachricht" : "Oh, falsches PDF, siehe richtiges pdf.",
-        "timestamp" : 1566915257858,
-        "anhang" : "http://meine.domain.de/richtiges.pdf"
-      },
-      "sachbearbeiter" : {
-        "nachricht" : "Ach so, verstehe. Alles Klar !",
-        "timestamp" : 1566915257858
-      },
-      "next" : {
-        "buerger" : {
-          "nachricht" : "Geht doch, danke.",
-          "timestamp" : 1566915257858
-        }
-      }
-    }
-  }
-}
-*/
 }
