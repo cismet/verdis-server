@@ -26,6 +26,7 @@ import de.cismet.connectioncontext.ConnectionContextStore;
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
 import de.cismet.verdis.server.utils.StacUtils;
+import de.cismet.verdis.server.utils.aenderungsanfrage.AenderungsanfrageUtils;
 
 /**
  * DOCUMENT ME!
@@ -110,7 +111,7 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore, 
                         stacEntry,
                         getMetaService(),
                         getConnectionContext());
-                final CidsBean aenderungsanfrageBean = StacUtils.getAenderungsanfrageBean(
+                final CidsBean aenderungsanfrageBean = AenderungsanfrageUtils.getAenderungsanfrageBean(
                         stacEntry,
                         getMetaService(),
                         getConnectionContext());

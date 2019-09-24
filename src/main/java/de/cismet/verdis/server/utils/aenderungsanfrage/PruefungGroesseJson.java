@@ -28,7 +28,7 @@ import java.util.Date;
  *
  * @version  $Revision$, $Date$
  */
-public class PruefungGroesseJson extends PruefungJson {
+public class PruefungGroesseJson extends PruefungJson<Integer> {
 
     //~ Constructors -----------------------------------------------------------
 
@@ -40,7 +40,7 @@ public class PruefungGroesseJson extends PruefungJson {
      * @param  timestamp  DOCUMENT ME!
      */
     public PruefungGroesseJson(final Integer anfrage, final String von, final Date timestamp) {
-        this(false, anfrage, von, timestamp);
+        super(false, anfrage, von, timestamp);
     }
 
     /**

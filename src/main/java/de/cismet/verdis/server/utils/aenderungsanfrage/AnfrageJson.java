@@ -57,7 +57,7 @@ public class AnfrageJson {
 
     private Integer kassenzeichen;
     private Map<String, FlaecheJson> flaechen;
-    private List<NachrichtJson> nachrichten = new ArrayList<>();
+    private List<NachrichtJson> nachrichten;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -67,7 +67,7 @@ public class AnfrageJson {
      * @param  kassenzeichen  DOCUMENT ME!
      */
     public AnfrageJson(final Integer kassenzeichen) {
-        this(kassenzeichen, null, null);
+        this(kassenzeichen, null, new ArrayList<NachrichtJson>());
     }
 
     /**
@@ -77,7 +77,7 @@ public class AnfrageJson {
      * @param  flaechen       DOCUMENT ME!
      */
     public AnfrageJson(final Integer kassenzeichen, final Map<String, FlaecheJson> flaechen) {
-        this(kassenzeichen, flaechen, null);
+        this(kassenzeichen, new HashMap<String, FlaecheJson>(), new ArrayList<NachrichtJson>());
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -94,6 +94,7 @@ public class AnfrageJson {
     public static AnfrageJson readValue(final String json) throws Exception {
         final ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         final SimpleModule module = new SimpleModule();
         module.addDeserializer(PruefungGroesseJson.class, new PruefungGroesseJson.Deserializer(mapper));
         module.addDeserializer(PruefungFlaechenartJson.class, new PruefungFlaechenartJson.Deserializer(mapper));

@@ -30,12 +30,12 @@ import java.util.Date;
 @Setter
 @AllArgsConstructor
 @JsonIgnoreProperties({ "pending" })
-public abstract class PruefungJson {
+public abstract class PruefungJson<O> {
 
     //~ Instance fields --------------------------------------------------------
 
     @JsonIgnore private transient Boolean pending;
-    private Object anfrage;
+    private O anfrage;
     private String von;
     private Date timestamp;
 }
