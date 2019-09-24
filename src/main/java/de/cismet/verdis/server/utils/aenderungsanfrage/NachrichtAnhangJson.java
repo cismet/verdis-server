@@ -38,7 +38,7 @@ public class NachrichtAnhangJson {
     //~ Instance fields --------------------------------------------------------
 
     private String name;
-    private String uid;
+    private String uuid;
 
     //~ Inner Classes ----------------------------------------------------------
 
@@ -67,12 +67,12 @@ public class NachrichtAnhangJson {
             JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
             final String name = on.has("name") ? on.get("name").textValue() : null;
-            final String uid = on.has("uid") ? on.get("uid").textValue() : null;
-            if ((uid == null) && (uid == null)) {
+            final String uiud = on.has("uuid") ? on.get("uuid").textValue() : null;
+            if ((uiud == null) && (uiud == null)) {
                 throw new RuntimeException(
                     "invalid NachrichtAnhangJson: name and uid can't be null");
             }
-            return new NachrichtAnhangJson(name, uid);
+            return new NachrichtAnhangJson(name, uiud);
         }
     }
 }

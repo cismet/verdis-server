@@ -16,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -26,7 +27,10 @@ import lombok.Setter;
 
 import java.io.IOException;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * DOCUMENT ME!
@@ -60,7 +64,7 @@ public class NachrichtJson {
     private Date timestamp;
     private String nachricht;
     private String absender;
-    private NachrichtAnhangJson anhang;
+    private List<NachrichtAnhangJson> anhang;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -71,7 +75,7 @@ public class NachrichtJson {
      * @param  nachricht  DOCUMENT ME!
      */
     public NachrichtJson(final Date timestamp, final String nachricht) {
-        this(Typ.SYSTEM, timestamp, nachricht, null, null);
+        this(Typ.SYSTEM, timestamp, nachricht, null, new ArrayList<NachrichtAnhangJson>());
     }
 
     /**
@@ -83,7 +87,7 @@ public class NachrichtJson {
      * @param  absender   DOCUMENT ME!
      */
     public NachrichtJson(final Typ typ, final Date timestamp, final String nachricht, final String absender) {
-        this(typ, timestamp, nachricht, absender, null);
+        this(typ, timestamp, nachricht, absender, new ArrayList<NachrichtAnhangJson>());
     }
 
     /**
@@ -100,7 +104,7 @@ public class NachrichtJson {
             final Date timestamp,
             final String nachricht,
             final String absender) {
-        this(pending, typ, timestamp, nachricht, absender, null);
+        this(pending, typ, timestamp, nachricht, absender, new ArrayList<NachrichtAnhangJson>());
     }
 
     /**
@@ -116,7 +120,7 @@ public class NachrichtJson {
             final Date timestamp,
             final String nachricht,
             final String absender,
-            final NachrichtAnhangJson anhang) {
+            final List<NachrichtAnhangJson> anhang) {
         this(false, typ, timestamp, nachricht, absender, anhang);
     }
 
@@ -155,8 +159,13 @@ public class NachrichtJson {
             final Date timestamp = on.has("timestamp") ? new Date(on.get("timestamp").longValue()) : null;
             final String absender = on.has("absender") ? on.get("absender").textValue() : null;
             final String nachricht = on.has("nachricht") ? on.get("nachricht").textValue() : null;
-            final NachrichtAnhangJson anhang = on.has("anhang")
-                ? objectMapper.treeToValue(on.get("anhang"), NachrichtAnhangJson.class) : null;
+            final List<NachrichtAnhangJson> anhang = new ArrayList<>();
+            if (on.has("anhang") && on.get("anhang").isArray()) {
+                final Iterator<JsonNode> iterator = on.get("anhang").iterator();
+                while (iterator.hasNext()) {
+                    anhang.add(objectMapper.treeToValue(iterator.next(), NachrichtAnhangJson.class));
+                }
+            }
             if ((nachricht == null) && (timestamp == null)) {
                 throw new RuntimeException(
                     "invalid NachrichtJson: neither nachricht nor timestamp is set");

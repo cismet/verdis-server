@@ -271,13 +271,15 @@ public class StacUtils {
             search.setUser(user);
             search.setStacHash(stacEntry.getHash());
             final Collection<MetaObjectNode> mons = search.performServerSearch();
-            for (final MetaObjectNode mon : mons) {
-                if (mon != null) {
-                    return metaService.getMetaObject(
-                                user,
-                                mon.getObjectId(),
-                                mon.getClassId(),
-                                connectionContext).getBean();
+            if (mons != null) {
+                for (final MetaObjectNode mon : mons) {
+                    if (mon != null) {
+                        return metaService.getMetaObject(
+                                    user,
+                                    mon.getObjectId(),
+                                    mon.getClassId(),
+                                    connectionContext).getBean();
+                    }
                 }
             }
         }

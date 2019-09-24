@@ -33,10 +33,10 @@
     "timestamp" : 47110815,
     "nachricht" : "Da passt was nicht weil isso, siehe lustiges pdf !",
     "absender" : "Bürger",
-    "anhang" : {
+    "anhang" : [ {
       "name" : "lustiges.pdf",
-      "uid" : "aaa-bbb-ccc"
-    }
+      "uuid" : "aaa-bbb-ccc"
+    } ]
   }, {
     "typ" : "CLERK",
     "timestamp" : 47110815,
@@ -51,10 +51,10 @@
     "timestamp" : 47110815,
     "nachricht" : "Oh, falsches PDF, siehe richtiges pdf.",
     "absender" : "Bürger",
-    "anhang" : {
+    "anhang" : [ {
       "name" : "richtiges.pdf",
-      "uid" : "ddd-eee-fff"
-    }
+      "uuid" : "ddd-eee-fff"
+    } ]
   }, {
     "typ" : "CLERK",
     "timestamp" : 47110815,
