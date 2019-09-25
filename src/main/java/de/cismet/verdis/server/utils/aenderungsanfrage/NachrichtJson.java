@@ -12,7 +12,6 @@
  */
 package de.cismet.verdis.server.utils.aenderungsanfrage;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -40,7 +39,6 @@ import java.util.List;
 @Getter
 @Setter
 @AllArgsConstructor
-@JsonIgnoreProperties({ "pending" })
 public class NachrichtJson {
 
     //~ Enums ------------------------------------------------------------------
@@ -59,7 +57,7 @@ public class NachrichtJson {
 
     //~ Instance fields --------------------------------------------------------
 
-    private transient boolean pending;
+    private Boolean draft;
     private Typ typ;
     private Date timestamp;
     private String nachricht;
@@ -93,18 +91,18 @@ public class NachrichtJson {
     /**
      * Creates a new NachrichtJson object.
      *
-     * @param  pending    DOCUMENT ME!
+     * @param  draft      DOCUMENT ME!
      * @param  typ        DOCUMENT ME!
      * @param  timestamp  DOCUMENT ME!
      * @param  nachricht  DOCUMENT ME!
      * @param  absender   DOCUMENT ME!
      */
-    public NachrichtJson(final boolean pending,
+    public NachrichtJson(final Boolean draft,
             final Typ typ,
             final Date timestamp,
             final String nachricht,
             final String absender) {
-        this(pending, typ, timestamp, nachricht, absender, new ArrayList<NachrichtAnhangJson>());
+        this(draft, typ, timestamp, nachricht, absender, new ArrayList<NachrichtAnhangJson>());
     }
 
     /**
@@ -121,7 +119,7 @@ public class NachrichtJson {
             final String nachricht,
             final String absender,
             final List<NachrichtAnhangJson> anhang) {
-        this(false, typ, timestamp, nachricht, absender, anhang);
+        this(null, typ, timestamp, nachricht, absender, anhang);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -155,6 +153,7 @@ public class NachrichtJson {
         public NachrichtJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
             JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
+            final Boolean draft = on.has("draft") ? on.get("draft").asBoolean() : null;
             final Typ typ = on.has("typ") ? Typ.valueOf(on.get("typ").textValue()) : null;
             final Date timestamp = on.has("timestamp") ? new Date(on.get("timestamp").longValue()) : null;
             final String absender = on.has("absender") ? on.get("absender").textValue() : null;
@@ -170,7 +169,7 @@ public class NachrichtJson {
                 throw new RuntimeException(
                     "invalid NachrichtJson: neither nachricht nor timestamp is set");
             }
-            return new NachrichtJson(typ, timestamp, nachricht, absender, anhang);
+            return new NachrichtJson(draft, typ, timestamp, nachricht, absender, anhang);
         }
     }
 }

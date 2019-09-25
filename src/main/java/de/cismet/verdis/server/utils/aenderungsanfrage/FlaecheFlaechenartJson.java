@@ -14,6 +14,7 @@ package de.cismet.verdis.server.utils.aenderungsanfrage;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -37,14 +38,13 @@ import java.io.IOException;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class FlaecheJson {
+public class FlaecheFlaechenartJson {
 
     //~ Instance fields --------------------------------------------------------
 
-    private Integer groesse;
-    private FlaechenartJson flaechenart;
-    private AnschlussgradJson anschlussgrad;
-    private FlaechePruefungJson pruefung;
+    private String art;
+    @JsonProperty("art_abkuerzung")
+    private String artAbkuerzung;
 
     //~ Inner Classes ----------------------------------------------------------
 
@@ -53,11 +53,7 @@ public class FlaecheJson {
      *
      * @version  $Revision$, $Date$
      */
-    public static class Deserializer extends StdDeserializer<FlaecheJson> {
-
-        //~ Instance fields ----------------------------------------------------
-
-        private final ObjectMapper objectMapper;
+    public static class Deserializer extends StdDeserializer<FlaecheFlaechenartJson> {
 
         //~ Constructors -------------------------------------------------------
 
@@ -67,33 +63,22 @@ public class FlaecheJson {
          * @param  objectMapper  DOCUMENT ME!
          */
         public Deserializer(final ObjectMapper objectMapper) {
-            super(FlaecheJson.class);
-            this.objectMapper = objectMapper;
+            super(FlaecheFlaechenartJson.class);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public FlaecheJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
+        public FlaecheFlaechenartJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
             JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
-            final Integer groesse = on.has("groesse") ? on.get("groesse").intValue() : null;
-            final FlaechenartJson flaechenart = on.has("flaechenart")
-                ? objectMapper.treeToValue(on.get("flaechenart"), FlaechenartJson.class) : null;
-            final AnschlussgradJson anschlussgrad = on.has("anschlussgrad")
-                ? objectMapper.treeToValue(on.get("anschlussgrad"), AnschlussgradJson.class) : null;
-            final FlaechePruefungJson pruefung = on.has("pruefung")
-                ? objectMapper.treeToValue(on.get("pruefung"), FlaechePruefungJson.class) : null;
-            if ((anschlussgrad == null) && (flaechenart == null) && (groesse == null)) {
+            final String art = on.has("art") ? on.get("art").asText() : null;
+            final String artAbkuerzung = on.has("art_abkuerzung") ? on.get("art_abkuerzung").asText() : null;
+            if ((art == null) || (artAbkuerzung == null)) {
                 throw new RuntimeException(
-                    "invalid FlaecheJson: neither anschlussgrad nor flaechenart nor groesse is set");
+                    "invalid FlaecheFlaechenartJson: art or artAbkuerzung can't be null");
             }
-            if ((groesse != null) && (groesse < 0)) {
-                throw new RuntimeException("invalid FlaecheJson: groesse can't be negative");
-            }
-            // TODO: check for valid anschlussgrad
-            // TODO: check for valid flaechenart
-            return new FlaecheJson(groesse, flaechenart, anschlussgrad, pruefung);
+            return new FlaecheFlaechenartJson(art, artAbkuerzung);
         }
     }
 }

@@ -56,7 +56,7 @@ public class AnfrageJson {
     //~ Instance fields --------------------------------------------------------
 
     private Integer kassenzeichen;
-    private Map<String, FlaecheJson> flaechen;
+    private Map<String, FlaecheAenderungJson> flaechen;
     private List<NachrichtJson> nachrichten;
 
     //~ Constructors -----------------------------------------------------------
@@ -76,8 +76,8 @@ public class AnfrageJson {
      * @param  kassenzeichen  DOCUMENT ME!
      * @param  flaechen       DOCUMENT ME!
      */
-    public AnfrageJson(final Integer kassenzeichen, final Map<String, FlaecheJson> flaechen) {
-        this(kassenzeichen, new HashMap<String, FlaecheJson>(), new ArrayList<NachrichtJson>());
+    public AnfrageJson(final Integer kassenzeichen, final Map<String, FlaecheAenderungJson> flaechen) {
+        this(kassenzeichen, new HashMap<String, FlaecheAenderungJson>(), new ArrayList<NachrichtJson>());
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -101,9 +101,9 @@ public class AnfrageJson {
         module.addDeserializer(PruefungAnschlussgradJson.class, new PruefungAnschlussgradJson.Deserializer(mapper));
         module.addDeserializer(PruefungGroesseJson.class, new PruefungGroesseJson.Deserializer(mapper));
         module.addDeserializer(FlaechePruefungJson.class, new FlaechePruefungJson.Deserializer(mapper));
-        module.addDeserializer(FlaecheJson.class, new FlaecheJson.Deserializer(mapper));
-        module.addDeserializer(AnschlussgradJson.class, new AnschlussgradJson.Deserializer(mapper));
-        module.addDeserializer(FlaechenartJson.class, new FlaechenartJson.Deserializer(mapper));
+        module.addDeserializer(FlaecheAenderungJson.class, new FlaecheAenderungJson.Deserializer(mapper));
+        module.addDeserializer(FlaecheAnschlussgradJson.class, new FlaecheAnschlussgradJson.Deserializer(mapper));
+        module.addDeserializer(FlaecheFlaechenartJson.class, new FlaecheFlaechenartJson.Deserializer(mapper));
         module.addDeserializer(NachrichtAnhangJson.class, new NachrichtAnhangJson.Deserializer(mapper));
         module.addDeserializer(NachrichtJson.class, new NachrichtJson.Deserializer(mapper));
         module.addDeserializer(AnfrageJson.class, new AnfrageJson.Deserializer(mapper));
@@ -151,7 +151,7 @@ public class AnfrageJson {
                     nachrichten.add(objectMapper.treeToValue(iterator.next(), NachrichtJson.class));
                 }
             }
-            final Map<String, FlaecheJson> flaechen;
+            final Map<String, FlaecheAenderungJson> flaechen;
             if (on.has("flaechen") && on.get("flaechen").isObject()) {
                 flaechen = new HashMap<>();
                 final Iterator<Map.Entry<String, JsonNode>> fieldIterator = on.get("flaechen").fields();
@@ -159,7 +159,7 @@ public class AnfrageJson {
                     final Map.Entry<String, JsonNode> fieldEntry = fieldIterator.next();
                     final String bezeichnung = fieldEntry.getKey();
                     // TODO: check for valid bezeichnung.
-                    flaechen.put(bezeichnung, objectMapper.treeToValue(fieldEntry.getValue(), FlaecheJson.class));
+                    flaechen.put(bezeichnung, objectMapper.treeToValue(fieldEntry.getValue(), FlaecheAenderungJson.class));
                 }
             } else {
                 flaechen = null;

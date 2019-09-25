@@ -28,7 +28,7 @@ import java.util.Date;
  *
  * @version  $Revision$, $Date$
  */
-public class PruefungAnschlussgradJson extends PruefungJson<AnschlussgradJson> {
+public class PruefungAnschlussgradJson extends PruefungJson<FlaecheAnschlussgradJson> {
 
     //~ Constructors -----------------------------------------------------------
 
@@ -39,7 +39,7 @@ public class PruefungAnschlussgradJson extends PruefungJson<AnschlussgradJson> {
      * @param  von        DOCUMENT ME!
      * @param  timestamp  DOCUMENT ME!
      */
-    public PruefungAnschlussgradJson(final AnschlussgradJson anfrage, final String von, final Date timestamp) {
+    public PruefungAnschlussgradJson(final FlaecheAnschlussgradJson anfrage, final String von, final Date timestamp) {
         this(false, anfrage, von, timestamp);
     }
 
@@ -52,7 +52,7 @@ public class PruefungAnschlussgradJson extends PruefungJson<AnschlussgradJson> {
      * @param  timestamp  DOCUMENT ME!
      */
     public PruefungAnschlussgradJson(final boolean pending,
-            final AnschlussgradJson anfrage,
+            final FlaecheAnschlussgradJson anfrage,
             final String von,
             final Date timestamp) {
         super(pending, anfrage, von, timestamp);
@@ -90,8 +90,8 @@ public class PruefungAnschlussgradJson extends PruefungJson<AnschlussgradJson> {
         public PruefungAnschlussgradJson deserialize(final JsonParser jp, final DeserializationContext dc)
                 throws IOException, JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
-            final AnschlussgradJson anfrage = on.has("anfrage")
-                ? objectMapper.treeToValue(on.get("anfrage"), AnschlussgradJson.class) : null;
+            final FlaecheAnschlussgradJson anfrage = on.has("anfrage")
+                ? objectMapper.treeToValue(on.get("anfrage"), FlaecheAnschlussgradJson.class) : null;
             final String von = on.has("von") ? on.get("von").textValue() : null;
             final Date timestamp = on.has("timestamp") ? new Date(on.get("timestamp").longValue()) : null;
             if ((anfrage == null)) {
