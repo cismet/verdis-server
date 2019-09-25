@@ -12,6 +12,7 @@
  */
 package de.cismet.verdis.server.utils.aenderungsanfrage;
 
+import Sirius.server.middleware.interfaces.domainserver.ActionService;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.newuser.User;
@@ -24,8 +25,11 @@ import org.apache.log4j.Logger;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import de.cismet.cids.dynamics.CidsBean;
+
+import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
 import de.cismet.connectioncontext.ConnectionContext;
 
@@ -33,6 +37,7 @@ import de.cismet.verdis.commons.constants.VerdisConstants;
 
 import de.cismet.verdis.server.search.AenderungsanfrageSearchStatement;
 import de.cismet.verdis.server.utils.StacUtils;
+import de.cismet.verdis.server.utils.VerdisServerResources;
 
 import static de.cismet.verdis.server.utils.StacUtils.getUser;
 
@@ -67,6 +72,19 @@ public class AenderungsanfrageUtils {
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static AenderungsanfrageConf getConfFromServerResource() throws Exception {
+        final Properties properties = ServerResourcesLoader.getInstance()
+                    .loadProperties(VerdisServerResources.AENDERUNTSANFRAGE.getValue());
+        return new AenderungsanfrageConf(properties);
+    }
 
     /**
      * DOCUMENT ME!

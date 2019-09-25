@@ -69,8 +69,8 @@ public class FlaecheFlaechenartJson {
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public FlaecheFlaechenartJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
-            JsonProcessingException {
+        public FlaecheFlaechenartJson deserialize(final JsonParser jp, final DeserializationContext dc)
+                throws IOException, JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
             final String art = on.has("art") ? on.get("art").asText() : null;
             final String artAbkuerzung = on.has("art_abkuerzung") ? on.get("art_abkuerzung").asText() : null;

@@ -159,7 +159,9 @@ public class AnfrageJson {
                     final Map.Entry<String, JsonNode> fieldEntry = fieldIterator.next();
                     final String bezeichnung = fieldEntry.getKey();
                     // TODO: check for valid bezeichnung.
-                    flaechen.put(bezeichnung, objectMapper.treeToValue(fieldEntry.getValue(), FlaecheAenderungJson.class));
+                    flaechen.put(
+                        bezeichnung,
+                        objectMapper.treeToValue(fieldEntry.getValue(), FlaecheAenderungJson.class));
                 }
             } else {
                 flaechen = null;

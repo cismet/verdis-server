@@ -116,7 +116,7 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore, 
                         getMetaService(),
                         getConnectionContext());
 
-                kassenzeichenBean.setProperty(VerdisConstants.PROP.KASSENZEICHEN.STAC_OPTION, stacEntry.getOptions());
+                kassenzeichenBean.setProperty(VerdisConstants.PROP.KASSENZEICHEN.STAC_OPTIONS, stacEntry.getOptions());
                 kassenzeichenBean.setProperty(
                     VerdisConstants.PROP.KASSENZEICHEN.STAC_EXPIRATION,
                     stacEntry.getExpiration());

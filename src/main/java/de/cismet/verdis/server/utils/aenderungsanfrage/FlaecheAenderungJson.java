@@ -75,8 +75,8 @@ public class FlaecheAenderungJson {
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public FlaecheAenderungJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
-            JsonProcessingException {
+        public FlaecheAenderungJson deserialize(final JsonParser jp, final DeserializationContext dc)
+                throws IOException, JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
             final Boolean draft = on.has("draft") ? on.get("draft").asBoolean() : null;
             final Integer groesse = on.has("groesse") ? on.get("groesse").intValue() : null;

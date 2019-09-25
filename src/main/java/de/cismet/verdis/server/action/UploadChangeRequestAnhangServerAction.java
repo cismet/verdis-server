@@ -21,15 +21,26 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.log4j.Logger;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+
 import java.util.UUID;
+
+import javax.swing.SwingWorker;
 
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.actions.UserAwareServerAction;
 
+import de.cismet.commons.security.WebDavClient;
+
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextStore;
 
+import de.cismet.netutil.Proxy;
+
+import de.cismet.verdis.server.utils.aenderungsanfrage.AenderungsanfrageConf;
+import de.cismet.verdis.server.utils.aenderungsanfrage.AenderungsanfrageUtils;
 import de.cismet.verdis.server.utils.aenderungsanfrage.NachrichtAnhangJson;
 
 /**
@@ -93,15 +104,15 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
 
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
-        final Byte[] bytes;
+        final byte[] bytes;
         String fileName = null;
 
         try {
-//            if (body == null) {
-//                throw new Exception("body can't be null");
-//            } else {
-//                bytes = (Byte[])body;
-//            }
+            if (body == null) {
+                throw new Exception("body can't be null");
+            } else {
+                bytes = (byte[])body;
+            }
 
             if (params != null) {
                 for (final ServerActionParameter sap : params) {
@@ -117,6 +128,29 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
             }
 
             final String uuid = UUID.randomUUID().toString();
+            final AenderungsanfrageConf conf = AenderungsanfrageUtils.getConfFromServerResource();
+            final String webdavUrl = conf.getWebdavUrl();
+            final String uploadDirPath = webdavUrl.endsWith("/") ? webdavUrl : (webdavUrl + "/");
+            final String uploadFilePath = String.format("%s%s_%s", uploadDirPath, uuid, fileName);
+            new SwingWorker<Void, Void>() {
+
+                    @Override
+                    protected Void doInBackground() throws Exception {
+                        try {
+                            final InputStream data = new ByteArrayInputStream(bytes);
+
+                            final WebDavClient webdavClient = new WebDavClient(
+                                    Proxy.fromPreferences(),
+                                    conf.getWebdavUser(),
+                                    conf.getWebdavPassword());
+                            webdavClient.put(uploadFilePath, data);
+                        } catch (final Exception ex) {
+                            LOG.error(ex, ex);
+                        }
+                        return null;
+                    }
+                }.execute();
+
             return objectMapper.writeValueAsString(new NachrichtAnhangJson(fileName, uuid));
         } catch (final Exception ex) {
             LOG.error(ex, ex);

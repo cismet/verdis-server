@@ -69,8 +69,8 @@ public class FlaecheAnschlussgradJson {
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public FlaecheAnschlussgradJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
-            JsonProcessingException {
+        public FlaecheAnschlussgradJson deserialize(final JsonParser jp, final DeserializationContext dc)
+                throws IOException, JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
             final String grad = on.has("grad") ? on.get("grad").asText() : null;
             final String gradAbkuerzung = on.has("grad_abkuerzung") ? on.get("grad_abkuerzung").asText() : null;

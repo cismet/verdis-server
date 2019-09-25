@@ -21,21 +21,46 @@ public class FlaecheAenderungFlaechenartJson extends FlaecheAenderungJson {
 
     //~ Constructors -----------------------------------------------------------
 
+    /**
+     * Creates a new FlaecheAenderungFlaechenartJson object.
+     *
+     * @param  flaechenartJson  DOCUMENT ME!
+     */
     public FlaecheAenderungFlaechenartJson(final FlaecheFlaechenartJson flaechenartJson) {
         super(null, null, flaechenartJson, null, null);
     }
 
+    /**
+     * Creates a new FlaecheAenderungFlaechenartJson object.
+     *
+     * @param  flaechenartJson  DOCUMENT ME!
+     * @param  pruefung         DOCUMENT ME!
+     */
     public FlaecheAenderungFlaechenartJson(final FlaecheFlaechenartJson flaechenartJson,
             final FlaechePruefungFlaechenartJson pruefung) {
         super(null, null, flaechenartJson, null, pruefung);
     }
-    
+
+    /**
+     * Creates a new FlaecheAenderungFlaechenartJson object.
+     *
+     * @param  draft            DOCUMENT ME!
+     * @param  flaechenartJson  DOCUMENT ME!
+     */
     public FlaecheAenderungFlaechenartJson(final Boolean draft, final FlaecheFlaechenartJson flaechenartJson) {
         super(draft, null, flaechenartJson, null, null);
     }
 
-    public FlaecheAenderungFlaechenartJson(final Boolean draft, final FlaecheFlaechenartJson flaechenartJson,
+    /**
+     * Creates a new FlaecheAenderungFlaechenartJson object.
+     *
+     * @param  draft            DOCUMENT ME!
+     * @param  flaechenartJson  DOCUMENT ME!
+     * @param  pruefung         DOCUMENT ME!
+     */
+    public FlaecheAenderungFlaechenartJson(final Boolean draft,
+            final FlaecheFlaechenartJson flaechenartJson,
             final FlaechePruefungFlaechenartJson pruefung) {
         super(draft, null, flaechenartJson, null, pruefung);
-    }    
+    }
 }

@@ -21,19 +21,45 @@ public class FlaecheAenderungGroesseJson extends FlaecheAenderungJson {
 
     //~ Constructors -----------------------------------------------------------
 
+    /**
+     * Creates a new FlaecheAenderungGroesseJson object.
+     *
+     * @param  groesse  DOCUMENT ME!
+     */
     public FlaecheAenderungGroesseJson(final Integer groesse) {
         super(null, groesse, null, null, null);
     }
 
+    /**
+     * Creates a new FlaecheAenderungGroesseJson object.
+     *
+     * @param  groesse   DOCUMENT ME!
+     * @param  pruefung  DOCUMENT ME!
+     */
     public FlaecheAenderungGroesseJson(final Integer groesse, final FlaechePruefungGroesseJson pruefung) {
         super(null, groesse, null, null, pruefung);
     }
-    
+
+    /**
+     * Creates a new FlaecheAenderungGroesseJson object.
+     *
+     * @param  draft    DOCUMENT ME!
+     * @param  groesse  DOCUMENT ME!
+     */
     public FlaecheAenderungGroesseJson(final Boolean draft, final Integer groesse) {
         super(draft, groesse, null, null, null);
     }
 
-    public FlaecheAenderungGroesseJson(final Boolean draft, final Integer groesse, final FlaechePruefungGroesseJson pruefung) {
+    /**
+     * Creates a new FlaecheAenderungGroesseJson object.
+     *
+     * @param  draft     DOCUMENT ME!
+     * @param  groesse   DOCUMENT ME!
+     * @param  pruefung  DOCUMENT ME!
+     */
+    public FlaecheAenderungGroesseJson(final Boolean draft,
+            final Integer groesse,
+            final FlaechePruefungGroesseJson pruefung) {
         super(draft, groesse, null, null, pruefung);
-    }    
+    }
 }

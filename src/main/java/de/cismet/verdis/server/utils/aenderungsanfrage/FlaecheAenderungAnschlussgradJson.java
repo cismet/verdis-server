@@ -21,20 +21,45 @@ public class FlaecheAenderungAnschlussgradJson extends FlaecheAenderungJson {
 
     //~ Constructors -----------------------------------------------------------
 
+    /**
+     * Creates a new FlaecheAenderungAnschlussgradJson object.
+     *
+     * @param  anschlussgradJson  DOCUMENT ME!
+     */
     public FlaecheAenderungAnschlussgradJson(final FlaecheAnschlussgradJson anschlussgradJson) {
         super(null, null, null, anschlussgradJson, null);
     }
 
+    /**
+     * Creates a new FlaecheAenderungAnschlussgradJson object.
+     *
+     * @param  anschlussgradJson  DOCUMENT ME!
+     * @param  pruefung           DOCUMENT ME!
+     */
     public FlaecheAenderungAnschlussgradJson(final FlaecheAnschlussgradJson anschlussgradJson,
             final FlaechePruefungAnschlussgradJson pruefung) {
         super(null, null, null, anschlussgradJson, pruefung);
     }
-    
+
+    /**
+     * Creates a new FlaecheAenderungAnschlussgradJson object.
+     *
+     * @param  draft              DOCUMENT ME!
+     * @param  anschlussgradJson  DOCUMENT ME!
+     */
     public FlaecheAenderungAnschlussgradJson(final Boolean draft, final FlaecheAnschlussgradJson anschlussgradJson) {
         super(draft, null, null, anschlussgradJson, null);
     }
 
-    public FlaecheAenderungAnschlussgradJson(final Boolean draft,final FlaecheAnschlussgradJson anschlussgradJson,
+    /**
+     * Creates a new FlaecheAenderungAnschlussgradJson object.
+     *
+     * @param  draft              DOCUMENT ME!
+     * @param  anschlussgradJson  DOCUMENT ME!
+     * @param  pruefung           DOCUMENT ME!
+     */
+    public FlaecheAenderungAnschlussgradJson(final Boolean draft,
+            final FlaecheAnschlussgradJson anschlussgradJson,
             final FlaechePruefungAnschlussgradJson pruefung) {
         super(draft, null, null, anschlussgradJson, pruefung);
     }
