@@ -95,7 +95,7 @@ public class AenderungsanfrageUtils {
             // pruefung rausschmeissen
             // (ist neu, kann noch nicht geprueft worden sein)
             for (final String bezeichnung : anfrageChanged.getFlaechen().keySet()) {
-                final FlaecheJson flaecheJson = anfrageChanged.getFlaechen().get(bezeichnung);
+                final FlaecheAenderungJson flaecheJson = anfrageChanged.getFlaechen().get(bezeichnung);
                 flaecheJson.setPruefung(null);
                 anfrageProcessed.getFlaechen().put(bezeichnung, flaecheJson);
             }
@@ -122,19 +122,19 @@ public class AenderungsanfrageUtils {
 
             // alle originalFlaechen übernehmen
             for (final String bezeichnung : anfrageOrigCopy.getFlaechen().keySet()) {
-                final FlaecheJson flaecheJson = anfrageOrigCopy.getFlaechen().get(bezeichnung);
+                final FlaecheAenderungJson flaecheJson = anfrageOrigCopy.getFlaechen().get(bezeichnung);
                 anfrageProcessed.getFlaechen().put(bezeichnung, flaecheJson);
             }
             for (final String bezeichnung : anfrageChanged.getFlaechen().keySet()) {
                 if (!anfrageOrigCopy.getFlaechen().containsKey(bezeichnung)) {
                     // neue CR an Flächen übernehmen (aber ohne pruefung)
-                    final FlaecheJson flaecheJsonChanged = anfrageChanged.getFlaechen().get(bezeichnung);
+                    final FlaecheAenderungJson flaecheJsonChanged = anfrageChanged.getFlaechen().get(bezeichnung);
                     flaecheJsonChanged.setPruefung(null);
                     anfrageProcessed.getFlaechen().put(bezeichnung, flaecheJsonChanged);
                 } else {
                     // veränderte CR an Flächen übernehmen, und pruefung entfernen
-                    final FlaecheJson flaecheJsonChanged = anfrageChanged.getFlaechen().get(bezeichnung);
-                    final FlaecheJson flaecheJsonOrig = anfrageOrigCopy.getFlaechen().get(bezeichnung);
+                    final FlaecheAenderungJson flaecheJsonChanged = anfrageChanged.getFlaechen().get(bezeichnung);
+                    final FlaecheAenderungJson flaecheJsonOrig = anfrageOrigCopy.getFlaechen().get(bezeichnung);
 
                     anfrageProcessed.getFlaechen().put(bezeichnung, flaecheJsonOrig);
                     if ((flaecheJsonChanged.getGroesse() != null)

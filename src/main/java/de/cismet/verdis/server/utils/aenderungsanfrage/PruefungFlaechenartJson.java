@@ -28,7 +28,7 @@ import java.util.Date;
  *
  * @version  $Revision$, $Date$
  */
-public class PruefungFlaechenartJson extends PruefungJson<FlaechenartJson> {
+public class PruefungFlaechenartJson extends PruefungJson<FlaecheFlaechenartJson> {
 
     //~ Constructors -----------------------------------------------------------
 
@@ -39,7 +39,7 @@ public class PruefungFlaechenartJson extends PruefungJson<FlaechenartJson> {
      * @param  von        DOCUMENT ME!
      * @param  timestamp  DOCUMENT ME!
      */
-    public PruefungFlaechenartJson(final FlaechenartJson anfrage, final String von, final Date timestamp) {
+    public PruefungFlaechenartJson(final FlaecheFlaechenartJson anfrage, final String von, final Date timestamp) {
         this(false, anfrage, von, timestamp);
     }
 
@@ -52,7 +52,7 @@ public class PruefungFlaechenartJson extends PruefungJson<FlaechenartJson> {
      * @param  timestamp  DOCUMENT ME!
      */
     public PruefungFlaechenartJson(final boolean pending,
-            final FlaechenartJson anfrage,
+            final FlaecheFlaechenartJson anfrage,
             final String von,
             final Date timestamp) {
         super(pending, anfrage, von, timestamp);
@@ -90,8 +90,8 @@ public class PruefungFlaechenartJson extends PruefungJson<FlaechenartJson> {
         public PruefungFlaechenartJson deserialize(final JsonParser jp, final DeserializationContext dc)
                 throws IOException, JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
-            final FlaechenartJson anfrage = on.has("anfrage")
-                ? objectMapper.treeToValue(on.get("anfrage"), FlaechenartJson.class) : null;
+            final FlaecheFlaechenartJson anfrage = on.has("anfrage")
+                ? objectMapper.treeToValue(on.get("anfrage"), FlaecheFlaechenartJson.class) : null;
             final String von = on.has("von") ? on.get("von").textValue() : null;
             final Date timestamp = on.has("timestamp") ? new Date(on.get("timestamp").longValue()) : null;
             if ((anfrage == null)) {

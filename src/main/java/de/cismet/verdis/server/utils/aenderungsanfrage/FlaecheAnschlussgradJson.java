@@ -38,7 +38,7 @@ import java.io.IOException;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class AnschlussgradJson {
+public class FlaecheAnschlussgradJson {
 
     //~ Instance fields --------------------------------------------------------
 
@@ -53,7 +53,7 @@ public class AnschlussgradJson {
      *
      * @version  $Revision$, $Date$
      */
-    public static class Deserializer extends StdDeserializer<AnschlussgradJson> {
+    public static class Deserializer extends StdDeserializer<FlaecheAnschlussgradJson> {
 
         //~ Constructors -------------------------------------------------------
 
@@ -63,13 +63,13 @@ public class AnschlussgradJson {
          * @param  objectMapper  DOCUMENT ME!
          */
         public Deserializer(final ObjectMapper objectMapper) {
-            super(AnschlussgradJson.class);
+            super(FlaecheAnschlussgradJson.class);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public AnschlussgradJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
+        public FlaecheAnschlussgradJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
             JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
             final String grad = on.has("grad") ? on.get("grad").asText() : null;
@@ -78,7 +78,7 @@ public class AnschlussgradJson {
                 throw new RuntimeException(
                     "invalid FlaecheAnschlussgradJson: grad or gradAbkuerzung can't be null");
             }
-            return new AnschlussgradJson(grad, gradAbkuerzung);
+            return new FlaecheAnschlussgradJson(grad, gradAbkuerzung);
         }
     }
 }
