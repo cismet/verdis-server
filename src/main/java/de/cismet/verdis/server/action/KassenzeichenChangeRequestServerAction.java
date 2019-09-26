@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import java.sql.Timestamp;
 
 import java.util.Date;
+import java.util.Map;
 
 import de.cismet.cids.dynamics.CidsBean;
 
@@ -124,7 +125,8 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                     if (Parameter.STAC.toString().equals(key)) {
                         stac = (String)value;
                     } else if (Parameter.CHANGEREQUEST_JSON.toString().equals(key)) {
-                        aenderungsanfrageJson = ((AenderungsanfrageJson)value).toJson();
+                        aenderungsanfrageJson = AenderungsanfrageUtils.getInstance().getMapper()
+                                    .writeValueAsString((Map<String, Object>)value);
                     } else if (Parameter.EMAIL.toString().equals(key)) {
                         email = (String)value;
                     }
