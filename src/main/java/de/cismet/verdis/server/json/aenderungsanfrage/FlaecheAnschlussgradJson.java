@@ -10,10 +10,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.cismet.verdis.server.utils.aenderungsanfrage;
+package de.cismet.verdis.server.json.aenderungsanfrage;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -36,9 +34,7 @@ import java.io.IOException;
 @Getter
 @Setter
 @AllArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class FlaecheAnschlussgradJson {
+public class FlaecheAnschlussgradJson extends AbstractJson {
 
     //~ Instance fields --------------------------------------------------------
 

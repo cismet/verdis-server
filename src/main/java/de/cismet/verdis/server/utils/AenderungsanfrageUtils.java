@@ -10,15 +10,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.cismet.verdis.server.utils.aenderungsanfrage;
+package de.cismet.verdis.server.utils;
 
-import Sirius.server.middleware.interfaces.domainserver.ActionService;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.newuser.User;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import org.apache.log4j.Logger;
 
@@ -35,9 +35,15 @@ import de.cismet.connectioncontext.ConnectionContext;
 
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
+import de.cismet.verdis.server.json.aenderungsanfrage.AenderungsanfrageJson;
+import de.cismet.verdis.server.json.aenderungsanfrage.FlaecheAenderungJson;
+import de.cismet.verdis.server.json.aenderungsanfrage.FlaecheAnschlussgradJson;
+import de.cismet.verdis.server.json.aenderungsanfrage.FlaecheFlaechenartJson;
+import de.cismet.verdis.server.json.aenderungsanfrage.FlaechePruefungJson;
+import de.cismet.verdis.server.json.aenderungsanfrage.NachrichtAnhangJson;
+import de.cismet.verdis.server.json.aenderungsanfrage.NachrichtJson;
+import de.cismet.verdis.server.json.aenderungsanfrage.PruefungJson;
 import de.cismet.verdis.server.search.AenderungsanfrageSearchStatement;
-import de.cismet.verdis.server.utils.StacUtils;
-import de.cismet.verdis.server.utils.VerdisServerResources;
 
 import static de.cismet.verdis.server.utils.StacUtils.getUser;
 
@@ -55,7 +61,7 @@ public class AenderungsanfrageUtils {
 
     //~ Instance fields --------------------------------------------------------
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -64,14 +70,38 @@ public class AenderungsanfrageUtils {
      */
     public AenderungsanfrageUtils() {
         try {
-            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+            final SimpleModule module = new SimpleModule();
+            module.addDeserializer(PruefungJson.Groesse.class, new PruefungJson.Groesse.Deserializer(mapper));
+            module.addDeserializer(PruefungJson.Flaechenart.class, new PruefungJson.Flaechenart.Deserializer(mapper));
+            module.addDeserializer(
+                PruefungJson.Anschlussgrad.class,
+                new PruefungJson.Anschlussgrad.Deserializer(mapper));
+            module.addDeserializer(PruefungJson.Groesse.class, new PruefungJson.Groesse.Deserializer(mapper));
+            module.addDeserializer(FlaechePruefungJson.class, new FlaechePruefungJson.Deserializer(mapper));
+            module.addDeserializer(FlaecheAenderungJson.class, new FlaecheAenderungJson.Deserializer(mapper));
+            module.addDeserializer(FlaecheAnschlussgradJson.class, new FlaecheAnschlussgradJson.Deserializer(mapper));
+            module.addDeserializer(FlaecheFlaechenartJson.class, new FlaecheFlaechenartJson.Deserializer(mapper));
+            module.addDeserializer(NachrichtAnhangJson.class, new NachrichtAnhangJson.Deserializer(mapper));
+            module.addDeserializer(NachrichtJson.class, new NachrichtJson.Deserializer(mapper));
+            module.addDeserializer(AenderungsanfrageJson.class, new AenderungsanfrageJson.Deserializer(mapper));
+            mapper.registerModule(module);
+            mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         } catch (final Throwable t) {
             LOG.fatal("this should never happen", t);
         }
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public ObjectMapper getMapper() {
+        return mapper;
+    }
 
     /**
      * DOCUMENT ME!
@@ -97,51 +127,51 @@ public class AenderungsanfrageUtils {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public AnfrageJson processAnfrage(final Integer kassenzeichennumer,
-            final AnfrageJson anfrageOrig,
-            final AnfrageJson anfrageChanged) throws Exception {
-        final AnfrageJson anfrageProcessed = new AnfrageJson(kassenzeichennumer);
+    public AenderungsanfrageJson processAnfrage(final Integer kassenzeichennumer,
+            final AenderungsanfrageJson anfrageOrig,
+            final AenderungsanfrageJson anfrageChanged) throws Exception {
+        final AenderungsanfrageJson anfrageProcessed = new AenderungsanfrageJson(kassenzeichennumer);
         if (anfrageOrig == null) {
             // nicht bürger-nachrichten rausschmeissen
             // (ist neu, kann noch keine System- oder Sachbearbeiter-Nachricht enthalten)
-            for (final NachrichtJson nachrichtJson : anfrageChanged.getNachrichten()) {
-                if (NachrichtJson.Typ.CITIZEN.equals(nachrichtJson.getTyp())) {
-                    anfrageProcessed.getNachrichten().add(nachrichtJson);
+            for (final NachrichtJson nachricht : anfrageChanged.getNachrichten()) {
+                if (NachrichtJson.Typ.CITIZEN.equals(nachricht.getTyp())) {
+                    anfrageProcessed.getNachrichten().add(nachricht);
                 }
             }
 
             // pruefung rausschmeissen
             // (ist neu, kann noch nicht geprueft worden sein)
             for (final String bezeichnung : anfrageChanged.getFlaechen().keySet()) {
-                final FlaecheAenderungJson flaecheJson = anfrageChanged.getFlaechen().get(bezeichnung);
-                flaecheJson.setPruefung(null);
-                anfrageProcessed.getFlaechen().put(bezeichnung, flaecheJson);
+                final FlaecheAenderungJson flaeche = anfrageChanged.getFlaechen().get(bezeichnung);
+                flaeche.setPruefung(null);
+                anfrageProcessed.getFlaechen().put(bezeichnung, flaeche);
             }
         } else {
-            final AnfrageJson anfrageOrigCopy = AnfrageJson.readValue(objectMapper.writeValueAsString(anfrageOrig));
+            final AenderungsanfrageJson anfrageOrigCopy = AenderungsanfrageJson.readValue(anfrageOrig.toJson());
 
             // erst alle original Nachrichten übernehmen
             long newestNachrichtTimestamp = 0;
-            for (final NachrichtJson nachrichtJson : anfrageOrigCopy.getNachrichten()) {
-                anfrageProcessed.getNachrichten().add(nachrichtJson);
-                final long nachrichtTimestamp = nachrichtJson.getTimestamp().getTime();
+            for (final NachrichtJson nachricht : anfrageOrigCopy.getNachrichten()) {
+                anfrageProcessed.getNachrichten().add(nachricht);
+                final long nachrichtTimestamp = nachricht.getTimestamp().getTime();
                 if (nachrichtTimestamp > newestNachrichtTimestamp) {
                     newestNachrichtTimestamp = nachrichtTimestamp;
                 }
             }
             // dann neue Bürger-Nachrichten übernehmen
-            for (final NachrichtJson nachrichtJson : anfrageChanged.getNachrichten()) {
-                final long nachrichtTimestamp = nachrichtJson.getTimestamp().getTime();
-                if (NachrichtJson.Typ.CITIZEN.equals(nachrichtJson.getTyp())
+            for (final NachrichtJson nachricht : anfrageChanged.getNachrichten()) {
+                final long nachrichtTimestamp = nachricht.getTimestamp().getTime();
+                if (NachrichtJson.Typ.CITIZEN.equals(nachricht.getTyp())
                             && (nachrichtTimestamp > newestNachrichtTimestamp)) {
-                    anfrageProcessed.getNachrichten().add(nachrichtJson);
+                    anfrageProcessed.getNachrichten().add(nachricht);
                 }
             }
 
             // alle originalFlaechen übernehmen
             for (final String bezeichnung : anfrageOrigCopy.getFlaechen().keySet()) {
-                final FlaecheAenderungJson flaecheJson = anfrageOrigCopy.getFlaechen().get(bezeichnung);
-                anfrageProcessed.getFlaechen().put(bezeichnung, flaecheJson);
+                final FlaecheAenderungJson flaeche = anfrageOrigCopy.getFlaechen().get(bezeichnung);
+                anfrageProcessed.getFlaechen().put(bezeichnung, flaeche);
             }
             for (final String bezeichnung : anfrageChanged.getFlaechen().keySet()) {
                 if (!anfrageOrigCopy.getFlaechen().containsKey(bezeichnung)) {
@@ -151,29 +181,29 @@ public class AenderungsanfrageUtils {
                     anfrageProcessed.getFlaechen().put(bezeichnung, flaecheJsonChanged);
                 } else {
                     // veränderte CR an Flächen übernehmen, und pruefung entfernen
-                    final FlaecheAenderungJson flaecheJsonChanged = anfrageChanged.getFlaechen().get(bezeichnung);
-                    final FlaecheAenderungJson flaecheJsonOrig = anfrageOrigCopy.getFlaechen().get(bezeichnung);
+                    final FlaecheAenderungJson flaecheChanged = anfrageChanged.getFlaechen().get(bezeichnung);
+                    final FlaecheAenderungJson flaecheOrig = anfrageOrigCopy.getFlaechen().get(bezeichnung);
 
-                    anfrageProcessed.getFlaechen().put(bezeichnung, flaecheJsonOrig);
-                    if ((flaecheJsonChanged.getGroesse() != null)
-                                && !flaecheJsonChanged.getGroesse().equals(flaecheJsonOrig.getGroesse())) {
-                        flaecheJsonOrig.setGroesse(flaecheJsonChanged.getGroesse());
-                        if (flaecheJsonOrig.getPruefung() != null) {
-                            flaecheJsonOrig.setGroesse(null);
+                    anfrageProcessed.getFlaechen().put(bezeichnung, flaecheOrig);
+                    if ((flaecheChanged.getGroesse() != null)
+                                && !flaecheChanged.getGroesse().equals(flaecheOrig.getGroesse())) {
+                        flaecheOrig.setGroesse(flaecheChanged.getGroesse());
+                        if (flaecheOrig.getPruefung() != null) {
+                            flaecheOrig.setGroesse(null);
                         }
                     }
-                    if ((flaecheJsonChanged.getFlaechenart() != null)
-                                && !flaecheJsonChanged.getFlaechenart().equals(flaecheJsonOrig.getFlaechenart())) {
-                        flaecheJsonOrig.setFlaechenart(flaecheJsonChanged.getFlaechenart());
-                        if (flaecheJsonOrig.getPruefung() != null) {
-                            flaecheJsonOrig.setFlaechenart(null);
+                    if ((flaecheChanged.getFlaechenart() != null)
+                                && !flaecheChanged.getFlaechenart().equals(flaecheOrig.getFlaechenart())) {
+                        flaecheOrig.setFlaechenart(flaecheChanged.getFlaechenart());
+                        if (flaecheOrig.getPruefung() != null) {
+                            flaecheOrig.setFlaechenart(null);
                         }
                     }
-                    if ((flaecheJsonChanged.getAnschlussgrad() != null)
-                                && !flaecheJsonChanged.getAnschlussgrad().equals(flaecheJsonOrig.getAnschlussgrad())) {
-                        flaecheJsonOrig.setAnschlussgrad(flaecheJsonChanged.getAnschlussgrad());
-                        if (flaecheJsonOrig.getPruefung() != null) {
-                            flaecheJsonOrig.setAnschlussgrad(null);
+                    if ((flaecheChanged.getAnschlussgrad() != null)
+                                && !flaecheChanged.getAnschlussgrad().equals(flaecheOrig.getAnschlussgrad())) {
+                        flaecheOrig.setAnschlussgrad(flaecheChanged.getAnschlussgrad());
+                        if (flaecheOrig.getPruefung() != null) {
+                            flaecheOrig.setAnschlussgrad(null);
                         }
                     }
                 }

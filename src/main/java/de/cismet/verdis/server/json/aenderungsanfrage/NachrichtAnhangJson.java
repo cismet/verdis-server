@@ -10,7 +10,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.cismet.verdis.server.utils.aenderungsanfrage;
+package de.cismet.verdis.server.json.aenderungsanfrage;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -33,7 +33,7 @@ import java.io.IOException;
 @Getter
 @Setter
 @AllArgsConstructor
-public class NachrichtAnhangJson {
+public class NachrichtAnhangJson extends AbstractJson {
 
     //~ Instance fields --------------------------------------------------------
 

@@ -18,9 +18,6 @@ import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.apache.log4j.Logger;
 
 import java.sql.Timestamp;
@@ -38,9 +35,9 @@ import de.cismet.connectioncontext.ConnectionContextStore;
 
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
+import de.cismet.verdis.server.json.aenderungsanfrage.AenderungsanfrageJson;
+import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
 import de.cismet.verdis.server.utils.StacUtils;
-import de.cismet.verdis.server.utils.aenderungsanfrage.AenderungsanfrageUtils;
-import de.cismet.verdis.server.utils.aenderungsanfrage.AnfrageJson;
 
 /**
  * DOCUMENT ME!
@@ -110,20 +107,6 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
     private User user;
     private MetaService metaService;
     private ConnectionContext connectionContext = ConnectionContext.createDummy();
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    //~ Constructors -----------------------------------------------------------
-
-    /**
-     * Creates a new KassenzeichenChangeRequestServerAction object.
-     */
-    public KassenzeichenChangeRequestServerAction() {
-        try {
-            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        } catch (final Throwable t) {
-            LOG.fatal("this should never happen", t);
-        }
-    }
 
     //~ Methods ----------------------------------------------------------------
 
@@ -131,7 +114,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
     public Object execute(final Object boxy, final ServerActionParameter... params) {
         String stac = null;
         String email = null;
-        String changerequestJson = null;
+        String aenderungsanfrageJson = null;
 
         try {
             if (params != null) {
@@ -141,15 +124,15 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                     if (Parameter.STAC.toString().equals(key)) {
                         stac = (String)value;
                     } else if (Parameter.CHANGEREQUEST_JSON.toString().equals(key)) {
-                        changerequestJson = objectMapper.writeValueAsString(value);
+                        aenderungsanfrageJson = ((AenderungsanfrageJson)value).toJson();
                     } else if (Parameter.EMAIL.toString().equals(key)) {
                         email = (String)value;
                     }
                 }
             }
 
-            if ((stac != null) && (changerequestJson != null)) {
-                final AnfrageJson anfrage = AnfrageJson.readValue(changerequestJson);
+            if ((stac != null) && (aenderungsanfrageJson != null)) {
+                final AenderungsanfrageJson aenderungsanfrage = AenderungsanfrageJson.readValue(aenderungsanfrageJson);
                 final StacUtils.StacEntry stacEntry = StacUtils.getStacEntry(
                         stac,
                         getMetaService(),
@@ -161,7 +144,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
 
                 final Integer kassenzeichenNummerFromBean = (Integer)kassenzeichenBean.getProperty(
                         VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER);
-                final Integer kassenzeichenNummerFromJson = anfrage.getKassenzeichen();
+                final Integer kassenzeichenNummerFromObject = aenderungsanfrage.getKassenzeichen();
 
                 final CidsBean aenderungsanfrageSearchBean = AenderungsanfrageUtils.getAenderungsanfrageBean(
                         stacEntry,
@@ -176,7 +159,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                         getConnectionContext());
                 aenderungsanfrageBean.setProperty(
                     VerdisConstants.PROP.AENDERUNGSANFRAGE.CHANGES_JSON,
-                    objectMapper.writeValueAsString(anfrage));
+                    aenderungsanfrage.toJson());
                 aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID, stacEntry.getId());
                 aenderungsanfrageBean.setProperty(
                     VerdisConstants.PROP.AENDERUNGSANFRAGE.KASSENZEICHEN_NUMMER,

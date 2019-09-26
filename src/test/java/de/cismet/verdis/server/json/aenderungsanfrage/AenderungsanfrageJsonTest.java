@@ -1,3 +1,5 @@
+package de.cismet.verdis.server.json.aenderungsanfrage;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -5,20 +7,7 @@
  */
 
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.cismet.verdis.server.utils.aenderungsanfrage.AnfrageJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheAenderungFlaechenartJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheFlaechenartJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheAenderungGroesseJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.FlaecheAenderungJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.FlaechePruefungFlaechenartJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.FlaechePruefungGroesseJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.NachrichtAnhangJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.NachrichtJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.PruefungFlaechenartJson;
-import de.cismet.verdis.server.utils.aenderungsanfrage.PruefungGroesseJson;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -37,10 +26,12 @@ import org.junit.Test;
  *
  * @author pd
  */
-public class AnfrageJsonTest {
-    private ObjectMapper mapper;
+public class AenderungsanfrageJsonTest {
     
-    public AnfrageJsonTest() {
+    private static String JSON_ANFRAGE_COMPLEX = "de/cismet/verdis/server/json/aenderungsanfrage/anfrage_complex.json";
+    private static String JSON_ANFRAGE_SIMPLE = "de/cismet/verdis/server/json/aenderungsanfrage/anfrage_simple.json";
+    
+    public AenderungsanfrageJsonTest() {
     }
     
     @BeforeClass
@@ -53,19 +44,16 @@ public class AnfrageJsonTest {
     
     @Before
     public void setUp() {
-        mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);        
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
     }
     
     @After
     public void tearDown() {
     }
     
-    private AnfrageJson getSimpleAnfrageJson() {
+    private AenderungsanfrageJson getSimpleAnfrageJson() {
             final Map<String, FlaecheAenderungJson> flaechen = new HashMap<>();
-            flaechen.put("5", new FlaecheAenderungGroesseJson(12));
-            final AnfrageJson anfrageJson = new AnfrageJson(
+            flaechen.put("5", new FlaecheAenderungJson.Groesse(12));
+            final AenderungsanfrageJson anederungsanfrage = new AenderungsanfrageJson(
                     60004629,
                     flaechen,
                     new ArrayList<>(
@@ -79,17 +67,18 @@ public class AnfrageJsonTest {
                         )
                     )
             );
-            return anfrageJson;
+            return anederungsanfrage;
     }
 
-    private AnfrageJson getComplexAnfrageJson() {
+    private AenderungsanfrageJson getComplexAnfrageJson() {
         final Map<String, FlaecheAenderungJson> flaechen = new HashMap<>();
-        flaechen.put("1", new FlaecheAenderungGroesseJson(1430));            
-        flaechen.put("2", new FlaecheAenderungGroesseJson(921, new FlaechePruefungGroesseJson(new PruefungGroesseJson(921, "SteinbacherD102", new Date(47110815)))));
-        flaechen.put("8", new FlaecheAenderungFlaechenartJson(
+        flaechen.put("1", new FlaecheAenderungJson.Groesse(1430));            
+        flaechen.put("2", new FlaecheAenderungJson.Groesse(921, 
+                new FlaechePruefungJson.Groesse(new PruefungJson.Groesse(921, "SteinbacherD102", new Date(47110815)))));
+        flaechen.put("8", new FlaecheAenderungJson.Flaechenart(
                 new FlaecheFlaechenartJson("Gründachfläche", "GDF"), 
-                new FlaechePruefungFlaechenartJson(
-                        new PruefungFlaechenartJson(new FlaecheFlaechenartJson("Gründachfläche", "GDF"), "SteinbacherD102", new Date(47110815))
+                new FlaechePruefungJson.Flaechenart(
+                        new PruefungJson.Flaechenart(new FlaecheFlaechenartJson("Gründachfläche", "GDF"), "SteinbacherD102", new Date(47110815))
                 )
         ));
 
@@ -136,44 +125,44 @@ public class AnfrageJsonTest {
             "..."
         ));
 
-        final AnfrageJson anfrageJson = new AnfrageJson(
+        final AenderungsanfrageJson aenderungsanfrage = new AenderungsanfrageJson(
                 60004629,
                 flaechen,
                 nachrichten
         );
-        return anfrageJson;
+        return aenderungsanfrage;
     }
 
     @Test
     public void testComplexAnfrageJson() throws JsonProcessingException, Exception {
-        final AnfrageJson anfrageJson = getComplexAnfrageJson();
-        String anfrageString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(anfrageJson);
+        final AenderungsanfrageJson aenderungsanfrage = getComplexAnfrageJson();
+        String anfrageString = aenderungsanfrage.toJson(true);
         Assert.assertNotNull(anfrageString);
         System.out.println(anfrageString);            
 
-        final String testString = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("anfrage_complex.json"), "UTF-8");
+        final String testString = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(JSON_ANFRAGE_COMPLEX), "UTF-8");
         Assert.assertEquals(anfrageString, testString);
     }
     
     @Test
     public void testSimpleAnfrageJson() throws JsonProcessingException, Exception {
-        final AnfrageJson anfrageJson = getSimpleAnfrageJson();
-        String anfrageString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(anfrageJson);
+        final AenderungsanfrageJson aenderungsanfrage = getSimpleAnfrageJson();
+        String anfrageString = aenderungsanfrage.toJson(true);
         Assert.assertNotNull(anfrageString);
         System.out.println(anfrageString);            
 
-        final String testString = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("anfrage_simple.json"), "UTF-8");
+        final String testString = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(JSON_ANFRAGE_SIMPLE), "UTF-8");
         Assert.assertEquals(anfrageString, testString);
     }
     
     @Test
     public void testSimpleAnfrageJsonDeserializer() throws JsonProcessingException, Exception {
-            final AnfrageJson anfrageJson = getSimpleAnfrageJson();
-            String anfrageString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(anfrageJson);
+            final AenderungsanfrageJson aenderungsanfrage = getSimpleAnfrageJson();
+            String anfrageString = aenderungsanfrage.toJson();
             Assert.assertNotNull(anfrageString);
 
-            final AnfrageJson anfrageJsonTest = AnfrageJson.readValue(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(anfrageJson));            
-            final String testString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(anfrageJsonTest);
+            final AenderungsanfrageJson anfrageTest = AenderungsanfrageJson.readValue(aenderungsanfrage.toJson());            
+            final String testString = anfrageTest.toJson();
             System.out.println(testString);            
             Assert.assertEquals(anfrageString, testString);
         
@@ -181,12 +170,12 @@ public class AnfrageJsonTest {
     
     @Test
     public void testComplexAnfrageJsonDeserializer() throws JsonProcessingException, Exception {
-            final AnfrageJson anfrageJson = getComplexAnfrageJson();
-            String anfrageString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(anfrageJson);
+            final AenderungsanfrageJson aenderungsanfrage = getComplexAnfrageJson();
+            String anfrageString = aenderungsanfrage.toJson();
             Assert.assertNotNull(anfrageString);
 
-            final AnfrageJson anfrageJsonTest = AnfrageJson.readValue(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(anfrageJson));            
-            final String testString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(anfrageJsonTest);
+            final AenderungsanfrageJson anfrageTest = AenderungsanfrageJson.readValue(aenderungsanfrage.toJson());            
+            final String testString = anfrageTest.toJson();
             System.out.println(testString);            
             Assert.assertEquals(anfrageString, testString);
         

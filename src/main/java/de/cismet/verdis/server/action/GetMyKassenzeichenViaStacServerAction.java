@@ -25,8 +25,8 @@ import de.cismet.connectioncontext.ConnectionContextStore;
 
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
+import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
 import de.cismet.verdis.server.utils.StacUtils;
-import de.cismet.verdis.server.utils.aenderungsanfrage.AenderungsanfrageUtils;
 
 /**
  * DOCUMENT ME!

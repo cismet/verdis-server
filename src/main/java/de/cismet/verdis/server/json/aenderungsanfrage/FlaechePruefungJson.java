@@ -10,10 +10,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.cismet.verdis.server.utils.aenderungsanfrage;
+package de.cismet.verdis.server.json.aenderungsanfrage;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -35,18 +33,72 @@ import java.io.IOException;
 @Getter
 @Setter
 @AllArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class FlaechePruefungJson {
+public class FlaechePruefungJson extends AbstractJson {
 
     //~ Instance fields --------------------------------------------------------
 
-    private PruefungGroesseJson groesse;
-    private PruefungFlaechenartJson flaechenart;
-    private PruefungAnschlussgradJson anschlussgrad;
+    private PruefungJson.Groesse groesse;
+    private PruefungJson.Flaechenart flaechenart;
+    private PruefungJson.Anschlussgrad anschlussgrad;
 
     //~ Inner Classes ----------------------------------------------------------
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public static class Groesse extends FlaechePruefungJson {
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new FlaechePruefungGroesseJson object.
+         *
+         * @param  pruefung  DOCUMENT ME!
+         */
+        public Groesse(final PruefungJson.Groesse pruefung) {
+            super(pruefung, null, null);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public static class Flaechenart extends FlaechePruefungJson {
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new FlaechePruefungFlaechenartJson object.
+         *
+         * @param  pruefung  DOCUMENT ME!
+         */
+        public Flaechenart(final PruefungJson.Flaechenart pruefung) {
+            super(null, pruefung, null);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public static class Anschlussgrad extends FlaechePruefungJson {
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new FlaechePruefungAnschlussgradJson object.
+         *
+         * @param  pruefung  DOCUMENT ME!
+         */
+        public Anschlussgrad(final PruefungJson.Anschlussgrad pruefung) {
+            super(null, null, pruefung);
+        }
+    }
     /**
      * DOCUMENT ME!
      *
@@ -76,12 +128,12 @@ public class FlaechePruefungJson {
         public FlaechePruefungJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
             JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
-            final PruefungGroesseJson pruefungGroesse = on.has("groesse")
-                ? objectMapper.treeToValue(on.get("groesse"), PruefungGroesseJson.class) : null;
-            final PruefungFlaechenartJson pruefungFlaechenart = on.has("flaechenart")
-                ? objectMapper.treeToValue(on.get("flaechenart"), PruefungFlaechenartJson.class) : null;
-            final PruefungAnschlussgradJson pruefungAnschlussgrad = on.has("anschlussgrad")
-                ? objectMapper.treeToValue(on.get("anschlussgrad"), PruefungAnschlussgradJson.class) : null;
+            final PruefungJson.Groesse pruefungGroesse = on.has("groesse")
+                ? objectMapper.treeToValue(on.get("groesse"), PruefungJson.Groesse.class) : null;
+            final PruefungJson.Flaechenart pruefungFlaechenart = on.has("flaechenart")
+                ? objectMapper.treeToValue(on.get("flaechenart"), PruefungJson.Flaechenart.class) : null;
+            final PruefungJson.Anschlussgrad pruefungAnschlussgrad = on.has("anschlussgrad")
+                ? objectMapper.treeToValue(on.get("anschlussgrad"), PruefungJson.Anschlussgrad.class) : null;
             if ((pruefungGroesse == null) && (pruefungFlaechenart == null) && (pruefungAnschlussgrad == null)) {
                 throw new RuntimeException(
                     "invalid FlaechePruefungJson: neither anschlussgrad nor flaechenart nor groesse is set");
