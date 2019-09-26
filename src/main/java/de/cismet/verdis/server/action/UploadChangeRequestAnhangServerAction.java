@@ -42,6 +42,7 @@ import de.cismet.netutil.Proxy;
 import de.cismet.verdis.server.utils.aenderungsanfrage.AenderungsanfrageConf;
 import de.cismet.verdis.server.utils.aenderungsanfrage.AenderungsanfrageUtils;
 import de.cismet.verdis.server.utils.aenderungsanfrage.NachrichtAnhangJson;
+import java.net.URLEncoder;
 
 /**
  * DOCUMENT ME!
@@ -131,7 +132,7 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
             final AenderungsanfrageConf conf = AenderungsanfrageUtils.getConfFromServerResource();
             final String webdavUrl = conf.getWebdavUrl();
             final String uploadDirPath = webdavUrl.endsWith("/") ? webdavUrl : (webdavUrl + "/");
-            final String uploadFilePath = String.format("%s%s_%s", uploadDirPath, uuid, fileName);
+            final String uploadFilePath = String.format("%s%s_%s", uploadDirPath, uuid, URLEncoder.encode(fileName, "utf-8"));
             new SwingWorker<Void, Void>() {
 
                     @Override
