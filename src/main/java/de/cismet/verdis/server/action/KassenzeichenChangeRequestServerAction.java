@@ -24,6 +24,7 @@ import java.sql.Timestamp;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 
 import de.cismet.cids.dynamics.CidsBean;
 
@@ -39,7 +40,6 @@ import de.cismet.verdis.commons.constants.VerdisConstants;
 import de.cismet.verdis.server.json.aenderungsanfrage.AenderungsanfrageJson;
 import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
 import de.cismet.verdis.server.utils.StacUtils;
-import java.util.Objects;
 
 /**
  * DOCUMENT ME!
@@ -137,21 +137,21 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             if (stac == null) {
                 LOG.info("stac is null, returning false");
                 return false;
-            }                        
+            }
             if (aenderungsanfrageJson != null) {
                 LOG.info("aenderungsanfrageJson is null, returning false");
-                return false;                
+                return false;
             }
-            
+
             final StacUtils.StacEntry stacEntry = StacUtils.getStacEntry(
                     stac,
                     getMetaService(),
-                    getConnectionContext());            
+                    getConnectionContext());
             if (stacEntry == null) {
                 LOG.info("stacEntry not found, returning false");
                 return false;
             }
-            
+
             final CidsBean kassenzeichenBean = StacUtils.getKassenzeichenBean(
                     stacEntry,
                     getMetaService(),
@@ -162,12 +162,15 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             }
 
             final AenderungsanfrageJson aenderungsanfrage = AenderungsanfrageJson.readValue(aenderungsanfrageJson);
-            
+
             final Integer kassenzeichenNummerFromBean = (Integer)kassenzeichenBean.getProperty(
                     VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER);
-            final Integer kassenzeichenNummerFromObject = aenderungsanfrage.getKassenzeichen();            
+            final Integer kassenzeichenNummerFromObject = aenderungsanfrage.getKassenzeichen();
             if (!Objects.equals(kassenzeichenNummerFromBean, kassenzeichenNummerFromObject)) {
-                LOG.info(String.format("kassenzeichennummer from json (%d) not equals kassenzeichennummer from bean (%d), returning false", kassenzeichenNummerFromBean, kassenzeichenNummerFromObject));
+                LOG.info(String.format(
+                        "kassenzeichennummer from json (%d) not equals kassenzeichennummer from bean (%d), returning false",
+                        kassenzeichenNummerFromBean,
+                        kassenzeichenNummerFromObject));
                 return false;
             }
 
@@ -181,7 +184,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                     VerdisConstants.DOMAIN,
                     VerdisConstants.MC.AENDERUNGSANFRAGE,
                     getConnectionContext());
-            
+
             aenderungsanfrageBean.setProperty(
                 VerdisConstants.PROP.AENDERUNGSANFRAGE.CHANGES_JSON,
                 aenderungsanfrage.toJson());
@@ -194,7 +197,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                 VerdisConstants.PROP.AENDERUNGSANFRAGE.TIMESTAMP,
                 new Timestamp(new Date().getTime()));
             aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS, "PENDING");
-            
+
             if (MetaObject.NEW == aenderungsanfrageBean.getMetaObject().getStatus()) {
                 DomainServerImpl.getServerInstance()
                         .insertMetaObject(getUser(), aenderungsanfrageBean.getMetaObject(), getConnectionContext());
