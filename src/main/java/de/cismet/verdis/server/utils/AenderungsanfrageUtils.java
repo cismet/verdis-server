@@ -121,7 +121,7 @@ public class AenderungsanfrageUtils {
      *
      * @param   kassenzeichennumer  DOCUMENT ME!
      * @param   anfrageOrig         DOCUMENT ME!
-     * @param   anfrageChanged      DOCUMENT ME!
+     * @param   anfrage             DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -129,12 +129,12 @@ public class AenderungsanfrageUtils {
      */
     public AenderungsanfrageJson processAnfrage(final Integer kassenzeichennumer,
             final AenderungsanfrageJson anfrageOrig,
-            final AenderungsanfrageJson anfrageChanged) throws Exception {
+            final AenderungsanfrageJson anfrage) throws Exception {
         final AenderungsanfrageJson anfrageProcessed = new AenderungsanfrageJson(kassenzeichennumer);
         if (anfrageOrig == null) {
             // nicht bürger-nachrichten rausschmeissen
             // (ist neu, kann noch keine System- oder Sachbearbeiter-Nachricht enthalten)
-            for (final NachrichtJson nachricht : anfrageChanged.getNachrichten()) {
+            for (final NachrichtJson nachricht : anfrage.getNachrichten()) {
                 if (NachrichtJson.Typ.CITIZEN.equals(nachricht.getTyp())) {
                     anfrageProcessed.getNachrichten().add(nachricht);
                 }
@@ -142,8 +142,8 @@ public class AenderungsanfrageUtils {
 
             // pruefung rausschmeissen
             // (ist neu, kann noch nicht geprueft worden sein)
-            for (final String bezeichnung : anfrageChanged.getFlaechen().keySet()) {
-                final FlaecheAenderungJson flaeche = anfrageChanged.getFlaechen().get(bezeichnung);
+            for (final String bezeichnung : anfrage.getFlaechen().keySet()) {
+                final FlaecheAenderungJson flaeche = anfrage.getFlaechen().get(bezeichnung);
                 flaeche.setPruefung(null);
                 anfrageProcessed.getFlaechen().put(bezeichnung, flaeche);
             }
@@ -160,7 +160,7 @@ public class AenderungsanfrageUtils {
                 }
             }
             // dann neue Bürger-Nachrichten übernehmen
-            for (final NachrichtJson nachricht : anfrageChanged.getNachrichten()) {
+            for (final NachrichtJson nachricht : anfrage.getNachrichten()) {
                 final long nachrichtTimestamp = nachricht.getTimestamp().getTime();
                 if (NachrichtJson.Typ.CITIZEN.equals(nachricht.getTyp())
                             && (nachrichtTimestamp > newestNachrichtTimestamp)) {
@@ -173,15 +173,15 @@ public class AenderungsanfrageUtils {
                 final FlaecheAenderungJson flaeche = anfrageOrigCopy.getFlaechen().get(bezeichnung);
                 anfrageProcessed.getFlaechen().put(bezeichnung, flaeche);
             }
-            for (final String bezeichnung : anfrageChanged.getFlaechen().keySet()) {
+            for (final String bezeichnung : anfrage.getFlaechen().keySet()) {
                 if (!anfrageOrigCopy.getFlaechen().containsKey(bezeichnung)) {
                     // neue CR an Flächen übernehmen (aber ohne pruefung)
-                    final FlaecheAenderungJson flaecheJsonChanged = anfrageChanged.getFlaechen().get(bezeichnung);
+                    final FlaecheAenderungJson flaecheJsonChanged = anfrage.getFlaechen().get(bezeichnung);
                     flaecheJsonChanged.setPruefung(null);
                     anfrageProcessed.getFlaechen().put(bezeichnung, flaecheJsonChanged);
                 } else {
                     // veränderte CR an Flächen übernehmen, und pruefung entfernen
-                    final FlaecheAenderungJson flaecheChanged = anfrageChanged.getFlaechen().get(bezeichnung);
+                    final FlaecheAenderungJson flaecheChanged = anfrage.getFlaechen().get(bezeichnung);
                     final FlaecheAenderungJson flaecheOrig = anfrageOrigCopy.getFlaechen().get(bezeichnung);
 
                     anfrageProcessed.getFlaechen().put(bezeichnung, flaecheOrig);

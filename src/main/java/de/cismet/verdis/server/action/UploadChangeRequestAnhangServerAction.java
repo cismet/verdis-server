@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 
 import java.net.URLEncoder;
 
@@ -41,7 +42,6 @@ import de.cismet.netutil.Proxy;
 import de.cismet.verdis.server.json.aenderungsanfrage.NachrichtAnhangJson;
 import de.cismet.verdis.server.utils.AenderungsanfrageConf;
 import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
-import java.io.UnsupportedEncodingException;
 
 /**
  * DOCUMENT ME!

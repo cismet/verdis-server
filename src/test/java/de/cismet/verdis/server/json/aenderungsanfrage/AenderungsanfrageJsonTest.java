@@ -8,6 +8,7 @@ package de.cismet.verdis.server.json.aenderungsanfrage;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -28,9 +29,13 @@ import org.junit.Test;
  */
 public class AenderungsanfrageJsonTest {
     
-    private static String JSON_ANFRAGE_COMPLEX = "de/cismet/verdis/server/json/aenderungsanfrage/anfrage_complex.json";
-    private static String JSON_ANFRAGE_SIMPLE = "de/cismet/verdis/server/json/aenderungsanfrage/anfrage_simple.json";
-    
+    private static final String JSON_ANFRAGE_COMPLEX = "de/cismet/verdis/server/json/aenderungsanfrage/anfrage_complex.json";
+    private static final String JSON_ANFRAGE_SIMPLE = "de/cismet/verdis/server/json/aenderungsanfrage/anfrage_simple.json";
+
+    private static final String JSON_ANFRAGE_PROCESSING_ORIG = "de/cismet/verdis/server/json/aenderungsanfrage/anfrage_processing%d_orig.json";
+    private static final String JSON_ANFRAGE_PROCESSING_CHANGE = "de/cismet/verdis/server/json/aenderungsanfrage/anfrage_processing%d_change.json";
+    private static final String JSON_ANFRAGE_PROCESSING_PROCESSED = "de/cismet/verdis/server/json/aenderungsanfrage/anfrage_processing%d_processed.json";
+
     public AenderungsanfrageJsonTest() {
     }
     
@@ -133,51 +138,122 @@ public class AenderungsanfrageJsonTest {
         return aenderungsanfrage;
     }
 
+    private void testProcessing(final String aenderungsanfrageOrigJson, final String aenderungsanfrageChangeJson, final String aenderungsanfrageProcessedJson) throws Exception {
+        final AenderungsanfrageJson aenderungsanfrageOrig = aenderungsanfrageOrigJson != null ? AenderungsanfrageJson.readValue(aenderungsanfrageOrigJson) : null;
+        final AenderungsanfrageJson aenderungsanfrageChange = aenderungsanfrageChangeJson != null ? AenderungsanfrageJson.readValue(aenderungsanfrageChangeJson) : null;
+
+        final AenderungsanfrageJson aenderungsanfrageNew = AenderungsanfrageUtils.getInstance().processAnfrage(60004629, aenderungsanfrageOrig, aenderungsanfrageChange);               
+        final String aenderungsanfrageNewJson = aenderungsanfrageNew.toPrettyJson();
+        //System.out.println(aenderungsanfrageNewJson);                            
+        Assert.assertEquals(aenderungsanfrageNewJson, aenderungsanfrageProcessedJson);        
+    }
+    
     @Test
-    public void testComplexAnfrageJson() throws JsonProcessingException, Exception {
+    public void testProcessing1() throws JsonProcessingException, Exception {
+        final Integer jsonNumber = 1;
+        final String aenderungsanfrageOrigJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(String.format(JSON_ANFRAGE_PROCESSING_ORIG, jsonNumber)), "UTF-8");
+        final String aenderungsanfrageChangeJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(String.format(JSON_ANFRAGE_PROCESSING_CHANGE, jsonNumber)), "UTF-8");
+        final String aenderungsanfrageProcessedJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(String.format(JSON_ANFRAGE_PROCESSING_PROCESSED, jsonNumber)), "UTF-8");        
+        
+        testProcessing(null, aenderungsanfrageChangeJson, aenderungsanfrageProcessedJson);
+        testProcessing(aenderungsanfrageOrigJson, aenderungsanfrageChangeJson, aenderungsanfrageProcessedJson);
+    }
+
+    @Test
+    public void testProcessing2() throws JsonProcessingException, Exception {
+        final Integer jsonNumber = 2;
+        final String aenderungsanfrageOrigJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(String.format(JSON_ANFRAGE_PROCESSING_ORIG, jsonNumber)), "UTF-8");
+        final String aenderungsanfrageChangeJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(String.format(JSON_ANFRAGE_PROCESSING_CHANGE, jsonNumber)), "UTF-8");
+        final String aenderungsanfrageProcessedJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(String.format(JSON_ANFRAGE_PROCESSING_PROCESSED, jsonNumber)), "UTF-8");        
+        
+        testProcessing(aenderungsanfrageOrigJson, aenderungsanfrageChangeJson, aenderungsanfrageProcessedJson);
+    }
+
+    @Test
+    public void testProcessing3() throws JsonProcessingException, Exception {
+        final Integer jsonNumber = 3;
+        final String aenderungsanfrageOrigJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(String.format(JSON_ANFRAGE_PROCESSING_ORIG, jsonNumber)), "UTF-8");
+        final String aenderungsanfrageChangeJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(String.format(JSON_ANFRAGE_PROCESSING_CHANGE, jsonNumber)), "UTF-8");
+        final String aenderungsanfrageProcessedJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(String.format(JSON_ANFRAGE_PROCESSING_PROCESSED, jsonNumber)), "UTF-8");        
+        
+        testProcessing(aenderungsanfrageOrigJson, aenderungsanfrageChangeJson, aenderungsanfrageProcessedJson);
+    }
+
+    @Test
+    public void testProcessing4() throws JsonProcessingException, Exception {
+        final Integer jsonNumber = 4;
+        final String aenderungsanfrageOrigJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(String.format(JSON_ANFRAGE_PROCESSING_ORIG, jsonNumber)), "UTF-8");
+        final String aenderungsanfrageChangeJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(String.format(JSON_ANFRAGE_PROCESSING_CHANGE, jsonNumber)), "UTF-8");
+        final String aenderungsanfrageProcessedJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(String.format(JSON_ANFRAGE_PROCESSING_PROCESSED, jsonNumber)), "UTF-8");        
+        
+        testProcessing(aenderungsanfrageOrigJson, aenderungsanfrageChangeJson, aenderungsanfrageProcessedJson);
+    }
+    
+    @Test
+    public void testProcessing5() throws JsonProcessingException, Exception {
+        final Integer jsonNumber = 5;
+        final String aenderungsanfrageOrigJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(String.format(JSON_ANFRAGE_PROCESSING_ORIG, jsonNumber)), "UTF-8");
+        final String aenderungsanfrageChangeJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(String.format(JSON_ANFRAGE_PROCESSING_CHANGE, jsonNumber)), "UTF-8");
+        final String aenderungsanfrageProcessedJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(String.format(JSON_ANFRAGE_PROCESSING_PROCESSED, jsonNumber)), "UTF-8");        
+        
+        testProcessing(aenderungsanfrageOrigJson, aenderungsanfrageChangeJson, aenderungsanfrageProcessedJson);
+    }
+
+    @Test
+    public void testProcessing6() throws JsonProcessingException, Exception {
+        final Integer jsonNumber = 6;
+        final String aenderungsanfrageOrigJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(String.format(JSON_ANFRAGE_PROCESSING_ORIG, jsonNumber)), "UTF-8");
+        final String aenderungsanfrageChangeJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(String.format(JSON_ANFRAGE_PROCESSING_CHANGE, jsonNumber)), "UTF-8");
+        final String aenderungsanfrageProcessedJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(String.format(JSON_ANFRAGE_PROCESSING_PROCESSED, jsonNumber)), "UTF-8");        
+        
+        testProcessing(aenderungsanfrageOrigJson, aenderungsanfrageChangeJson, aenderungsanfrageProcessedJson);
+    }
+
+    @Test
+    public void testComplexAnfrageSerializer() throws JsonProcessingException, Exception {
         final AenderungsanfrageJson aenderungsanfrage = getComplexAnfrageJson();
-        String anfrageString = aenderungsanfrage.toJson(true);
-        Assert.assertNotNull(anfrageString);
-        System.out.println(anfrageString);            
+        final String aenderungsanfrageJson = aenderungsanfrage.toPrettyJson();
+        Assert.assertNotNull(aenderungsanfrageJson);
+        //System.out.println(aenderungsanfrageJson);            
 
-        final String testString = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(JSON_ANFRAGE_COMPLEX), "UTF-8");
-        Assert.assertEquals(anfrageString, testString);
+        final String aenderungsanfrageComplexJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(JSON_ANFRAGE_COMPLEX), "UTF-8");
+        Assert.assertEquals(aenderungsanfrageJson, aenderungsanfrageComplexJson);
     }
     
     @Test
-    public void testSimpleAnfrageJson() throws JsonProcessingException, Exception {
+    public void testSimpleAnfrageSerializer() throws JsonProcessingException, Exception {
         final AenderungsanfrageJson aenderungsanfrage = getSimpleAnfrageJson();
-        String anfrageString = aenderungsanfrage.toJson(true);
-        Assert.assertNotNull(anfrageString);
-        System.out.println(anfrageString);            
+        final String aenderungsanfrageJson = aenderungsanfrage.toPrettyJson();
+        Assert.assertNotNull(aenderungsanfrageJson);
+        //System.out.println(aenderungsanfrageJson);            
 
-        final String testString = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(JSON_ANFRAGE_SIMPLE), "UTF-8");
-        Assert.assertEquals(anfrageString, testString);
+        final String aenderungsanfrageSimpleJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(JSON_ANFRAGE_SIMPLE), "UTF-8");
+        Assert.assertEquals(aenderungsanfrageJson, aenderungsanfrageSimpleJson);
     }
     
     @Test
-    public void testSimpleAnfrageJsonDeserializer() throws JsonProcessingException, Exception {
-            final AenderungsanfrageJson aenderungsanfrage = getSimpleAnfrageJson();
-            String anfrageString = aenderungsanfrage.toJson();
-            Assert.assertNotNull(anfrageString);
+    public void testSimpleAnfrageDeserializer() throws JsonProcessingException, Exception {
+        final AenderungsanfrageJson aenderungsanfrage = getSimpleAnfrageJson();
+        final String aenderungsanfrageJson = aenderungsanfrage.toJson();
+        Assert.assertNotNull(aenderungsanfrageJson);
+        //System.out.println(aenderungsanfrageJson);            
 
-            final AenderungsanfrageJson anfrageTest = AenderungsanfrageJson.readValue(aenderungsanfrage.toJson());            
-            final String testString = anfrageTest.toJson();
-            System.out.println(testString);            
-            Assert.assertEquals(anfrageString, testString);
-        
+        final AenderungsanfrageJson aenderungsanfrageDeserialized = AenderungsanfrageJson.readValue(aenderungsanfrage.toJson());                    
+        final String aenderungsanfrageDeserializedJson = aenderungsanfrageDeserialized.toJson();        
+        //System.out.println(aenderungsanfrageDeserializedJson);            
+        Assert.assertEquals(aenderungsanfrageJson, aenderungsanfrageDeserializedJson);        
     }
     
     @Test
-    public void testComplexAnfrageJsonDeserializer() throws JsonProcessingException, Exception {
-            final AenderungsanfrageJson aenderungsanfrage = getComplexAnfrageJson();
-            String anfrageString = aenderungsanfrage.toJson();
-            Assert.assertNotNull(anfrageString);
+    public void testComplexAnfrageDeserializer() throws JsonProcessingException, Exception {
+        final AenderungsanfrageJson aenderungsanfrage = getComplexAnfrageJson();
+        final String aenderungsanfrageJson = aenderungsanfrage.toJson();
+        Assert.assertNotNull(aenderungsanfrageJson);
+        //System.out.println(aenderungsanfrageJson);
 
-            final AenderungsanfrageJson anfrageTest = AenderungsanfrageJson.readValue(aenderungsanfrage.toJson());            
-            final String testString = anfrageTest.toJson();
-            System.out.println(testString);            
-            Assert.assertEquals(anfrageString, testString);
-        
+        final AenderungsanfrageJson aenderungsanfrageDeserialized = AenderungsanfrageJson.readValue(aenderungsanfrage.toJson());            
+        final String aenderungsanfrageDeserializedJson = aenderungsanfrageDeserialized.toJson();
+        //System.out.println(aenderungsanfrageDeserializedJson);            
+        Assert.assertEquals(aenderungsanfrageJson, aenderungsanfrageDeserializedJson);        
     }
 }

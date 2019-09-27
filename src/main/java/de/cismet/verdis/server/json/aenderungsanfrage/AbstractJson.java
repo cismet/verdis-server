@@ -36,26 +36,20 @@ abstract class AbstractJson {
      * @throws  JsonProcessingException  DOCUMENT ME!
      */
     public String toJson() throws JsonProcessingException {
-        return toJson(false);
+        return AenderungsanfrageUtils.getInstance().getMapper().writeValueAsString(this);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   pretty  DOCUMENT ME!
-     *
      * @return  DOCUMENT ME!
      *
      * @throws  JsonProcessingException  DOCUMENT ME!
      */
-    public String toJson(final boolean pretty) throws JsonProcessingException {
-        if (pretty) {
-            return AenderungsanfrageUtils.getInstance()
-                        .getMapper()
-                        .writerWithDefaultPrettyPrinter()
-                        .writeValueAsString(this);
-        } else {
-            return AenderungsanfrageUtils.getInstance().getMapper().writeValueAsString(this);
-        }
+    public String toPrettyJson() throws JsonProcessingException {
+        return AenderungsanfrageUtils.getInstance()
+                    .getMapper()
+                    .writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(this);
     }
 }

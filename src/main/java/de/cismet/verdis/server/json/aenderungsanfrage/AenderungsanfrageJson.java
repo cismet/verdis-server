@@ -64,7 +64,7 @@ public class AenderungsanfrageJson extends AbstractJson {
      * @param  kassenzeichen  DOCUMENT ME!
      */
     public AenderungsanfrageJson(final Integer kassenzeichen) {
-        this(kassenzeichen, null, new ArrayList<NachrichtJson>());
+        this(kassenzeichen, new HashMap<String, FlaecheAenderungJson>(), new ArrayList<NachrichtJson>());
     }
 
     /**
@@ -131,9 +131,9 @@ public class AenderungsanfrageJson extends AbstractJson {
                     nachrichten.add(objectMapper.treeToValue(iterator.next(), NachrichtJson.class));
                 }
             }
-            final Map<String, FlaecheAenderungJson> flaechen;
+            final Map<String, FlaecheAenderungJson> flaechen = new HashMap<>();
             if (on.has("flaechen") && on.get("flaechen").isObject()) {
-                flaechen = new HashMap<>();
+                ;
                 final Iterator<Map.Entry<String, JsonNode>> fieldIterator = on.get("flaechen").fields();
                 while (fieldIterator.hasNext()) {
                     final Map.Entry<String, JsonNode> fieldEntry = fieldIterator.next();
@@ -143,8 +143,6 @@ public class AenderungsanfrageJson extends AbstractJson {
                         bezeichnung,
                         objectMapper.treeToValue(fieldEntry.getValue(), FlaecheAenderungJson.class));
                 }
-            } else {
-                flaechen = null;
             }
 
             if (kassenzeichen == null) {
