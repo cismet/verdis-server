@@ -41,6 +41,7 @@ import de.cismet.netutil.Proxy;
 import de.cismet.verdis.server.json.aenderungsanfrage.NachrichtAnhangJson;
 import de.cismet.verdis.server.utils.AenderungsanfrageConf;
 import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
+import java.io.UnsupportedEncodingException;
 
 /**
  * DOCUMENT ME!
@@ -120,7 +121,7 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
                     "%s%s_%s",
                     uploadDirPath,
                     uuid,
-                    URLEncoder.encode(fileName, "utf-8"));
+                    URLEncoder.encode(fileName, "utf-8").replaceAll("\\+", "%20"));
             new SwingWorker<Void, Void>() {
 
                     @Override
