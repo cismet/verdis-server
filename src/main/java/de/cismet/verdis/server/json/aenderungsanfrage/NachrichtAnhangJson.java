@@ -25,6 +25,8 @@ import lombok.Setter;
 
 import java.io.IOException;
 
+import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
+
 /**
  * DOCUMENT ME!
  *
@@ -39,6 +41,21 @@ public class NachrichtAnhangJson extends AbstractJson {
 
     private String name;
     private String uuid;
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   json  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static NachrichtAnhangJson readValue(final String json) throws Exception {
+        return AenderungsanfrageUtils.getInstance().getMapper().readValue(json, NachrichtAnhangJson.class);
+    }
 
     //~ Inner Classes ----------------------------------------------------------
 

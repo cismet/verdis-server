@@ -12,8 +12,6 @@
  */
 package de.cismet.verdis.server.json.aenderungsanfrage;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
