@@ -61,66 +61,9 @@ public class NachrichtJson extends AbstractJson {
     private Typ typ;
     private Date timestamp;
     private String nachricht;
+    private NachrichtParameterJson nachrichtenParameter;
     private String absender;
     private List<NachrichtAnhangJson> anhang;
-
-    //~ Constructors -----------------------------------------------------------
-
-    /**
-     * Creates a new NachrichtJson object.
-     *
-     * @param  timestamp  DOCUMENT ME!
-     * @param  nachricht  DOCUMENT ME!
-     */
-    public NachrichtJson(final Date timestamp, final String nachricht) {
-        this(Typ.SYSTEM, timestamp, nachricht, null, new ArrayList<NachrichtAnhangJson>());
-    }
-
-    /**
-     * Creates a new NachrichtJson object.
-     *
-     * @param  typ        DOCUMENT ME!
-     * @param  timestamp  DOCUMENT ME!
-     * @param  nachricht  DOCUMENT ME!
-     * @param  absender   DOCUMENT ME!
-     */
-    public NachrichtJson(final Typ typ, final Date timestamp, final String nachricht, final String absender) {
-        this(typ, timestamp, nachricht, absender, new ArrayList<NachrichtAnhangJson>());
-    }
-
-    /**
-     * Creates a new NachrichtJson object.
-     *
-     * @param  draft      DOCUMENT ME!
-     * @param  typ        DOCUMENT ME!
-     * @param  timestamp  DOCUMENT ME!
-     * @param  nachricht  DOCUMENT ME!
-     * @param  absender   DOCUMENT ME!
-     */
-    public NachrichtJson(final Boolean draft,
-            final Typ typ,
-            final Date timestamp,
-            final String nachricht,
-            final String absender) {
-        this(draft, typ, timestamp, nachricht, absender, new ArrayList<NachrichtAnhangJson>());
-    }
-
-    /**
-     * Creates a new NachrichtJson object.
-     *
-     * @param  typ        DOCUMENT ME!
-     * @param  timestamp  DOCUMENT ME!
-     * @param  nachricht  DOCUMENT ME!
-     * @param  absender   DOCUMENT ME!
-     * @param  anhang     DOCUMENT ME!
-     */
-    public NachrichtJson(final Typ typ,
-            final Date timestamp,
-            final String nachricht,
-            final String absender,
-            final List<NachrichtAnhangJson> anhang) {
-        this(null, typ, timestamp, nachricht, absender, anhang);
-    }
 
     //~ Inner Classes ----------------------------------------------------------
 
@@ -158,6 +101,8 @@ public class NachrichtJson extends AbstractJson {
             final Date timestamp = on.has("timestamp") ? new Date(on.get("timestamp").longValue()) : null;
             final String absender = on.has("absender") ? on.get("absender").textValue() : null;
             final String nachricht = on.has("nachricht") ? on.get("nachricht").textValue() : null;
+            final NachrichtParameterJson nachrichtenParameter = on.has("nachrichtenParameter")
+                ? objectMapper.treeToValue(on.get("nachrichtenParameter"), NachrichtParameterJson.class) : null;
             final List<NachrichtAnhangJson> anhang = new ArrayList<>();
             if (on.has("anhang") && on.get("anhang").isArray()) {
                 final Iterator<JsonNode> iterator = on.get("anhang").iterator();
@@ -169,7 +114,123 @@ public class NachrichtJson extends AbstractJson {
                 throw new RuntimeException(
                     "invalid NachrichtJson: neither nachricht nor timestamp is set");
             }
-            return new NachrichtJson(draft, typ, timestamp, nachricht, absender, anhang);
+            return new NachrichtJson(draft, typ, timestamp, nachricht, nachrichtenParameter, absender, anhang);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public static class System extends NachrichtJson {
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new System object.
+         *
+         * @param  timestamp             DOCUMENT ME!
+         * @param  nachrichtenParameter  DOCUMENT ME!
+         * @param  verursacher           DOCUMENT ME!
+         */
+        public System(final Date timestamp,
+                final NachrichtParameterJson nachrichtenParameter,
+                final String verursacher) {
+            super(
+                null,
+                Typ.SYSTEM,
+                timestamp,
+                null,
+                nachrichtenParameter,
+                verursacher,
+                new ArrayList<NachrichtAnhangJson>());
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public static class Buerger extends NachrichtJson {
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new Buerger object.
+         *
+         * @param  timestamp  DOCUMENT ME!
+         * @param  nachricht  DOCUMENT ME!
+         * @param  absender   DOCUMENT ME!
+         */
+        public Buerger(final Date timestamp, final String nachricht, final String absender) {
+            super(null, Typ.CITIZEN, timestamp, nachricht, null, absender, new ArrayList<NachrichtAnhangJson>());
+        }
+
+        /**
+         * Creates a new Buerger object.
+         *
+         * @param  timestamp  DOCUMENT ME!
+         * @param  nachricht  DOCUMENT ME!
+         * @param  absender   DOCUMENT ME!
+         * @param  anhang     DOCUMENT ME!
+         */
+        public Buerger(final Date timestamp,
+                final String nachricht,
+                final String absender,
+                final List<NachrichtAnhangJson> anhang) {
+            super(null, Typ.CITIZEN, timestamp, nachricht, null, absender, anhang);
+        }
+
+        /**
+         * Creates a new Buerger object.
+         *
+         * @param  timestamp  DOCUMENT ME!
+         * @param  nachricht  DOCUMENT ME!
+         * @param  absender   DOCUMENT ME!
+         * @param  draft      DOCUMENT ME!
+         */
+        public Buerger(final Date timestamp, final String nachricht, final String absender, final boolean draft) {
+            super(draft, Typ.CITIZEN, timestamp, nachricht, null, absender, new ArrayList<NachrichtAnhangJson>());
+        }
+
+        /**
+         * Creates a new Buerger object.
+         *
+         * @param  timestamp  DOCUMENT ME!
+         * @param  nachricht  DOCUMENT ME!
+         * @param  absender   DOCUMENT ME!
+         * @param  anhang     DOCUMENT ME!
+         * @param  draft      DOCUMENT ME!
+         */
+        public Buerger(final Date timestamp,
+                final String nachricht,
+                final String absender,
+                final List<NachrichtAnhangJson> anhang,
+                final boolean draft) {
+            super(draft, Typ.CITIZEN, timestamp, nachricht, null, absender, anhang);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public static class Sachberarbeiter extends NachrichtJson {
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new Sachberarbeiter object.
+         *
+         * @param  timestamp  DOCUMENT ME!
+         * @param  nachricht  DOCUMENT ME!
+         * @param  absender   DOCUMENT ME!
+         */
+        public Sachberarbeiter(final Date timestamp, final String nachricht, final String absender) {
+            super(null, Typ.CLERK, timestamp, nachricht, null, absender, new ArrayList<NachrichtAnhangJson>());
         }
     }
 }

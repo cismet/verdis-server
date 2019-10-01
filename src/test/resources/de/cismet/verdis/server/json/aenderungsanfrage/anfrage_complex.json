@@ -40,7 +40,7 @@
     "typ" : "CITIZEN",
     "timestamp" : 1562060700000,
     "nachricht" : "Fläche B ist kleiner. Sie ist nicht 40 m² groß, sondern nur 37 m². Sie ist auch nicht an dem Kanal angeschlossen, sondern besteht aus Ökopflaster und versickert. Siehe Foto.",
-    "absender" : "...",
+    "absender" : "Bürger",
     "anhang" : [ {
       "name" : "Ökopflasterfoto.pdf",
       "uuid" : "1337"
@@ -53,12 +53,20 @@
   }, {
     "typ" : "SYSTEM",
     "timestamp" : 1562136360000,
-    "nachricht" : "SYSTEMMESSAGE({ type: 'changed', flaeche: '1' ,flaechenart:'Dachfläche'})"
+    "nachrichtenParameter" : {
+      "type" : "REJECTED",
+      "flaeche" : "1",
+      "anschlussgrad" : {
+        "grad" : "Dachfläche",
+        "grad_abkuerzung" : "DF"
+      }
+    },
+    "absender" : "Dirk Steinbacher"
   }, {
     "typ" : "CITIZEN",
     "timestamp" : 1562179560000,
     "nachricht" : "Hier das gewünschte Foto. Die Zufahrt entwässert seitlich in die Beete.",
-    "absender" : "...",
+    "absender" : "Bürger",
     "anhang" : [ {
       "name" : "Foto2.pdf",
       "uuid" : "13374"
@@ -71,12 +79,20 @@
   }, {
     "typ" : "SYSTEM",
     "timestamp" : 1562227560000,
-    "nachricht" : "SYSTEMMESSAGE({ type: 'changed', flaeche: '1', flaechenart:'Dachfläche' })"
+    "nachrichtenParameter" : {
+      "type" : "CHANGED",
+      "flaeche" : "1",
+      "anschlussgrad" : {
+        "grad" : "Dachfläche",
+        "grad_abkuerzung" : "DF"
+      }
+    },
+    "absender" : "Dirk Steinbacher"
   }, {
     "draft" : true,
     "typ" : "CITIZEN",
     "timestamp" : 1562486760000,
     "nachricht" : "So wird eine Nachricht visualisiert, die noch nicht abgesschickt ist.",
-    "absender" : "..."
+    "absender" : "Bürger"
   } ]
 }

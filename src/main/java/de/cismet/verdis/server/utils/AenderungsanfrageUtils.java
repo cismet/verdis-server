@@ -42,6 +42,7 @@ import de.cismet.verdis.server.json.aenderungsanfrage.FlaecheFlaechenartJson;
 import de.cismet.verdis.server.json.aenderungsanfrage.FlaechePruefungJson;
 import de.cismet.verdis.server.json.aenderungsanfrage.NachrichtAnhangJson;
 import de.cismet.verdis.server.json.aenderungsanfrage.NachrichtJson;
+import de.cismet.verdis.server.json.aenderungsanfrage.NachrichtParameterJson;
 import de.cismet.verdis.server.json.aenderungsanfrage.PruefungJson;
 import de.cismet.verdis.server.search.AenderungsanfrageSearchStatement;
 
@@ -76,6 +77,8 @@ public class AenderungsanfrageUtils {
             module.addDeserializer(
                 PruefungJson.Anschlussgrad.class,
                 new PruefungJson.Anschlussgrad.Deserializer(mapper));
+            module.addDeserializer(NachrichtParameterJson.class,
+                new NachrichtParameterJson.Deserializer(mapper));
             module.addDeserializer(PruefungJson.Groesse.class, new PruefungJson.Groesse.Deserializer(mapper));
             module.addDeserializer(FlaechePruefungJson.class, new FlaechePruefungJson.Deserializer(mapper));
             module.addDeserializer(FlaecheAenderungJson.class, new FlaecheAenderungJson.Deserializer(mapper));

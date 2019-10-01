@@ -62,8 +62,8 @@ public class AenderungsanfrageJsonTest {
                     60004629,
                     flaechen,
                     new ArrayList<>(
-                        Arrays.asList(
-                            new NachrichtJson(NachrichtJson.Typ.CITIZEN,
+                        (List)Arrays.asList(
+                            new NachrichtJson.Buerger(
                                 new Date(47110815),
                                 "Da passt was nicht weil isso, siehe lustiges pdf !",
                                 "Bürger",
@@ -88,46 +88,48 @@ public class AenderungsanfrageJsonTest {
         ));
 
         final List<NachrichtJson> nachrichten = new ArrayList<>();
-        nachrichten.add(new NachrichtJson(NachrichtJson.Typ.CLERK,
+        nachrichten.add(new NachrichtJson.Sachberarbeiter(
             new Date(1562059800000l),
             "Sehr geehrte*r Nutzer*in, hier haben Sie die Möglichkeit Änderungen an Ihren Flächen mitzuteilen.",
             "verdis"
         ));
-        nachrichten.add(new NachrichtJson(NachrichtJson.Typ.CITIZEN,
+        nachrichten.add(new NachrichtJson.Buerger(
             new Date(1562060700000l),
             "Fläche B ist kleiner. Sie ist nicht 40 m² groß, sondern nur 37 m². Sie ist auch nicht an dem Kanal angeschlossen, sondern besteht aus Ökopflaster und versickert. Siehe Foto.",
-            "...",
+            "Bürger",
             Arrays.asList(new NachrichtAnhangJson("Ökopflasterfoto.pdf", "1337"))                
         ));
-        nachrichten.add(new NachrichtJson(NachrichtJson.Typ.CLERK,
+        nachrichten.add(new NachrichtJson.Sachberarbeiter(
             new Date(1562136300000l),
             "Die Änderung der Fläche werde ich übernehmen. Das Foto ist nicht ausreichend. Bitte übersenden Sie zusätzlich ein Foto der gesamten Fläche. Ökopflaster wird auch nicht als vollständig versickernd angesehen, sondern muss laut Satzung mit 70% seiner Flächen zur Gebührenerhebung herangezogen werden.",
             "Dirk Steinbacher" 
         ));
-        nachrichten.add(new NachrichtJson(
+        nachrichten.add(new NachrichtJson.System(
             new Date(1562136360000l),
-            "SYSTEMMESSAGE({ type: 'changed', flaeche: '1' ,flaechenart:'Dachfläche'})"
+            new NachrichtParameterJson.Anschlussgrad(NachrichtParameterJson.Type.REJECTED, "1", new FlaecheAnschlussgradJson("Dachfläche", "DF")),
+            "Dirk Steinbacher"                
         ));
-        nachrichten.add(new NachrichtJson(NachrichtJson.Typ.CITIZEN,
+        nachrichten.add(new NachrichtJson.Buerger(
             new Date(1562179560000l),
             "Hier das gewünschte Foto. Die Zufahrt entwässert seitlich in die Beete.",
-            "...",
+            "Bürger",
             Arrays.asList(new NachrichtAnhangJson("Foto2.pdf", "13374"))                
         ));
-        nachrichten.add(new NachrichtJson(NachrichtJson.Typ.CLERK,
+        nachrichten.add(new NachrichtJson.Sachberarbeiter(
             new Date(1562227500000l),
             "Auf dem 2ten Foto sind Rasenkantensteine und ein Gully zu erkennen. Aus diesem Grund muss ich für diese Fläche 24 m² (70% von 37 m²) zur Veranlagung an das Steueramt weitergeben.",
             "Dirk Steinbacher" 
         ));
-        nachrichten.add(new NachrichtJson(
+        nachrichten.add(new NachrichtJson.System(
             new Date(1562227560000l),
-            "SYSTEMMESSAGE({ type: 'changed', flaeche: '1', flaechenart:'Dachfläche' })"
+            new NachrichtParameterJson.Anschlussgrad(NachrichtParameterJson.Type.CHANGED, "1", new FlaecheAnschlussgradJson("Dachfläche", "DF")), 
+            "Dirk Steinbacher"                
         ));
-        nachrichten.add(new NachrichtJson(Boolean.TRUE, 
-            NachrichtJson.Typ.CITIZEN,
+        nachrichten.add(new NachrichtJson.Buerger(
             new Date(1562486760000l),
             "So wird eine Nachricht visualisiert, die noch nicht abgesschickt ist.",
-            "..."
+            "Bürger",
+            true
         ));
 
         final AenderungsanfrageJson aenderungsanfrage = new AenderungsanfrageJson(
@@ -214,7 +216,7 @@ public class AenderungsanfrageJsonTest {
         final AenderungsanfrageJson aenderungsanfrage = getComplexAnfrageJson();
         final String aenderungsanfrageJson = aenderungsanfrage.toPrettyJson();
         Assert.assertNotNull(aenderungsanfrageJson);
-        //System.out.println(aenderungsanfrageJson);            
+        System.out.println(aenderungsanfrageJson);            
 
         final String aenderungsanfrageComplexJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(JSON_ANFRAGE_COMPLEX), "UTF-8");
         Assert.assertEquals(aenderungsanfrageJson, aenderungsanfrageComplexJson);
@@ -234,12 +236,12 @@ public class AenderungsanfrageJsonTest {
     @Test
     public void testSimpleAnfrageDeserializer() throws JsonProcessingException, Exception {
         final AenderungsanfrageJson aenderungsanfrage = getSimpleAnfrageJson();
-        final String aenderungsanfrageJson = aenderungsanfrage.toJson();
+        final String aenderungsanfrageJson = aenderungsanfrage.toPrettyJson();
         Assert.assertNotNull(aenderungsanfrageJson);
         //System.out.println(aenderungsanfrageJson);            
 
-        final AenderungsanfrageJson aenderungsanfrageDeserialized = AenderungsanfrageJson.readValue(aenderungsanfrage.toJson());                    
-        final String aenderungsanfrageDeserializedJson = aenderungsanfrageDeserialized.toJson();        
+        final AenderungsanfrageJson aenderungsanfrageDeserialized = AenderungsanfrageJson.readValue(aenderungsanfrage.toPrettyJson());                    
+        final String aenderungsanfrageDeserializedJson = aenderungsanfrageDeserialized.toPrettyJson();        
         //System.out.println(aenderungsanfrageDeserializedJson);            
         Assert.assertEquals(aenderungsanfrageJson, aenderungsanfrageDeserializedJson);        
     }
@@ -247,12 +249,12 @@ public class AenderungsanfrageJsonTest {
     @Test
     public void testComplexAnfrageDeserializer() throws JsonProcessingException, Exception {
         final AenderungsanfrageJson aenderungsanfrage = getComplexAnfrageJson();
-        final String aenderungsanfrageJson = aenderungsanfrage.toJson();
+        final String aenderungsanfrageJson = aenderungsanfrage.toPrettyJson();
         Assert.assertNotNull(aenderungsanfrageJson);
         //System.out.println(aenderungsanfrageJson);
 
-        final AenderungsanfrageJson aenderungsanfrageDeserialized = AenderungsanfrageJson.readValue(aenderungsanfrage.toJson());            
-        final String aenderungsanfrageDeserializedJson = aenderungsanfrageDeserialized.toJson();
+        final AenderungsanfrageJson aenderungsanfrageDeserialized = AenderungsanfrageJson.readValue(aenderungsanfrage.toPrettyJson());            
+        final String aenderungsanfrageDeserializedJson = aenderungsanfrageDeserialized.toPrettyJson();
         //System.out.println(aenderungsanfrageDeserializedJson);            
         Assert.assertEquals(aenderungsanfrageJson, aenderungsanfrageDeserializedJson);        
     }
