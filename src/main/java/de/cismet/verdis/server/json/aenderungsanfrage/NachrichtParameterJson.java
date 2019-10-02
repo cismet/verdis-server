@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -36,6 +37,7 @@ import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
 @Getter
 @Setter
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class NachrichtParameterJson extends AbstractJson {
 
     //~ Enums ------------------------------------------------------------------

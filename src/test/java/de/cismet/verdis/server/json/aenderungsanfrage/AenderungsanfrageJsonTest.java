@@ -216,7 +216,7 @@ public class AenderungsanfrageJsonTest {
         final AenderungsanfrageJson aenderungsanfrage = getComplexAnfrageJson();
         final String aenderungsanfrageJson = aenderungsanfrage.toPrettyJson();
         Assert.assertNotNull(aenderungsanfrageJson);
-        System.out.println(aenderungsanfrageJson);            
+        //System.out.println(aenderungsanfrageJson);            
 
         final String aenderungsanfrageComplexJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(JSON_ANFRAGE_COMPLEX), "UTF-8");
         Assert.assertEquals(aenderungsanfrageJson, aenderungsanfrageComplexJson);
@@ -258,4 +258,13 @@ public class AenderungsanfrageJsonTest {
         //System.out.println(aenderungsanfrageDeserializedJson);            
         Assert.assertEquals(aenderungsanfrageJson, aenderungsanfrageDeserializedJson);        
     }
+    
+    @Test
+    public void testEqualsTest() throws JsonProcessingException, Exception {
+        final AenderungsanfrageJson aenderungsanfrage1 = getComplexAnfrageJson();
+        final AenderungsanfrageJson aenderungsanfrage2 = getComplexAnfrageJson();
+        Assert.assertEquals(aenderungsanfrage1.toPrettyJson(), aenderungsanfrage2.toPrettyJson());        
+        Assert.assertEquals(aenderungsanfrage1, aenderungsanfrage2);        
+    }
+    
 }

@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -48,6 +49,7 @@ import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
 @Getter
 @Setter
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class AenderungsanfrageJson extends AbstractJson {
 
     //~ Instance fields --------------------------------------------------------
@@ -133,7 +135,6 @@ public class AenderungsanfrageJson extends AbstractJson {
             }
             final Map<String, FlaecheAenderungJson> flaechen = new HashMap<>();
             if (on.has("flaechen") && on.get("flaechen").isObject()) {
-                ;
                 final Iterator<Map.Entry<String, JsonNode>> fieldIterator = on.get("flaechen").fields();
                 while (fieldIterator.hasNext()) {
                     final Map.Entry<String, JsonNode> fieldEntry = fieldIterator.next();

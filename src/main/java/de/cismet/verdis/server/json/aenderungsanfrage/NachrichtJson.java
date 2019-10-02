@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -39,6 +40,7 @@ import java.util.List;
 @Getter
 @Setter
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class NachrichtJson extends AbstractJson {
 
     //~ Enums ------------------------------------------------------------------
@@ -231,6 +233,21 @@ public class NachrichtJson extends AbstractJson {
          */
         public Sachberarbeiter(final Date timestamp, final String nachricht, final String absender) {
             super(null, Typ.CLERK, timestamp, nachricht, null, absender, new ArrayList<NachrichtAnhangJson>());
+        }
+
+        /**
+         * Creates a new Sachberarbeiter object.
+         *
+         * @param  draft      DOCUMENT ME!
+         * @param  timestamp  DOCUMENT ME!
+         * @param  nachricht  DOCUMENT ME!
+         * @param  absender   DOCUMENT ME!
+         */
+        public Sachberarbeiter(final boolean draft,
+                final Date timestamp,
+                final String nachricht,
+                final String absender) {
+            super(draft, Typ.CLERK, timestamp, nachricht, null, absender, new ArrayList<NachrichtAnhangJson>());
         }
     }
 }

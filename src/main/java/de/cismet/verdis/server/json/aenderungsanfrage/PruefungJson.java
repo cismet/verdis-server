@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -40,6 +41,7 @@ import java.util.Date;
 @Setter
 @AllArgsConstructor
 @JsonIgnoreProperties({ "pending" })
+@EqualsAndHashCode(callSuper = false)
 public abstract class PruefungJson<O> extends AbstractJson {
 
     //~ Instance fields --------------------------------------------------------
