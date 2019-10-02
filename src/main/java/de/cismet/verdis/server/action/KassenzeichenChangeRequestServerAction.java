@@ -138,7 +138,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                 LOG.info("stac is null, returning false");
                 return false;
             }
-            if (aenderungsanfrageJson != null) {
+            if (aenderungsanfrageJson == null) {
                 LOG.info("aenderungsanfrageJson is null, returning false");
                 return false;
             }
