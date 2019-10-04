@@ -1,0 +1,22 @@
+{
+  "kassenzeichen" : 60004629,
+  "flaechen" : {
+    "5" : {
+      "groesse" : 12
+    }
+  },
+  "nachrichten" : [ {
+    "typ" : "CITIZEN",
+    "timestamp" : 1,
+    "nachricht" : "Alte Nachricht."
+  }, {
+    "typ" : "CLERK",
+    "timestamp" : 3,
+    "nachricht" : "Alte Antwort.",
+    "absender" : "Mustermann"
+  }, {
+    "typ" : "SYSTEM",
+    "timestamp" : 4,
+    "nachricht" : "FUNCTION( {} )"
+  } ]
+}

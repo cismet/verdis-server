@@ -57,7 +57,9 @@ public enum VerdisServerResources {
     MAP_FRONTEN_A4P_JASPER(new JasperReportServerResource("/reports/fronten_mapA4P.jasper")),
     MAP_FRONTEN_A3P_JASPER(new JasperReportServerResource("/reports/fronten_mapA3P.jasper")),
 
-    WEBDAV(new TextServerResource("/webdav/WebDav.properties"));
+    WEBDAV(new TextServerResource("/webdav/WebDav.properties")),
+
+    AENDERUNTSANFRAGE(new TextServerResource("/aenderungsanfrage/aenderungsanfrage.properties"));
 
     //~ Instance fields --------------------------------------------------------
 

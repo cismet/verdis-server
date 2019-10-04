@@ -1,0 +1,24 @@
+{
+  "kassenzeichen" : 60004629,
+  "flaechen" : {
+    "5" : {
+      "groesse" : 12
+    }
+  },
+  "nachrichten" : [ {
+    "typ" : "CLERK",
+    "timestamp" : 1,
+    "nachricht" : "Versuch eine CLERK Nachricht zu pushen",
+    "absender" : "Hacker"
+  }, {
+    "typ" : "SYSTEM",
+    "timestamp" : 2,
+    "nachricht" : "Versuch eine SYSTEM Nachricht zu pushen",
+    "absender" : "Hacker"
+  }, {
+    "typ" : "CITIZEN",
+    "timestamp" : 3,
+    "nachricht" : "Normale Nachricht.",
+    "absender" : "Bürger"
+  } ]
+}

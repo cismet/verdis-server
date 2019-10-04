@@ -1,0 +1,15 @@
+{
+  "kassenzeichen" : 60004629,
+  "flaechen" : {
+    "5" : {
+      "groesse" : 12,
+      "pruefung" : {
+        "groesse" : {
+          "anfrage" : 12,
+          "von" : "SteinbacherD102",
+          "timestamp" : 5
+        }
+      }
+    }
+  }
+}
