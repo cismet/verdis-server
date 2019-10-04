@@ -46,7 +46,7 @@ public final class KassenzeichenPropertyConstants extends PropertyConstants {
     public static final String LETZTE_AENDERUNG_USER = "letzte_aenderung_von";
     public static final String VERANLAGUNGSZETTEL = "veranlagungszettel";
     public static final String KASSENZEICHEN_GEOMETRIEN = "kassenzeichen_geometrien";
-    public static final String STAC_OPTION = "stac_option";
+    public static final String STAC_OPTIONS = "stac_options";
     public static final String STAC_EXPIRATION = "stac_expiration";
     public static final String AENDERUNGSANFRAGE = "aenderungsanfrage";
 

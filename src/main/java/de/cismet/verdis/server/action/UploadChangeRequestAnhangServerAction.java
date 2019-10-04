@@ -16,21 +16,31 @@ import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
 import Sirius.server.newuser.User;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.apache.log4j.Logger;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+
+import java.net.URLEncoder;
+
 import java.util.UUID;
+
+import javax.swing.SwingWorker;
 
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.actions.UserAwareServerAction;
 
+import de.cismet.commons.security.WebDavClient;
+
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextStore;
 
-import de.cismet.verdis.server.utils.aenderungsanfrage.NachrichtAnhangJson;
+import de.cismet.netutil.Proxy;
+
+import de.cismet.verdis.server.json.aenderungsanfrage.NachrichtAnhangJson;
+import de.cismet.verdis.server.utils.AenderungsanfrageConf;
+import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
 
 /**
  * DOCUMENT ME!
@@ -74,34 +84,20 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
     private User user;
     private MetaService metaService;
     private ConnectionContext connectionContext = ConnectionContext.createDummy();
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    //~ Constructors -----------------------------------------------------------
-
-    /**
-     * Creates a new KassenzeichenChangeRequestServerAction object.
-     */
-    public UploadChangeRequestAnhangServerAction() {
-        try {
-            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        } catch (final Throwable t) {
-            LOG.fatal("this should never happen", t);
-        }
-    }
 
     //~ Methods ----------------------------------------------------------------
 
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
-        final Byte[] bytes;
+        final byte[] bytes;
         String fileName = null;
 
         try {
-//            if (body == null) {
-//                throw new Exception("body can't be null");
-//            } else {
-//                bytes = (Byte[])body;
-//            }
+            if (body == null) {
+                throw new Exception("body can't be null");
+            } else {
+                bytes = (byte[])body;
+            }
 
             if (params != null) {
                 for (final ServerActionParameter sap : params) {
@@ -117,7 +113,34 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
             }
 
             final String uuid = UUID.randomUUID().toString();
-            return objectMapper.writeValueAsString(new NachrichtAnhangJson(fileName, uuid));
+            final AenderungsanfrageConf conf = AenderungsanfrageUtils.getConfFromServerResource();
+            final String webdavUrl = conf.getWebdavUrl();
+            final String uploadDirPath = webdavUrl.endsWith("/") ? webdavUrl : (webdavUrl + "/");
+            final String uploadFilePath = String.format(
+                    "%s%s_%s",
+                    uploadDirPath,
+                    uuid,
+                    URLEncoder.encode(fileName, "utf-8").replaceAll("\\+", "%20"));
+            new SwingWorker<Void, Void>() {
+
+                    @Override
+                    protected Void doInBackground() throws Exception {
+                        try {
+                            final InputStream data = new ByteArrayInputStream(bytes);
+
+                            final WebDavClient webdavClient = new WebDavClient(
+                                    Proxy.fromPreferences(),
+                                    conf.getWebdavUser(),
+                                    conf.getWebdavPassword());
+                            webdavClient.put(uploadFilePath, data);
+                        } catch (final Exception ex) {
+                            LOG.error(ex, ex);
+                        }
+                        return null;
+                    }
+                }.execute();
+
+            return new NachrichtAnhangJson(fileName, uuid).toJson();
         } catch (final Exception ex) {
             LOG.error(ex, ex);
             return ex;

@@ -10,8 +10,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.cismet.verdis.server.utils.aenderungsanfrage;
+package de.cismet.verdis.server.json.aenderungsanfrage;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -20,6 +21,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,12 +35,14 @@ import java.io.IOException;
 @Getter
 @Setter
 @AllArgsConstructor
-public class NachrichtAnhangJson {
+@EqualsAndHashCode(callSuper = false)
+public class FlaecheFlaechenartJson extends AbstractJson {
 
     //~ Instance fields --------------------------------------------------------
 
-    private String name;
-    private String uuid;
+    private String art;
+    @JsonProperty("art_abkuerzung")
+    private String artAbkuerzung;
 
     //~ Inner Classes ----------------------------------------------------------
 
@@ -47,32 +51,32 @@ public class NachrichtAnhangJson {
      *
      * @version  $Revision$, $Date$
      */
-    public static class Deserializer extends StdDeserializer<NachrichtAnhangJson> {
+    public static class Deserializer extends StdDeserializer<FlaecheFlaechenartJson> {
 
         //~ Constructors -------------------------------------------------------
 
         /**
-         * Creates a new Deserializer object.
+         * Creates a new FlaecheJsonDeserializer object.
          *
          * @param  objectMapper  DOCUMENT ME!
          */
         public Deserializer(final ObjectMapper objectMapper) {
-            super(NachrichtAnhangJson.class);
+            super(FlaecheFlaechenartJson.class);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public NachrichtAnhangJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
-            JsonProcessingException {
+        public FlaecheFlaechenartJson deserialize(final JsonParser jp, final DeserializationContext dc)
+                throws IOException, JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
-            final String name = on.has("name") ? on.get("name").textValue() : null;
-            final String uiud = on.has("uuid") ? on.get("uuid").textValue() : null;
-            if ((uiud == null) && (uiud == null)) {
+            final String art = on.has("art") ? on.get("art").asText() : null;
+            final String artAbkuerzung = on.has("art_abkuerzung") ? on.get("art_abkuerzung").asText() : null;
+            if ((art == null) || (artAbkuerzung == null)) {
                 throw new RuntimeException(
-                    "invalid NachrichtAnhangJson: name and uid can't be null");
+                    "invalid FlaecheFlaechenartJson: art or artAbkuerzung can't be null");
             }
-            return new NachrichtAnhangJson(name, uiud);
+            return new FlaecheFlaechenartJson(art, artAbkuerzung);
         }
     }
 }
