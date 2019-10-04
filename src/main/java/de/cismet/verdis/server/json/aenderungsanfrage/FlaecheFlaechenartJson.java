@@ -10,10 +10,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.cismet.verdis.server.utils.aenderungsanfrage;
+package de.cismet.verdis.server.json.aenderungsanfrage;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,6 +21,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -36,9 +35,8 @@ import java.io.IOException;
 @Getter
 @Setter
 @AllArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class FlaecheFlaechenartJson {
+@EqualsAndHashCode(callSuper = false)
+public class FlaecheFlaechenartJson extends AbstractJson {
 
     //~ Instance fields --------------------------------------------------------
 
@@ -69,8 +67,8 @@ public class FlaecheFlaechenartJson {
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public FlaecheFlaechenartJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
-            JsonProcessingException {
+        public FlaecheFlaechenartJson deserialize(final JsonParser jp, final DeserializationContext dc)
+                throws IOException, JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
             final String art = on.has("art") ? on.get("art").asText() : null;
             final String artAbkuerzung = on.has("art_abkuerzung") ? on.get("art_abkuerzung").asText() : null;

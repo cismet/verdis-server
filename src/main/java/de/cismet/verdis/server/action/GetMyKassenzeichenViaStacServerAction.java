@@ -25,8 +25,8 @@ import de.cismet.connectioncontext.ConnectionContextStore;
 
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
+import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
 import de.cismet.verdis.server.utils.StacUtils;
-import de.cismet.verdis.server.utils.aenderungsanfrage.AenderungsanfrageUtils;
 
 /**
  * DOCUMENT ME!
@@ -116,7 +116,7 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore, 
                         getMetaService(),
                         getConnectionContext());
 
-                kassenzeichenBean.setProperty(VerdisConstants.PROP.KASSENZEICHEN.STAC_OPTION, stacEntry.getOptions());
+                kassenzeichenBean.setProperty(VerdisConstants.PROP.KASSENZEICHEN.STAC_OPTIONS, stacEntry.getOptions());
                 kassenzeichenBean.setProperty(
                     VerdisConstants.PROP.KASSENZEICHEN.STAC_EXPIRATION,
                     stacEntry.getExpiration());

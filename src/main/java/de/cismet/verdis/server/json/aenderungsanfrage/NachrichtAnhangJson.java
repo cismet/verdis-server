@@ -10,11 +10,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.cismet.verdis.server.utils.aenderungsanfrage;
+package de.cismet.verdis.server.json.aenderungsanfrage;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -23,10 +20,13 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.IOException;
+
+import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
 
 /**
  * DOCUMENT ME!
@@ -36,15 +36,28 @@ import java.io.IOException;
 @Getter
 @Setter
 @AllArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class FlaecheAnschlussgradJson {
+@EqualsAndHashCode(callSuper = false)
+public class NachrichtAnhangJson extends AbstractJson {
 
     //~ Instance fields --------------------------------------------------------
 
-    private String grad;
-    @JsonProperty("grad_abkuerzung")
-    private String gradAbkuerzung;
+    private String name;
+    private String uuid;
+
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   json  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static NachrichtAnhangJson readValue(final String json) throws Exception {
+        return AenderungsanfrageUtils.getInstance().getMapper().readValue(json, NachrichtAnhangJson.class);
+    }
 
     //~ Inner Classes ----------------------------------------------------------
 
@@ -53,32 +66,32 @@ public class FlaecheAnschlussgradJson {
      *
      * @version  $Revision$, $Date$
      */
-    public static class Deserializer extends StdDeserializer<FlaecheAnschlussgradJson> {
+    public static class Deserializer extends StdDeserializer<NachrichtAnhangJson> {
 
         //~ Constructors -------------------------------------------------------
 
         /**
-         * Creates a new FlaecheJsonDeserializer object.
+         * Creates a new Deserializer object.
          *
          * @param  objectMapper  DOCUMENT ME!
          */
         public Deserializer(final ObjectMapper objectMapper) {
-            super(FlaecheAnschlussgradJson.class);
+            super(NachrichtAnhangJson.class);
         }
 
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public FlaecheAnschlussgradJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
+        public NachrichtAnhangJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
             JsonProcessingException {
             final ObjectNode on = jp.readValueAsTree();
-            final String grad = on.has("grad") ? on.get("grad").asText() : null;
-            final String gradAbkuerzung = on.has("grad_abkuerzung") ? on.get("grad_abkuerzung").asText() : null;
-            if ((grad == null) || (gradAbkuerzung == null)) {
+            final String name = on.has("name") ? on.get("name").textValue() : null;
+            final String uiud = on.has("uuid") ? on.get("uuid").textValue() : null;
+            if ((uiud == null) && (uiud == null)) {
                 throw new RuntimeException(
-                    "invalid FlaecheAnschlussgradJson: grad or gradAbkuerzung can't be null");
+                    "invalid NachrichtAnhangJson: name and uid can't be null");
             }
-            return new FlaecheAnschlussgradJson(grad, gradAbkuerzung);
+            return new NachrichtAnhangJson(name, uiud);
         }
     }
 }

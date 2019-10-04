@@ -18,14 +18,13 @@ import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.apache.log4j.Logger;
 
 import java.sql.Timestamp;
 
 import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
 
 import de.cismet.cids.dynamics.CidsBean;
 
@@ -38,9 +37,9 @@ import de.cismet.connectioncontext.ConnectionContextStore;
 
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
+import de.cismet.verdis.server.json.aenderungsanfrage.AenderungsanfrageJson;
+import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
 import de.cismet.verdis.server.utils.StacUtils;
-import de.cismet.verdis.server.utils.aenderungsanfrage.AenderungsanfrageUtils;
-import de.cismet.verdis.server.utils.aenderungsanfrage.AnfrageJson;
 
 /**
  * DOCUMENT ME!
@@ -110,20 +109,6 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
     private User user;
     private MetaService metaService;
     private ConnectionContext connectionContext = ConnectionContext.createDummy();
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    //~ Constructors -----------------------------------------------------------
-
-    /**
-     * Creates a new KassenzeichenChangeRequestServerAction object.
-     */
-    public KassenzeichenChangeRequestServerAction() {
-        try {
-            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        } catch (final Throwable t) {
-            LOG.fatal("this should never happen", t);
-        }
-    }
 
     //~ Methods ----------------------------------------------------------------
 
@@ -131,7 +116,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
     public Object execute(final Object boxy, final ServerActionParameter... params) {
         String stac = null;
         String email = null;
-        String changerequestJson = null;
+        String aenderungsanfrageJson = null;
 
         try {
             if (params != null) {
@@ -141,58 +126,84 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                     if (Parameter.STAC.toString().equals(key)) {
                         stac = (String)value;
                     } else if (Parameter.CHANGEREQUEST_JSON.toString().equals(key)) {
-                        changerequestJson = objectMapper.writeValueAsString(value);
+                        aenderungsanfrageJson = AenderungsanfrageUtils.getInstance().getMapper()
+                                    .writeValueAsString((Map<String, Object>)value);
                     } else if (Parameter.EMAIL.toString().equals(key)) {
                         email = (String)value;
                     }
                 }
             }
 
-            if ((stac != null) && (changerequestJson != null)) {
-                final AnfrageJson anfrage = AnfrageJson.readValue(changerequestJson);
-                final StacUtils.StacEntry stacEntry = StacUtils.getStacEntry(
-                        stac,
-                        getMetaService(),
-                        getConnectionContext());
-                final CidsBean kassenzeichenBean = StacUtils.getKassenzeichenBean(
-                        stacEntry,
-                        getMetaService(),
-                        getConnectionContext());
+            if (stac == null) {
+                LOG.info("stac is null, returning false");
+                return false;
+            }
+            if (aenderungsanfrageJson == null) {
+                LOG.info("aenderungsanfrageJson is null, returning false");
+                return false;
+            }
 
-                final Integer kassenzeichenNummerFromBean = (Integer)kassenzeichenBean.getProperty(
-                        VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER);
-                final Integer kassenzeichenNummerFromJson = anfrage.getKassenzeichen();
+            final StacUtils.StacEntry stacEntry = StacUtils.getStacEntry(
+                    stac,
+                    getMetaService(),
+                    getConnectionContext());
+            if (stacEntry == null) {
+                LOG.info("stacEntry not found, returning false");
+                return false;
+            }
 
-                final CidsBean aenderungsanfrageSearchBean = AenderungsanfrageUtils.getAenderungsanfrageBean(
-                        stacEntry,
-                        getMetaService(),
-                        getConnectionContext());
+            final CidsBean kassenzeichenBean = StacUtils.getKassenzeichenBean(
+                    stacEntry,
+                    getMetaService(),
+                    getConnectionContext());
+            if (kassenzeichenBean == null) {
+                LOG.info("kassenzeichen for stacEntry not found, returning false");
+                return false;
+            }
 
-                final CidsBean aenderungsanfrageBean = (aenderungsanfrageSearchBean != null)
-                    ? aenderungsanfrageSearchBean
-                    : CidsBean.createNewCidsBeanFromTableName(
-                        VerdisConstants.DOMAIN,
-                        VerdisConstants.MC.AENDERUNGSANFRAGE,
-                        getConnectionContext());
-                aenderungsanfrageBean.setProperty(
-                    VerdisConstants.PROP.AENDERUNGSANFRAGE.CHANGES_JSON,
-                    objectMapper.writeValueAsString(anfrage));
-                aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID, stacEntry.getId());
-                aenderungsanfrageBean.setProperty(
-                    VerdisConstants.PROP.AENDERUNGSANFRAGE.KASSENZEICHEN_NUMMER,
-                    (Integer)kassenzeichenBean.getProperty(VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER));
-                aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.EMAIL, email);
-                aenderungsanfrageBean.setProperty(
-                    VerdisConstants.PROP.AENDERUNGSANFRAGE.TIMESTAMP,
-                    new Timestamp(new Date().getTime()));
-                aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS, "PENDING");
-                if (MetaObject.NEW == aenderungsanfrageBean.getMetaObject().getStatus()) {
-                    DomainServerImpl.getServerInstance()
-                            .insertMetaObject(getUser(), aenderungsanfrageBean.getMetaObject(), getConnectionContext());
-                } else {
-                    DomainServerImpl.getServerInstance()
-                            .updateMetaObject(getUser(), aenderungsanfrageBean.getMetaObject(), getConnectionContext());
-                }
+            final AenderungsanfrageJson aenderungsanfrage = AenderungsanfrageJson.readValue(aenderungsanfrageJson);
+
+            final Integer kassenzeichenNummerFromBean = (Integer)kassenzeichenBean.getProperty(
+                    VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER);
+            final Integer kassenzeichenNummerFromObject = aenderungsanfrage.getKassenzeichen();
+            if (!Objects.equals(kassenzeichenNummerFromBean, kassenzeichenNummerFromObject)) {
+                LOG.info(String.format(
+                        "kassenzeichennummer from json (%d) not equals kassenzeichennummer from bean (%d), returning false",
+                        kassenzeichenNummerFromBean,
+                        kassenzeichenNummerFromObject));
+                return false;
+            }
+
+            final CidsBean existingAenderungsanfrageBean = AenderungsanfrageUtils.getAenderungsanfrageBean(
+                    stacEntry,
+                    getMetaService(),
+                    getConnectionContext());
+            final CidsBean aenderungsanfrageBean = (existingAenderungsanfrageBean != null)
+                ? existingAenderungsanfrageBean
+                : CidsBean.createNewCidsBeanFromTableName(
+                    VerdisConstants.DOMAIN,
+                    VerdisConstants.MC.AENDERUNGSANFRAGE,
+                    getConnectionContext());
+
+            aenderungsanfrageBean.setProperty(
+                VerdisConstants.PROP.AENDERUNGSANFRAGE.CHANGES_JSON,
+                aenderungsanfrage.toJson());
+            aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID, stacEntry.getId());
+            aenderungsanfrageBean.setProperty(
+                VerdisConstants.PROP.AENDERUNGSANFRAGE.KASSENZEICHEN_NUMMER,
+                (Integer)kassenzeichenBean.getProperty(VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER));
+            aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.EMAIL, email);
+            aenderungsanfrageBean.setProperty(
+                VerdisConstants.PROP.AENDERUNGSANFRAGE.TIMESTAMP,
+                new Timestamp(new Date().getTime()));
+            aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS, "PENDING");
+
+            if (MetaObject.NEW == aenderungsanfrageBean.getMetaObject().getStatus()) {
+                DomainServerImpl.getServerInstance()
+                        .insertMetaObject(getUser(), aenderungsanfrageBean.getMetaObject(), getConnectionContext());
+            } else {
+                DomainServerImpl.getServerInstance()
+                        .updateMetaObject(getUser(), aenderungsanfrageBean.getMetaObject(), getConnectionContext());
             }
             return true;
         } catch (final Exception ex) {
