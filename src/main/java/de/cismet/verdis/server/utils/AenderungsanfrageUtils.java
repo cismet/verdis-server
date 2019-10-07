@@ -237,7 +237,7 @@ public class AenderungsanfrageUtils {
             final AenderungsanfrageSearchStatement search = new AenderungsanfrageSearchStatement();
             search.setActiveLocalServers(localServers);
             search.setUser(user);
-            search.setStacHash(stacEntry.getHash());
+            search.setStacId(stacEntry.getId());
             final Collection<MetaObjectNode> mons = search.performServerSearch();
             for (final MetaObjectNode mon : mons) {
                 if (mon != null) {

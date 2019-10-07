@@ -61,7 +61,7 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
 
     //~ Instance fields --------------------------------------------------------
 
-    @Getter @Setter private String stacHash;
+    @Getter @Setter private Integer stacId;
 
     @Getter @Setter private Integer kassenzeichennummer;
 
@@ -85,8 +85,8 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
         final List<SearchParameterInfo> parameterDescription = new LinkedList<>();
         final SearchParameterInfo searchParameterInfo = new SearchParameterInfo();
 
-        searchParameterInfo.setKey("stacHash");
-        searchParameterInfo.setType(Type.STRING);
+        searchParameterInfo.setKey("stacId");
+        searchParameterInfo.setType(Type.INTEGER);
         parameterDescription.add(searchParameterInfo);
         searchInfo.setParameterDescription(parameterDescription);
 
@@ -110,11 +110,11 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
     /**
      * Creates a new AenderungsanfrageSearchStatement object.
      *
-     * @param  stacHash  DOCUMENT ME!
+     * @param  stacId  DOCUMENT ME!
      */
-    public AenderungsanfrageSearchStatement(final String stacHash) {
+    public AenderungsanfrageSearchStatement(final Integer stacId) {
         this();
-        this.stacHash = stacHash;
+        this.stacId = stacId;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -126,10 +126,11 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
             final Collection<String> wheres = new ArrayList<>();
 
             boolean joinKassenzeichen = false;
-            boolean joinStacHash = false;
-            if (stacHash != null) {
-                wheres.add("cs_stac.thehash LIKE '" + stacHash + "'");
-                joinStacHash = true;
+            boolean joinStacId = false;
+            if (stacId != null) {
+                wheres.add("a." + VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID
+                            + " = " + stacId + "");
+                joinStacId = true;
             }
             if (kassenzeichennummer != null) {
                 joinKassenzeichen = true;
@@ -137,7 +138,7 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
             }
 
             froms.add(VerdisConstants.MC.AENDERUNGSANFRAGE + " AS a");
-            if (joinStacHash) {
+            if (joinStacId) {
                 froms.add("cs_stac ON a." + VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID + " = cs_stac.id");
             }
             if (joinKassenzeichen) {
