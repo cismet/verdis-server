@@ -47,7 +47,7 @@ public abstract class PruefungJson<O> extends AbstractJson {
     //~ Instance fields --------------------------------------------------------
 
     @JsonIgnore private transient Boolean pending;
-    private O anfrage;
+    private O value;
     private String von;
     private Date timestamp;
 
@@ -65,24 +65,24 @@ public abstract class PruefungJson<O> extends AbstractJson {
         /**
          * Creates a new PruefungGroesseJson object.
          *
-         * @param  anfrage    DOCUMENT ME!
+         * @param  value      DOCUMENT ME!
          * @param  von        DOCUMENT ME!
          * @param  timestamp  DOCUMENT ME!
          */
-        public Groesse(final Integer anfrage, final String von, final Date timestamp) {
-            super(false, anfrage, von, timestamp);
+        public Groesse(final Integer value, final String von, final Date timestamp) {
+            super(false, value, von, timestamp);
         }
 
         /**
          * Creates a new PruefungGroesseJson object.
          *
          * @param  pending    DOCUMENT ME!
-         * @param  anfrage    DOCUMENT ME!
+         * @param  value      DOCUMENT ME!
          * @param  von        DOCUMENT ME!
          * @param  timestamp  DOCUMENT ME!
          */
-        public Groesse(final boolean pending, final Integer anfrage, final String von, final Date timestamp) {
-            super(pending, anfrage, von, timestamp);
+        public Groesse(final boolean pending, final Integer value, final String von, final Date timestamp) {
+            super(pending, value, von, timestamp);
         }
 
         //~ Inner Classes ------------------------------------------------------
@@ -111,13 +111,13 @@ public abstract class PruefungJson<O> extends AbstractJson {
             public Groesse deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
                 JsonProcessingException {
                 final ObjectNode on = jp.readValueAsTree();
-                final Integer anfrage = on.has("anfrage") ? on.get("anfrage").intValue() : null;
+                final Integer value = on.has("value") ? on.get("value").intValue() : null;
                 final String von = on.has("von") ? on.get("von").textValue() : null;
                 final Date timestamp = on.has("timestamp") ? new Date(on.get("timestamp").longValue()) : null;
-                if ((anfrage == null)) {
+                if ((value == null)) {
                     throw new RuntimeException("invalid StatusJson: status is not set");
                 }
-                return new Groesse(anfrage, von, timestamp);
+                return new Groesse(value, von, timestamp);
             }
         }
     }
@@ -134,27 +134,27 @@ public abstract class PruefungJson<O> extends AbstractJson {
         /**
          * Creates a new PruefungFlaechenartJson object.
          *
-         * @param  anfrage    DOCUMENT ME!
+         * @param  value      DOCUMENT ME!
          * @param  von        DOCUMENT ME!
          * @param  timestamp  DOCUMENT ME!
          */
-        public Flaechenart(final FlaecheFlaechenartJson anfrage, final String von, final Date timestamp) {
-            this(false, anfrage, von, timestamp);
+        public Flaechenart(final FlaecheFlaechenartJson value, final String von, final Date timestamp) {
+            this(false, value, von, timestamp);
         }
 
         /**
          * Creates a new PruefungFlaechenartJson object.
          *
          * @param  pending    DOCUMENT ME!
-         * @param  anfrage    DOCUMENT ME!
+         * @param  value      DOCUMENT ME!
          * @param  von        DOCUMENT ME!
          * @param  timestamp  DOCUMENT ME!
          */
         public Flaechenart(final boolean pending,
-                final FlaecheFlaechenartJson anfrage,
+                final FlaecheFlaechenartJson value,
                 final String von,
                 final Date timestamp) {
-            super(pending, anfrage, von, timestamp);
+            super(pending, value, von, timestamp);
         }
 
         //~ Inner Classes ------------------------------------------------------
@@ -189,14 +189,14 @@ public abstract class PruefungJson<O> extends AbstractJson {
             public Flaechenart deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
                 JsonProcessingException {
                 final ObjectNode on = jp.readValueAsTree();
-                final FlaecheFlaechenartJson anfrage = on.has("anfrage")
-                    ? objectMapper.treeToValue(on.get("anfrage"), FlaecheFlaechenartJson.class) : null;
+                final FlaecheFlaechenartJson value = on.has("value")
+                    ? objectMapper.treeToValue(on.get("value"), FlaecheFlaechenartJson.class) : null;
                 final String von = on.has("von") ? on.get("von").textValue() : null;
                 final Date timestamp = on.has("timestamp") ? new Date(on.get("timestamp").longValue()) : null;
-                if ((anfrage == null)) {
+                if ((value == null)) {
                     throw new RuntimeException("invalid StatusJson: status is not set");
                 }
-                return new Flaechenart(anfrage, von, timestamp);
+                return new Flaechenart(value, von, timestamp);
             }
         }
     }
@@ -213,27 +213,27 @@ public abstract class PruefungJson<O> extends AbstractJson {
         /**
          * Creates a new PruefungAnschlussgradJson object.
          *
-         * @param  anfrage    DOCUMENT ME!
+         * @param  value      DOCUMENT ME!
          * @param  von        DOCUMENT ME!
          * @param  timestamp  DOCUMENT ME!
          */
-        public Anschlussgrad(final FlaecheAnschlussgradJson anfrage, final String von, final Date timestamp) {
-            this(false, anfrage, von, timestamp);
+        public Anschlussgrad(final FlaecheAnschlussgradJson value, final String von, final Date timestamp) {
+            this(false, value, von, timestamp);
         }
 
         /**
          * Creates a new PruefungAnschlussgradJson object.
          *
          * @param  pending    DOCUMENT ME!
-         * @param  anfrage    DOCUMENT ME!
+         * @param  value      DOCUMENT ME!
          * @param  von        DOCUMENT ME!
          * @param  timestamp  DOCUMENT ME!
          */
         public Anschlussgrad(final boolean pending,
-                final FlaecheAnschlussgradJson anfrage,
+                final FlaecheAnschlussgradJson value,
                 final String von,
                 final Date timestamp) {
-            super(pending, anfrage, von, timestamp);
+            super(pending, value, von, timestamp);
         }
 
         //~ Inner Classes ------------------------------------------------------
@@ -268,14 +268,14 @@ public abstract class PruefungJson<O> extends AbstractJson {
             public Anschlussgrad deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
                 JsonProcessingException {
                 final ObjectNode on = jp.readValueAsTree();
-                final FlaecheAnschlussgradJson anfrage = on.has("anfrage")
-                    ? objectMapper.treeToValue(on.get("anfrage"), FlaecheAnschlussgradJson.class) : null;
+                final FlaecheAnschlussgradJson value = on.has("value")
+                    ? objectMapper.treeToValue(on.get("value"), FlaecheAnschlussgradJson.class) : null;
                 final String von = on.has("von") ? on.get("von").textValue() : null;
                 final Date timestamp = on.has("timestamp") ? new Date(on.get("timestamp").longValue()) : null;
-                if ((anfrage == null)) {
+                if ((value == null)) {
                     throw new RuntimeException("invalid StatusJson: status is not set");
                 }
-                return new Anschlussgrad(anfrage, von, timestamp);
+                return new Anschlussgrad(value, von, timestamp);
             }
         }
     }
