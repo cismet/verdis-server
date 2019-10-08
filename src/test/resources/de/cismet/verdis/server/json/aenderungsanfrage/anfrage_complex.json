@@ -8,7 +8,7 @@
       "groesse" : 921,
       "pruefung" : {
         "groesse" : {
-          "anfrage" : 921,
+          "value" : 921,
           "von" : "SteinbacherD102",
           "timestamp" : 47110815
         }
@@ -21,7 +21,7 @@
       },
       "pruefung" : {
         "flaechenart" : {
-          "anfrage" : {
+          "value" : {
             "art" : "Gründachfläche",
             "art_abkuerzung" : "GDF"
           },
