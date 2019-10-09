@@ -57,13 +57,13 @@ public class AenderungsanfrageJsonTest {
     
     private AenderungsanfrageJson getSimpleAnfrageJson() {
             final Map<String, FlaecheAenderungJson> flaechen = new HashMap<>();
-            flaechen.put("5", new FlaecheAenderungJson.Groesse(12));
+            flaechen.put("5", new FlaecheAenderungGroesseJson(12));
             final AenderungsanfrageJson anederungsanfrage = new AenderungsanfrageJson(
                     60004629,
                     flaechen,
                     new ArrayList<>(
                         (List)Arrays.asList(
-                            new NachrichtJson.Buerger(
+                            new NachrichtBuergerJson(
                                 new Date(47110815),
                                 "Da passt was nicht weil isso, siehe lustiges pdf !",
                                 "Bürger",
@@ -77,55 +77,55 @@ public class AenderungsanfrageJsonTest {
 
     private AenderungsanfrageJson getComplexAnfrageJson() {
         final Map<String, FlaecheAenderungJson> flaechen = new HashMap<>();
-        flaechen.put("1", new FlaecheAenderungJson.Groesse(1430));            
-        flaechen.put("2", new FlaecheAenderungJson.Groesse(921, 
-                new FlaechePruefungJson.Groesse(new PruefungJson.Groesse(921, "SteinbacherD102", new Date(47110815)))));
-        flaechen.put("8", new FlaecheAenderungJson.Flaechenart(
+        flaechen.put("1", new FlaecheAenderungGroesseJson(1430));            
+        flaechen.put("2", new FlaecheAenderungGroesseJson(921, 
+                new FlaechePruefungGroesseJson(new PruefungGroesseJson(921, "SteinbacherD102", new Date(47110815)))));
+        flaechen.put("8", new FlaecheAenderungFlaechenartJson(
                 new FlaecheFlaechenartJson("Gründachfläche", "GDF"), 
-                new FlaechePruefungJson.Flaechenart(
-                        new PruefungJson.Flaechenart(new FlaecheFlaechenartJson("Gründachfläche", "GDF"), "SteinbacherD102", new Date(47110815))
+                new FlaechePruefungFlaechenartJson(
+                        new PruefungFlaechenartJson(new FlaecheFlaechenartJson("Gründachfläche", "GDF"), "SteinbacherD102", new Date(47110815))
                 )
         ));
 
         final List<NachrichtJson> nachrichten = new ArrayList<>();
-        nachrichten.add(new NachrichtJson.Sachberarbeiter(
+        nachrichten.add(new NachrichtSachberarbeiterJson(
             new Date(1562059800000l),
             "Sehr geehrte*r Nutzer*in, hier haben Sie die Möglichkeit Änderungen an Ihren Flächen mitzuteilen.",
             "verdis"
         ));
-        nachrichten.add(new NachrichtJson.Buerger(
+        nachrichten.add(new NachrichtBuergerJson(
             new Date(1562060700000l),
             "Fläche B ist kleiner. Sie ist nicht 40 m² groß, sondern nur 37 m². Sie ist auch nicht an dem Kanal angeschlossen, sondern besteht aus Ökopflaster und versickert. Siehe Foto.",
             "Bürger",
             Arrays.asList(new NachrichtAnhangJson("Ökopflasterfoto.pdf", "1337"))                
         ));
-        nachrichten.add(new NachrichtJson.Sachberarbeiter(
+        nachrichten.add(new NachrichtSachberarbeiterJson(
             new Date(1562136300000l),
             "Die Änderung der Fläche werde ich übernehmen. Das Foto ist nicht ausreichend. Bitte übersenden Sie zusätzlich ein Foto der gesamten Fläche. Ökopflaster wird auch nicht als vollständig versickernd angesehen, sondern muss laut Satzung mit 70% seiner Flächen zur Gebührenerhebung herangezogen werden.",
             "Dirk Steinbacher" 
         ));
-        nachrichten.add(new NachrichtJson.System(
+        nachrichten.add(new NachrichtSystemJson(
             new Date(1562136360000l),
-            new NachrichtParameterJson.Anschlussgrad(NachrichtParameterJson.Type.REJECTED, "1", new FlaecheAnschlussgradJson("Dachfläche", "DF")),
+            new NachrichtParameterAnschlussgradJson(NachrichtParameterJson.Type.REJECTED, "1", new FlaecheAnschlussgradJson("Dachfläche", "DF")),
             "Dirk Steinbacher"                
         ));
-        nachrichten.add(new NachrichtJson.Buerger(
+        nachrichten.add(new NachrichtBuergerJson(
             new Date(1562179560000l),
             "Hier das gewünschte Foto. Die Zufahrt entwässert seitlich in die Beete.",
             "Bürger",
             Arrays.asList(new NachrichtAnhangJson("Foto2.pdf", "13374"))                
         ));
-        nachrichten.add(new NachrichtJson.Sachberarbeiter(
+        nachrichten.add(new NachrichtSachberarbeiterJson(
             new Date(1562227500000l),
             "Auf dem 2ten Foto sind Rasenkantensteine und ein Gully zu erkennen. Aus diesem Grund muss ich für diese Fläche 24 m² (70% von 37 m²) zur Veranlagung an das Steueramt weitergeben.",
             "Dirk Steinbacher" 
         ));
-        nachrichten.add(new NachrichtJson.System(
+        nachrichten.add(new NachrichtSystemJson(
             new Date(1562227560000l),
-            new NachrichtParameterJson.Anschlussgrad(NachrichtParameterJson.Type.CHANGED, "1", new FlaecheAnschlussgradJson("Dachfläche", "DF")), 
+            new NachrichtParameterAnschlussgradJson(NachrichtParameterJson.Type.CHANGED, "1", new FlaecheAnschlussgradJson("Dachfläche", "DF")), 
             "Dirk Steinbacher"                
         ));
-        nachrichten.add(new NachrichtJson.Buerger(
+        nachrichten.add(new NachrichtBuergerJson(
             new Date(1562486760000l),
             "So wird eine Nachricht visualisiert, die noch nicht abgesschickt ist.",
             "Bürger",
@@ -141,8 +141,8 @@ public class AenderungsanfrageJsonTest {
     }
 
     private void testProcessing(final String aenderungsanfrageOrigJson, final String aenderungsanfrageChangeJson, final String aenderungsanfrageProcessedJson) throws Exception {
-        final AenderungsanfrageJson aenderungsanfrageOrig = aenderungsanfrageOrigJson != null ? AenderungsanfrageJson.readValue(aenderungsanfrageOrigJson) : null;
-        final AenderungsanfrageJson aenderungsanfrageChange = aenderungsanfrageChangeJson != null ? AenderungsanfrageJson.readValue(aenderungsanfrageChangeJson) : null;
+        final AenderungsanfrageJson aenderungsanfrageOrig = aenderungsanfrageOrigJson != null ? AenderungsanfrageUtils.createAenderungsanfrageJson(aenderungsanfrageOrigJson) : null;
+        final AenderungsanfrageJson aenderungsanfrageChange = aenderungsanfrageChangeJson != null ? AenderungsanfrageUtils.createAenderungsanfrageJson(aenderungsanfrageChangeJson) : null;
 
         final AenderungsanfrageJson aenderungsanfrageNew = AenderungsanfrageUtils.getInstance().processAnfrage(60004629, aenderungsanfrageOrig, aenderungsanfrageChange);               
         final String aenderungsanfrageNewJson = aenderungsanfrageNew.toPrettyJson();
@@ -240,7 +240,7 @@ public class AenderungsanfrageJsonTest {
         Assert.assertNotNull(aenderungsanfrageJson);
         //System.out.println(aenderungsanfrageJson);            
 
-        final AenderungsanfrageJson aenderungsanfrageDeserialized = AenderungsanfrageJson.readValue(aenderungsanfrage.toPrettyJson());                    
+        final AenderungsanfrageJson aenderungsanfrageDeserialized = AenderungsanfrageUtils.createAenderungsanfrageJson(aenderungsanfrage.toPrettyJson());                    
         final String aenderungsanfrageDeserializedJson = aenderungsanfrageDeserialized.toPrettyJson();        
         //System.out.println(aenderungsanfrageDeserializedJson);            
         Assert.assertEquals(aenderungsanfrageJson, aenderungsanfrageDeserializedJson);        
@@ -253,7 +253,7 @@ public class AenderungsanfrageJsonTest {
         Assert.assertNotNull(aenderungsanfrageJson);
         //System.out.println(aenderungsanfrageJson);
 
-        final AenderungsanfrageJson aenderungsanfrageDeserialized = AenderungsanfrageJson.readValue(aenderungsanfrage.toPrettyJson());            
+        final AenderungsanfrageJson aenderungsanfrageDeserialized = AenderungsanfrageUtils.createAenderungsanfrageJson(aenderungsanfrage.toPrettyJson());            
         final String aenderungsanfrageDeserializedJson = aenderungsanfrageDeserialized.toPrettyJson();
         //System.out.println(aenderungsanfrageDeserializedJson);            
         Assert.assertEquals(aenderungsanfrageJson, aenderungsanfrageDeserializedJson);        

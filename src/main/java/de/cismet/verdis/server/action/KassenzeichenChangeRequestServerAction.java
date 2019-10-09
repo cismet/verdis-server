@@ -161,7 +161,8 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                 return false;
             }
 
-            final AenderungsanfrageJson aenderungsanfrage = AenderungsanfrageJson.readValue(aenderungsanfrageJson);
+            final AenderungsanfrageJson aenderungsanfrage = AenderungsanfrageUtils.createAenderungsanfrageJson(
+                    aenderungsanfrageJson);
 
             final Integer kassenzeichenNummerFromBean = (Integer)kassenzeichenBean.getProperty(
                     VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER);

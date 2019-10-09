@@ -43,7 +43,20 @@ import de.cismet.verdis.server.json.aenderungsanfrage.FlaechePruefungJson;
 import de.cismet.verdis.server.json.aenderungsanfrage.NachrichtAnhangJson;
 import de.cismet.verdis.server.json.aenderungsanfrage.NachrichtJson;
 import de.cismet.verdis.server.json.aenderungsanfrage.NachrichtParameterJson;
-import de.cismet.verdis.server.json.aenderungsanfrage.PruefungJson;
+import de.cismet.verdis.server.json.aenderungsanfrage.PruefungAnschlussgradJson;
+import de.cismet.verdis.server.json.aenderungsanfrage.PruefungFlaechenartJson;
+import de.cismet.verdis.server.json.aenderungsanfrage.PruefungGroesseJson;
+import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.AenderungsanfrageDeserializer;
+import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.FlaecheAenderungDeserializer;
+import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.FlaecheAnschlussgradDeserializer;
+import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.FlaecheFlaechenartDeserializer;
+import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.FlaechePruefungDeserializer;
+import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.NachrichtAnhangDeserializer;
+import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.NachrichtDeserializer;
+import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.NachrichtParameterDeserializer;
+import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.PruefungAnschlussgradDeserializer;
+import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.PruefungFlaechenartDeserializer;
+import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.PruefungGroesseDeserializer;
 import de.cismet.verdis.server.search.AenderungsanfrageSearchStatement;
 
 import static de.cismet.verdis.server.utils.StacUtils.getUser;
@@ -72,21 +85,21 @@ public class AenderungsanfrageUtils {
     public AenderungsanfrageUtils() {
         try {
             final SimpleModule module = new SimpleModule();
-            module.addDeserializer(PruefungJson.Groesse.class, new PruefungJson.Groesse.Deserializer(mapper));
-            module.addDeserializer(PruefungJson.Flaechenart.class, new PruefungJson.Flaechenart.Deserializer(mapper));
+            module.addDeserializer(PruefungGroesseJson.class, new PruefungGroesseDeserializer(mapper));
+            module.addDeserializer(PruefungFlaechenartJson.class, new PruefungFlaechenartDeserializer(mapper));
             module.addDeserializer(
-                PruefungJson.Anschlussgrad.class,
-                new PruefungJson.Anschlussgrad.Deserializer(mapper));
+                PruefungAnschlussgradJson.class,
+                new PruefungAnschlussgradDeserializer(mapper));
             module.addDeserializer(NachrichtParameterJson.class,
-                new NachrichtParameterJson.Deserializer(mapper));
-            module.addDeserializer(PruefungJson.Groesse.class, new PruefungJson.Groesse.Deserializer(mapper));
-            module.addDeserializer(FlaechePruefungJson.class, new FlaechePruefungJson.Deserializer(mapper));
-            module.addDeserializer(FlaecheAenderungJson.class, new FlaecheAenderungJson.Deserializer(mapper));
-            module.addDeserializer(FlaecheAnschlussgradJson.class, new FlaecheAnschlussgradJson.Deserializer(mapper));
-            module.addDeserializer(FlaecheFlaechenartJson.class, new FlaecheFlaechenartJson.Deserializer(mapper));
-            module.addDeserializer(NachrichtAnhangJson.class, new NachrichtAnhangJson.Deserializer(mapper));
-            module.addDeserializer(NachrichtJson.class, new NachrichtJson.Deserializer(mapper));
-            module.addDeserializer(AenderungsanfrageJson.class, new AenderungsanfrageJson.Deserializer(mapper));
+                new NachrichtParameterDeserializer(mapper));
+            module.addDeserializer(PruefungGroesseJson.class, new PruefungGroesseDeserializer(mapper));
+            module.addDeserializer(FlaechePruefungJson.class, new FlaechePruefungDeserializer(mapper));
+            module.addDeserializer(FlaecheAenderungJson.class, new FlaecheAenderungDeserializer(mapper));
+            module.addDeserializer(FlaecheAnschlussgradJson.class, new FlaecheAnschlussgradDeserializer(mapper));
+            module.addDeserializer(FlaecheFlaechenartJson.class, new FlaecheFlaechenartDeserializer(mapper));
+            module.addDeserializer(NachrichtAnhangJson.class, new NachrichtAnhangDeserializer(mapper));
+            module.addDeserializer(NachrichtJson.class, new NachrichtDeserializer(mapper));
+            module.addDeserializer(AenderungsanfrageJson.class, new AenderungsanfrageDeserializer(mapper));
             mapper.registerModule(module);
             mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
             mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
@@ -151,7 +164,7 @@ public class AenderungsanfrageUtils {
                 anfrageProcessed.getFlaechen().put(bezeichnung, flaeche);
             }
         } else {
-            final AenderungsanfrageJson anfrageOrigCopy = AenderungsanfrageJson.readValue(anfrageOrig.toJson());
+            final AenderungsanfrageJson anfrageOrigCopy = createAenderungsanfrageJson(anfrageOrig.toJson());
 
             // erst alle original Nachrichten übernehmen
             long newestNachrichtTimestamp = 0;
@@ -250,6 +263,45 @@ public class AenderungsanfrageUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   json  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static AenderungsanfrageJson createAenderungsanfrageJson(final String json) throws Exception {
+        return AenderungsanfrageUtils.getInstance().getMapper().readValue(json, AenderungsanfrageJson.class);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   json  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static NachrichtAnhangJson createNachrichtAnhangJson(final String json) throws Exception {
+        return AenderungsanfrageUtils.getInstance().getMapper().readValue(json, NachrichtAnhangJson.class);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   json  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static NachrichtParameterJson createNachrichtParameterJson(final String json) throws Exception {
+        return AenderungsanfrageUtils.getInstance().getMapper().readValue(json, NachrichtParameterJson.class);
     }
 
     /**
