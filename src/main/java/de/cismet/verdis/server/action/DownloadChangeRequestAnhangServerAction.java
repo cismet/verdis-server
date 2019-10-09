@@ -115,7 +115,8 @@ public class DownloadChangeRequestAnhangServerAction implements ServerAction,
                 }
             }
             if (nachrichtAnhangJson != null) {
-                final NachrichtAnhangJson nachrichtAnhang = NachrichtAnhangJson.readValue(nachrichtAnhangJson);
+                final NachrichtAnhangJson nachrichtAnhang = AenderungsanfrageUtils.createNachrichtAnhangJson(
+                        nachrichtAnhangJson);
                 uuid = nachrichtAnhang.getUuid();
                 fileName = nachrichtAnhang.getName();
             }

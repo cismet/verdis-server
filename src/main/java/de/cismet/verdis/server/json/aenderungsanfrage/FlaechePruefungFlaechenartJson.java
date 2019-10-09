@@ -12,26 +12,21 @@
  */
 package de.cismet.verdis.server.json.aenderungsanfrage;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-
-import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
-
 /**
  * DOCUMENT ME!
  *
  * @version  $Revision$, $Date$
  */
-@Getter
-@Setter
-@AllArgsConstructor
-@EqualsAndHashCode(callSuper = false)
-public class NachrichtAnhangJson extends AbstractJson {
+public class FlaechePruefungFlaechenartJson extends FlaechePruefungJson {
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
-    private String name;
-    private String uuid;
+    /**
+     * Creates a new FlaechePruefungGroesseJson object.
+     *
+     * @param  pruefung  DOCUMENT ME!
+     */
+    public FlaechePruefungFlaechenartJson(final PruefungFlaechenartJson pruefung) {
+        super(null, pruefung, null);
+    }
 }
