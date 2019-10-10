@@ -41,6 +41,7 @@ import de.cismet.connectioncontext.ConnectionContextStore;
 
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
+import de.cismet.verdis.server.json.StacOptionsDurationJson;
 import de.cismet.verdis.server.search.KassenzeichenSearchStatement;
 import de.cismet.verdis.server.utils.StacUtils;
 import de.cismet.verdis.server.utils.VerdisServerResources;
@@ -76,18 +77,6 @@ public class CreateAStacForKassenzeichenServerAction implements MetaServiceStore
         USER, EXPIRATION, DURATION_VALUE, DURATION_UNIT, KASSENZEICHEN, KASSENZEICHEN_ID
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @version  $Revision$, $Date$
-     */
-    public enum DurationUnit {
-
-        //~ Enum constants -----------------------------------------------------
-
-        MINUTES, HOURS, DAYS, WEEKS, MONTHS, YEARS
-    }
-
     //~ Instance fields --------------------------------------------------------
 
     private User user;
@@ -101,7 +90,7 @@ public class CreateAStacForKassenzeichenServerAction implements MetaServiceStore
         String kassenzeichen = null;
         Integer kassenzeichenId = null;
         Integer durationValue = null;
-        DurationUnit durationUnit = null;
+        StacOptionsDurationJson.DurationUnit durationUnit = null;
         String userName = null;
         Timestamp expiration = null;
 
@@ -118,8 +107,9 @@ public class CreateAStacForKassenzeichenServerAction implements MetaServiceStore
                     } else if (sap.getKey().equals(Parameter.DURATION_VALUE.toString())) {
                         durationValue = (value instanceof Integer) ? (Integer)value : Integer.parseInt((String)value);
                     } else if (sap.getKey().equals(Parameter.DURATION_UNIT.toString())) {
-                        durationUnit = (value instanceof DurationUnit) ? (DurationUnit)value
-                                                                       : DurationUnit.valueOf((String)value);
+                        durationUnit = (value instanceof StacOptionsDurationJson.DurationUnit)
+                            ? (StacOptionsDurationJson.DurationUnit)value
+                            : StacOptionsDurationJson.DurationUnit.valueOf((String)value);
                     } else if (sap.getKey().equals(Parameter.EXPIRATION.toString())) {
                         expiration = (value instanceof Timestamp) ? (Timestamp)value
                                                                   : new Timestamp(Long.parseLong((String)value));
@@ -127,6 +117,7 @@ public class CreateAStacForKassenzeichenServerAction implements MetaServiceStore
                 }
             }
 
+            final StacOptionsDurationJson duration;
             if ((expiration == null) && (durationValue != null)) {
                 final Calendar cal = Calendar.getInstance();
                 cal.setTime(new Date());
@@ -157,8 +148,13 @@ public class CreateAStacForKassenzeichenServerAction implements MetaServiceStore
                         }
                         break;
                     }
+                    duration = new StacOptionsDurationJson(durationUnit, durationValue);
+                } else {
+                    duration = null;
                 }
                 expiration = new Timestamp(cal.getTime().getTime());
+            } else {
+                duration = null;
             }
 
             if ((kassenzeichenId == null) && (kassenzeichen != null)) {
@@ -194,7 +190,8 @@ public class CreateAStacForKassenzeichenServerAction implements MetaServiceStore
                     kassenzeichenId,
                     properties.getProperty("baseLoginName", userName),
                     userName,
-                    expiration);
+                    expiration,
+                    duration);
         } catch (final Exception ex) {
             LOG.error(ex, ex);
             return ex;

@@ -25,7 +25,7 @@ import de.cismet.connectioncontext.ConnectionContextStore;
 
 import de.cismet.netutil.Proxy;
 
-import de.cismet.verdis.server.json.aenderungsanfrage.NachrichtAnhangJson;
+import de.cismet.verdis.server.json.NachrichtAnhangJson;
 import de.cismet.verdis.server.utils.AenderungsanfrageConf;
 import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
 

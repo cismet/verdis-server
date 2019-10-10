@@ -7,8 +7,26 @@ package de.cismet.verdis.server.json.aenderungsanfrage;
  */
 
 
+import de.cismet.verdis.server.json.NachrichtParameterJson;
+import de.cismet.verdis.server.json.FlaecheAenderungFlaechenartJson;
+import de.cismet.verdis.server.json.NachrichtJson;
+import de.cismet.verdis.server.json.FlaechePruefungGroesseJson;
+import de.cismet.verdis.server.json.FlaecheFlaechenartJson;
+import de.cismet.verdis.server.json.NachrichtAnhangJson;
+import de.cismet.verdis.server.json.NachrichtSystemJson;
+import de.cismet.verdis.server.json.AenderungsanfrageJson;
+import de.cismet.verdis.server.json.FlaechePruefungFlaechenartJson;
+import de.cismet.verdis.server.json.NachrichtSachberarbeiterJson;
+import de.cismet.verdis.server.json.PruefungGroesseJson;
+import de.cismet.verdis.server.json.FlaecheAenderungGroesseJson;
+import de.cismet.verdis.server.json.FlaecheAnschlussgradJson;
+import de.cismet.verdis.server.json.FlaecheAenderungJson;
+import de.cismet.verdis.server.json.NachrichtBuergerJson;
+import de.cismet.verdis.server.json.NachrichtParameterAnschlussgradJson;
+import de.cismet.verdis.server.json.PruefungFlaechenartJson;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -29,6 +47,8 @@ import org.junit.Test;
  */
 public class AenderungsanfrageJsonTest {
     
+    private static final String JSON_ANFRAGE_TEST = "de/cismet/verdis/server/json/aenderungsanfrage/anfrage_test.json";
+
     private static final String JSON_ANFRAGE_COMPLEX = "de/cismet/verdis/server/json/aenderungsanfrage/anfrage_complex.json";
     private static final String JSON_ANFRAGE_SIMPLE = "de/cismet/verdis/server/json/aenderungsanfrage/anfrage_simple.json";
 
@@ -53,6 +73,17 @@ public class AenderungsanfrageJsonTest {
     
     @After
     public void tearDown() {
+    }
+
+    @Test
+    public void testTest() {
+        try {
+            final String aenderungsanfrageTestJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(JSON_ANFRAGE_TEST), "UTF-8");
+            final AenderungsanfrageJson aenderungsanfrageDeserialized = AenderungsanfrageUtils.createAenderungsanfrageJson(aenderungsanfrageTestJson);                            
+            Assert.assertNotNull(aenderungsanfrageDeserialized);
+        } catch (final Exception ex) {
+            Assert.fail(ex.getMessage());
+        }
     }
     
     private AenderungsanfrageJson getSimpleAnfrageJson() {
