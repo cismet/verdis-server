@@ -23,9 +23,7 @@ import org.apache.log4j.Logger;
 
 import java.sql.Timestamp;
 
-import java.util.Calendar;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -90,7 +88,7 @@ public class CreateAStacForKassenzeichenServerAction implements MetaServiceStore
         String kassenzeichen = null;
         Integer kassenzeichenId = null;
         Integer durationValue = null;
-        StacOptionsDurationJson.DurationUnit durationUnit = null;
+        StacOptionsDurationJson.Unit durationUnit = null;
         String userName = null;
         Timestamp expiration = null;
 
@@ -107,9 +105,8 @@ public class CreateAStacForKassenzeichenServerAction implements MetaServiceStore
                     } else if (sap.getKey().equals(Parameter.DURATION_VALUE.toString())) {
                         durationValue = (value instanceof Integer) ? (Integer)value : Integer.parseInt((String)value);
                     } else if (sap.getKey().equals(Parameter.DURATION_UNIT.toString())) {
-                        durationUnit = (value instanceof StacOptionsDurationJson.DurationUnit)
-                            ? (StacOptionsDurationJson.DurationUnit)value
-                            : StacOptionsDurationJson.DurationUnit.valueOf((String)value);
+                        durationUnit = (value instanceof StacOptionsDurationJson.Unit)
+                            ? (StacOptionsDurationJson.Unit)value : StacOptionsDurationJson.Unit.valueOf((String)value);
                     } else if (sap.getKey().equals(Parameter.EXPIRATION.toString())) {
                         expiration = (value instanceof Timestamp) ? (Timestamp)value
                                                                   : new Timestamp(Long.parseLong((String)value));
@@ -117,44 +114,10 @@ public class CreateAStacForKassenzeichenServerAction implements MetaServiceStore
                 }
             }
 
-            final StacOptionsDurationJson duration;
-            if ((expiration == null) && (durationValue != null)) {
-                final Calendar cal = Calendar.getInstance();
-                cal.setTime(new Date());
-                if (durationUnit != null) {
-                    switch (durationUnit) {
-                        case MINUTES: {
-                            cal.add(Calendar.MINUTE, durationValue);
-                        }
-                        break;
-                        case HOURS: {
-                            cal.add(Calendar.HOUR, durationValue);
-                        }
-                        break;
-                        case DAYS: {
-                            cal.add(Calendar.DAY_OF_YEAR, durationValue);
-                        }
-                        break;
-                        case WEEKS: {
-                            cal.add(Calendar.WEEK_OF_YEAR, durationValue);
-                        }
-                        break;
-                        case MONTHS: {
-                            cal.add(Calendar.MONTH, durationValue);
-                        }
-                        break;
-                        case YEARS: {
-                            cal.add(Calendar.YEAR, durationValue);
-                        }
-                        break;
-                    }
-                    duration = new StacOptionsDurationJson(durationUnit, durationValue);
-                } else {
-                    duration = null;
-                }
-                expiration = new Timestamp(cal.getTime().getTime());
-            } else {
-                duration = null;
+            final StacOptionsDurationJson duration = ((durationUnit != null) && (durationValue != null))
+                ? new StacOptionsDurationJson(durationUnit, durationValue) : null;
+            if (duration != null) {
+                expiration = StacUtils.createTimestampFrom(duration);
             }
 
             if ((kassenzeichenId == null) && (kassenzeichen != null)) {

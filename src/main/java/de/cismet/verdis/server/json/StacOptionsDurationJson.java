@@ -34,7 +34,7 @@ public class StacOptionsDurationJson extends AbstractJson {
      *
      * @version  $Revision$, $Date$
      */
-    public enum DurationUnit {
+    public enum Unit {
 
         //~ Enum constants -----------------------------------------------------
 
@@ -43,6 +43,6 @@ public class StacOptionsDurationJson extends AbstractJson {
 
     //~ Instance fields --------------------------------------------------------
 
-    private DurationUnit unit;
+    private Unit unit;
     private Integer value;
 }

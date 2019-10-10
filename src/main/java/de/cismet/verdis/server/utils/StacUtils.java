@@ -30,7 +30,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -62,7 +64,7 @@ public class StacUtils {
         "SELECT id, thehash, stac_options, base_login_name, expiration FROM cs_stac WHERE md5(salt || ? || stac_options || base_login_name) = thehash AND expiration > now();";
     private static final String PREPARED_STATEMENT__STAC_CREATE = "SELECT create_stac(?, ?, ?);";
     private static final String PREPARED_STATEMENT__STAC_SET_EXPIRATION =
-        "UPDATE cs_stac SET expiration = '' WHERE md5(salt || ? || stac_options || base_login_name) = thehash";
+        "UPDATE cs_stac SET expiration = ? WHERE md5(salt || ? || stac_options || base_login_name) = thehash";
 
     private static Connection CONNECTION = null;
 
@@ -167,7 +169,7 @@ public class StacUtils {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public static void setStacExpiration(final String stac,
+    public static void updateStacExpiration(final String stac,
             final Timestamp timestamp,
             final MetaService metaService,
             final ConnectionContext connectionContext) throws Exception {
@@ -178,6 +180,65 @@ public class StacUtils {
             LOG.debug(ps.toString());
         }
         ps.executeUpdate();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   duration  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static Timestamp createTimestampFrom(final StacOptionsDurationJson duration) {
+        return createTimestampFrom(duration, new Date());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   duration  DOCUMENT ME!
+     * @param   date      DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static Timestamp createTimestampFrom(final StacOptionsDurationJson duration, final Date date) {
+        if (duration != null) {
+            final Calendar cal = Calendar.getInstance();
+            cal.setTime(date);
+            final StacOptionsDurationJson.Unit unit = duration.getUnit();
+            if (unit != null) {
+                final Integer value = duration.getValue();
+                switch (unit) {
+                    case MINUTES: {
+                        cal.add(Calendar.MINUTE, value);
+                    }
+                    break;
+                    case HOURS: {
+                        cal.add(Calendar.HOUR, value);
+                    }
+                    break;
+                    case DAYS: {
+                        cal.add(Calendar.DAY_OF_YEAR, value);
+                    }
+                    break;
+                    case WEEKS: {
+                        cal.add(Calendar.WEEK_OF_YEAR, value);
+                    }
+                    break;
+                    case MONTHS: {
+                        cal.add(Calendar.MONTH, value);
+                    }
+                    break;
+                    case YEARS: {
+                        cal.add(Calendar.YEAR, value);
+                    }
+                    break;
+                }
+            }
+            return new Timestamp(cal.getTime().getTime());
+        } else {
+            return new Timestamp(date.getTime());
+        }
     }
 
     /**

@@ -53,8 +53,8 @@ public class StacOptionsDurationDeserializer extends StdDeserializer<StacOptions
         JsonProcessingException {
         final ObjectNode on = jp.readValueAsTree();
         final Integer value = on.has("value") ? on.get("value").asInt() : null;
-        final StacOptionsDurationJson.DurationUnit unit = on.has("unit")
-            ? StacOptionsDurationJson.DurationUnit.valueOf(on.get("unit").asText()) : null;
+        final StacOptionsDurationJson.Unit unit = on.has("unit")
+            ? StacOptionsDurationJson.Unit.valueOf(on.get("unit").asText()) : null;
 
         if (value == null) {
             throw new RuntimeException("invalid StacOptionsDurationJson: value is missing");
