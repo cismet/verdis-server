@@ -419,6 +419,19 @@ public class StacUtils {
     /**
      * DOCUMENT ME!
      *
+     * @param   map  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static StacOptionsJson createStacOptionsJson(final Map<String, Object> map) throws Exception {
+        return createStacOptionsJson(getInstance().getMapper().writeValueAsString(map));
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @return  DOCUMENT ME!
      */
     public static StacUtils getInstance() {
