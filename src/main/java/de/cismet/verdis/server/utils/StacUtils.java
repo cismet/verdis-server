@@ -19,9 +19,9 @@ import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserServer;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import lombok.Getter;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import java.rmi.Naming;
 
@@ -30,7 +30,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,6 +42,10 @@ import de.cismet.connectioncontext.ConnectionContext;
 
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
+import de.cismet.verdis.server.json.StacOptionsDurationJson;
+import de.cismet.verdis.server.json.StacOptionsJson;
+import de.cismet.verdis.server.jsondeserializer.StacOptionsDeserializer;
+import de.cismet.verdis.server.jsondeserializer.StacOptionsDurationDeserializer;
 import de.cismet.verdis.server.search.AenderungsanfrageSearchStatement;
 
 /**
@@ -57,10 +63,10 @@ public class StacUtils {
     private static final String PREPARED_STATEMENT__STAC_CHECK =
         "SELECT id, thehash, stac_options, base_login_name, expiration FROM cs_stac WHERE md5(salt || ? || stac_options || base_login_name) = thehash AND expiration > now();";
     private static final String PREPARED_STATEMENT__STAC_CREATE = "SELECT create_stac(?, ?, ?);";
+    private static final String PREPARED_STATEMENT__STAC_SET_EXPIRATION =
+        "UPDATE cs_stac SET expiration = ? WHERE md5(salt || ? || stac_options || base_login_name) = thehash";
 
     private static Connection CONNECTION = null;
-
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     //~ Enums ------------------------------------------------------------------
 
@@ -74,6 +80,28 @@ public class StacUtils {
         //~ Enum constants -----------------------------------------------------
 
         PENDING, PROCESSING, PROCESSED, CLOSED
+    }
+
+    //~ Instance fields --------------------------------------------------------
+
+    private final ObjectMapper mapper = new ObjectMapper();
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new KassenzeichenChangeRequestServerAction object.
+     */
+    public StacUtils() {
+        try {
+            final SimpleModule module = new SimpleModule();
+            module.addDeserializer(StacOptionsJson.class, new StacOptionsDeserializer(mapper));
+            module.addDeserializer(StacOptionsDurationJson.class, new StacOptionsDurationDeserializer(mapper));
+            mapper.registerModule(module);
+            mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        } catch (final Throwable t) {
+            LOG.fatal("this should never happen", t);
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -100,6 +128,7 @@ public class StacUtils {
      * @param   baseLoginName    DOCUMENT ME!
      * @param   creatorUserName  DOCUMENT ME!
      * @param   expiration       DOCUMENT ME!
+     * @param   duration         DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
@@ -109,19 +138,16 @@ public class StacUtils {
             final Integer kassenzeichenId,
             final String baseLoginName,
             final String creatorUserName,
-            final Timestamp expiration) throws Exception {
-        final HashMap optionsHM = new HashMap();
-        optionsHM.put("kassenzeichenid", kassenzeichenId);
-        optionsHM.put("classId", classId);
-        optionsHM.put("creatorUserName", creatorUserName);
+            final Timestamp expiration,
+            final StacOptionsDurationJson duration) throws Exception {
+        final StacOptionsJson stacOptions = new StacOptionsJson(classId, kassenzeichenId, creatorUserName, duration);
 
-        final ObjectMapper objectMapper = new ObjectMapper();
-        final String stacOptions = objectMapper.writeValueAsString(optionsHM);
+        final String stacOptionsJson = stacOptions.toJson();
 
         final PreparedStatement ps = getConnection().prepareStatement(PREPARED_STATEMENT__STAC_CREATE);
         ps.setString(1, baseLoginName);
         ps.setTimestamp(2, expiration);
-        ps.setString(3, stacOptions);
+        ps.setString(3, stacOptionsJson);
         final ResultSet rs = ps.executeQuery();
         if (rs.next()) {
             final String stac = rs.getString(1);
@@ -131,6 +157,88 @@ public class StacUtils {
             return stac;
         }
         return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   stac               DOCUMENT ME!
+     * @param   timestamp          DOCUMENT ME!
+     * @param   metaService        DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static void updateStacExpiration(final String stac,
+            final Timestamp timestamp,
+            final MetaService metaService,
+            final ConnectionContext connectionContext) throws Exception {
+        final PreparedStatement ps = getConnection().prepareStatement(PREPARED_STATEMENT__STAC_SET_EXPIRATION);
+        ps.setTimestamp(1, timestamp);
+        ps.setString(2, stac);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(ps.toString());
+        }
+        ps.executeUpdate();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   duration  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static Timestamp createTimestampFrom(final StacOptionsDurationJson duration) {
+        return createTimestampFrom(duration, new Date());
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   duration  DOCUMENT ME!
+     * @param   date      DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static Timestamp createTimestampFrom(final StacOptionsDurationJson duration, final Date date) {
+        if (duration != null) {
+            final Calendar cal = Calendar.getInstance();
+            cal.setTime(date);
+            final StacOptionsDurationJson.Unit unit = duration.getUnit();
+            if (unit != null) {
+                final Integer value = duration.getValue();
+                switch (unit) {
+                    case MINUTES: {
+                        cal.add(Calendar.MINUTE, value);
+                    }
+                    break;
+                    case HOURS: {
+                        cal.add(Calendar.HOUR, value);
+                    }
+                    break;
+                    case DAYS: {
+                        cal.add(Calendar.DAY_OF_YEAR, value);
+                    }
+                    break;
+                    case WEEKS: {
+                        cal.add(Calendar.WEEK_OF_YEAR, value);
+                    }
+                    break;
+                    case MONTHS: {
+                        cal.add(Calendar.MONTH, value);
+                    }
+                    break;
+                    case YEARS: {
+                        cal.add(Calendar.YEAR, value);
+                    }
+                    break;
+                }
+            }
+            return new Timestamp(cal.getTime().getTime());
+        } else {
+            return new Timestamp(date.getTime());
+        }
     }
 
     /**
@@ -199,8 +307,8 @@ public class StacUtils {
 
             final MetaObject mo = metaService.getMetaObject(
                     user,
-                    (Integer)(stacEntry.getOptions().get("kassenzeichenid")),
-                    (Integer)(stacEntry.getOptions().get("classId")),
+                    stacEntry.getStacOptions().getKassenzeichenid(),
+                    stacEntry.getStacOptions().getClassId(),
                     connectionContext);
             return mo.getBean();
         } else {
@@ -245,7 +353,7 @@ public class StacUtils {
      * @throws  Exception  DOCUMENT ME!
      */
     public static HashMap<String, Object> asMap(final String json) throws Exception {
-        return OBJECT_MAPPER.readValue(json, HashMap.class);
+        return getInstance().mapper.readValue(json, HashMap.class);
     }
 
     /**
@@ -286,6 +394,50 @@ public class StacUtils {
         return null;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public ObjectMapper getMapper() {
+        return mapper;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   json  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static StacOptionsJson createStacOptionsJson(final String json) throws Exception {
+        return getInstance().getMapper().readValue(json, StacOptionsJson.class);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   map  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static StacOptionsJson createStacOptionsJson(final Map<String, Object> map) throws Exception {
+        return createStacOptionsJson(getInstance().getMapper().writeValueAsString(map));
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static StacUtils getInstance() {
+        return LazyInitialiser.INSTANCE;
+    }
+
     //~ Inner Classes ----------------------------------------------------------
 
     /**
@@ -293,42 +445,18 @@ public class StacUtils {
      *
      * @version  $Revision$, $Date$
      */
-    @Getter
-    public static class StacEntry {
+    private static final class LazyInitialiser {
 
-        //~ Instance fields ----------------------------------------------------
+        //~ Static fields/initializers -----------------------------------------
 
-        private final Integer id;
-        private final String hash;
-        private final String optionsJson;
-        private final String loginName;
-        private final Timestamp expiration;
-        private final Map<String, Object> options;
+        private static final StacUtils INSTANCE = new StacUtils();
 
         //~ Constructors -------------------------------------------------------
 
         /**
-         * Creates a new StacEntry object.
-         *
-         * @param   id           DOCUMENT ME!
-         * @param   hash         DOCUMENT ME!
-         * @param   optionsJson  DOCUMENT ME!
-         * @param   loginName    DOCUMENT ME!
-         * @param   expiration   DOCUMENT ME!
-         *
-         * @throws  Exception  DOCUMENT ME!
+         * Creates a new LazyInitialiser object.
          */
-        public StacEntry(final Integer id,
-                final String hash,
-                final String optionsJson,
-                final String loginName,
-                final Timestamp expiration) throws Exception {
-            this.id = id;
-            this.hash = hash;
-            this.optionsJson = optionsJson;
-            this.loginName = loginName;
-            this.expiration = expiration;
-            this.options = asMap(optionsJson);
+        private LazyInitialiser() {
         }
     }
 }

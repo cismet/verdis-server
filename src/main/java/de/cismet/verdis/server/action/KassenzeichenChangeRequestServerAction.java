@@ -37,8 +37,9 @@ import de.cismet.connectioncontext.ConnectionContextStore;
 
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
-import de.cismet.verdis.server.json.aenderungsanfrage.AenderungsanfrageJson;
+import de.cismet.verdis.server.json.AenderungsanfrageJson;
 import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
+import de.cismet.verdis.server.utils.StacEntry;
 import de.cismet.verdis.server.utils.StacUtils;
 
 /**
@@ -116,7 +117,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
     public Object execute(final Object boxy, final ServerActionParameter... params) {
         String stac = null;
         String email = null;
-        String aenderungsanfrageJson = null;
+        Map<String, Object> aenderungsanfrageMap = null;
 
         try {
             if (params != null) {
@@ -126,8 +127,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                     if (Parameter.STAC.toString().equals(key)) {
                         stac = (String)value;
                     } else if (Parameter.CHANGEREQUEST_JSON.toString().equals(key)) {
-                        aenderungsanfrageJson = AenderungsanfrageUtils.getInstance().getMapper()
-                                    .writeValueAsString((Map<String, Object>)value);
+                        aenderungsanfrageMap = (Map<String, Object>)value;
                     } else if (Parameter.EMAIL.toString().equals(key)) {
                         email = (String)value;
                     }
@@ -138,12 +138,12 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                 LOG.info("stac is null, returning false");
                 return false;
             }
-            if (aenderungsanfrageJson == null) {
-                LOG.info("aenderungsanfrageJson is null, returning false");
+            if (aenderungsanfrageMap == null) {
+                LOG.info("aenderungsanfrageMap is null, returning false");
                 return false;
             }
 
-            final StacUtils.StacEntry stacEntry = StacUtils.getStacEntry(
+            final StacEntry stacEntry = StacUtils.getStacEntry(
                     stac,
                     getMetaService(),
                     getConnectionContext());
@@ -162,7 +162,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             }
 
             final AenderungsanfrageJson aenderungsanfrage = AenderungsanfrageUtils.createAenderungsanfrageJson(
-                    aenderungsanfrageJson);
+                    aenderungsanfrageMap);
 
             final Integer kassenzeichenNummerFromBean = (Integer)kassenzeichenBean.getProperty(
                     VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER);
@@ -205,6 +205,11 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             } else {
                 DomainServerImpl.getServerInstance()
                         .updateMetaObject(getUser(), aenderungsanfrageBean.getMetaObject(), getConnectionContext());
+            }
+
+            if (stacEntry.getStacOptions() != null) {
+                final Timestamp expiration = StacUtils.createTimestampFrom(stacEntry.getStacOptions().getDuration());
+                StacUtils.updateStacExpiration(stac, expiration, getMetaService(), getConnectionContext());
             }
             return true;
         } catch (final Exception ex) {

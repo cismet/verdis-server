@@ -31,6 +31,7 @@ import de.cismet.connectioncontext.ConnectionContextStore;
 
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
+import de.cismet.verdis.server.utils.StacEntry;
 import de.cismet.verdis.server.utils.StacUtils;
 import de.cismet.verdis.server.utils.VerdisServerResources;
 
@@ -182,7 +183,7 @@ public class GetMyFebViaStacServerAction implements MetaServiceStore,
      * @throws  Exception  DOCUMENT ME!
      */
     private byte[] createReport(final String stac) throws Exception {
-        final StacUtils.StacEntry stacEntry = StacUtils.getStacEntry(stac, getMetaService(),
+        final StacEntry stacEntry = StacUtils.getStacEntry(stac, getMetaService(),
                 getConnectionContext());
         final CidsBean kassenzeichenBean = StacUtils.getKassenzeichenBean(
                 stacEntry,

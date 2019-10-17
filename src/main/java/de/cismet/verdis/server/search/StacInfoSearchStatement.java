@@ -18,6 +18,7 @@ import java.sql.Timestamp;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
@@ -36,42 +37,90 @@ public class StacInfoSearchStatement extends AbstractCidsServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
 
-    /** LOGGER. */
     private static final transient Logger LOG = Logger.getLogger(StacInfoSearchStatement.class);
+    private static final String FIELD_KASSENZEICHENID = "kassenzeichenid";
+    private static final String QUERY_TEMPLATE_KASSENZEICHENID =
+        "SELECT base_login_name, expiration, stac_options FROM cs_stac WHERE stac_options ilike '%%\""
+                + FIELD_KASSENZEICHENID
+                + "\":%d%%'";
+    private static final String QUERY_TEMPLATE_STACID =
+        "SELECT base_login_name, expiration, stac_options FROM cs_stac WHERE id = %d";
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final String FIELD_KASSENZEICHENID = "kassenzeichenid";
+
+    //~ Enums ------------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public enum SearchBy {
+
+        //~ Enum constants -----------------------------------------------------
+
+        STAC_ID, KASSENZEICHEN_ID
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public enum Fields {
+
+        //~ Enum constants -----------------------------------------------------
+
+        BASE_LOGIN_NAME, TIMESTAMP, STAC_OPTIONS_JSON
+    }
 
     //~ Instance fields --------------------------------------------------------
 
-    private final Integer kassenzeichenId;
+    private final SearchBy searchBy;
+    private Integer kassenzeichenId = null;
+    private Integer stacId = null;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Creates a new KassenzeichenSearchStatement object.
+     * Creates a new StacInfoSearchStatement object.
      *
-     * @param  kassenzeichenId  DOCUMENT ME!
+     * @param  searchBy  DOCUMENT ME!
      */
-    public StacInfoSearchStatement(final Integer kassenzeichenId) {
-        this.kassenzeichenId = kassenzeichenId; // NOI18N
+    public StacInfoSearchStatement(final SearchBy searchBy) {
+        this.searchBy = searchBy;
     }
 
     //~ Methods ----------------------------------------------------------------
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  kassenzeichenId  DOCUMENT ME!
+     */
+    public void setKassenzeichenId(final Integer kassenzeichenId) {
+        this.kassenzeichenId = kassenzeichenId;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  stacId  DOCUMENT ME!
+     */
+    public void setStacId(final Integer stacId) {
+        this.stacId = stacId;
+    }
+
     @Override
-    public Collection<Object[]> performServerSearch() {
+    public Collection<Map> performServerSearch() {
         try {
-            final String sql =
-                "SELECT base_login_name, expiration, stac_options FROM cs_stac WHERE stac_options ilike '%\""
-                        + FIELD_KASSENZEICHENID
-                        + "\":"
-                        + kassenzeichenId
-                        + "%'";
+            final String sql = SearchBy.KASSENZEICHEN_ID.equals(searchBy)
+                ? String.format(QUERY_TEMPLATE_KASSENZEICHENID, kassenzeichenId)
+                : String.format(QUERY_TEMPLATE_STACID, stacId);
             final MetaService ms = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);
             final ArrayList<ArrayList> result = ms.performCustomSearch(sql, ConnectionContext.createDummy());
 
-            final ArrayList<Object[]> aln = new ArrayList<>();
+            final ArrayList<Map> aln = new ArrayList<>();
             for (final ArrayList al : result) {
                 final String baseLoginName = (String)al.get(0);
                 final Timestamp timestamp = (Timestamp)al.get(1);
@@ -81,21 +130,19 @@ public class StacInfoSearchStatement extends AbstractCidsServerSearch {
                         stacOptions,
                         new TypeReference<Map<String, Object>>() {
                         });
-                if (stacOptionsMap.containsKey(FIELD_KASSENZEICHENID)
-                            && kassenzeichenId.equals(stacOptionsMap.get(FIELD_KASSENZEICHENID))) {
-                    final Object[] objectArray = new Object[] {
-                            baseLoginName,
-                            timestamp,
-                            stacOptionsMap
-                        };
+                if (!SearchBy.KASSENZEICHEN_ID.equals(searchBy)
+                            || (stacOptionsMap.containsKey(FIELD_KASSENZEICHENID)
+                                && kassenzeichenId.equals(stacOptionsMap.get(FIELD_KASSENZEICHENID)))) {
+                    final Map objectArray = new HashMap<>();
+                    objectArray.put(Fields.BASE_LOGIN_NAME, baseLoginName);
+                    objectArray.put(Fields.TIMESTAMP, timestamp);
+                    objectArray.put(Fields.STAC_OPTIONS_JSON, stacOptionsMap);
                     aln.add(objectArray);
                 }
             }
-
             return aln;
         } catch (final Exception ex) {
             LOG.error("problem during search", ex); // NOI18N
-
             return null;
         }
     }
