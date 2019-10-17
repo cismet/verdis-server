@@ -16,7 +16,6 @@ import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.newuser.User;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
@@ -35,28 +34,28 @@ import de.cismet.connectioncontext.ConnectionContext;
 
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
-import de.cismet.verdis.server.json.aenderungsanfrage.AenderungsanfrageJson;
-import de.cismet.verdis.server.json.aenderungsanfrage.FlaecheAenderungJson;
-import de.cismet.verdis.server.json.aenderungsanfrage.FlaecheAnschlussgradJson;
-import de.cismet.verdis.server.json.aenderungsanfrage.FlaecheFlaechenartJson;
-import de.cismet.verdis.server.json.aenderungsanfrage.FlaechePruefungJson;
-import de.cismet.verdis.server.json.aenderungsanfrage.NachrichtAnhangJson;
-import de.cismet.verdis.server.json.aenderungsanfrage.NachrichtJson;
-import de.cismet.verdis.server.json.aenderungsanfrage.NachrichtParameterJson;
-import de.cismet.verdis.server.json.aenderungsanfrage.PruefungAnschlussgradJson;
-import de.cismet.verdis.server.json.aenderungsanfrage.PruefungFlaechenartJson;
-import de.cismet.verdis.server.json.aenderungsanfrage.PruefungGroesseJson;
-import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.AenderungsanfrageDeserializer;
-import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.FlaecheAenderungDeserializer;
-import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.FlaecheAnschlussgradDeserializer;
-import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.FlaecheFlaechenartDeserializer;
-import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.FlaechePruefungDeserializer;
-import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.NachrichtAnhangDeserializer;
-import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.NachrichtDeserializer;
-import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.NachrichtParameterDeserializer;
-import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.PruefungAnschlussgradDeserializer;
-import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.PruefungFlaechenartDeserializer;
-import de.cismet.verdis.server.json.aenderungsanfrage.deserializer.PruefungGroesseDeserializer;
+import de.cismet.verdis.server.json.AenderungsanfrageJson;
+import de.cismet.verdis.server.json.FlaecheAenderungJson;
+import de.cismet.verdis.server.json.FlaecheAnschlussgradJson;
+import de.cismet.verdis.server.json.FlaecheFlaechenartJson;
+import de.cismet.verdis.server.json.FlaechePruefungJson;
+import de.cismet.verdis.server.json.NachrichtAnhangJson;
+import de.cismet.verdis.server.json.NachrichtJson;
+import de.cismet.verdis.server.json.NachrichtParameterJson;
+import de.cismet.verdis.server.json.PruefungAnschlussgradJson;
+import de.cismet.verdis.server.json.PruefungFlaechenartJson;
+import de.cismet.verdis.server.json.PruefungGroesseJson;
+import de.cismet.verdis.server.jsondeserializer.AenderungsanfrageDeserializer;
+import de.cismet.verdis.server.jsondeserializer.FlaecheAenderungDeserializer;
+import de.cismet.verdis.server.jsondeserializer.FlaecheAnschlussgradDeserializer;
+import de.cismet.verdis.server.jsondeserializer.FlaecheFlaechenartDeserializer;
+import de.cismet.verdis.server.jsondeserializer.FlaechePruefungDeserializer;
+import de.cismet.verdis.server.jsondeserializer.NachrichtAnhangDeserializer;
+import de.cismet.verdis.server.jsondeserializer.NachrichtDeserializer;
+import de.cismet.verdis.server.jsondeserializer.NachrichtParameterDeserializer;
+import de.cismet.verdis.server.jsondeserializer.PruefungAnschlussgradDeserializer;
+import de.cismet.verdis.server.jsondeserializer.PruefungFlaechenartDeserializer;
+import de.cismet.verdis.server.jsondeserializer.PruefungGroesseDeserializer;
 import de.cismet.verdis.server.search.AenderungsanfrageSearchStatement;
 
 import static de.cismet.verdis.server.utils.StacUtils.getUser;
@@ -101,8 +100,6 @@ public class AenderungsanfrageUtils {
             module.addDeserializer(NachrichtJson.class, new NachrichtDeserializer(mapper));
             module.addDeserializer(AenderungsanfrageJson.class, new AenderungsanfrageDeserializer(mapper));
             mapper.registerModule(module);
-            mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-            mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         } catch (final Throwable t) {
             LOG.fatal("this should never happen", t);
         }
@@ -115,7 +112,7 @@ public class AenderungsanfrageUtils {
      *
      * @return  DOCUMENT ME!
      */
-    public ObjectMapper getMapper() {
+    private ObjectMapper getMapper() {
         return mapper;
     }
 
@@ -240,7 +237,7 @@ public class AenderungsanfrageUtils {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public static CidsBean getAenderungsanfrageBean(final StacUtils.StacEntry stacEntry,
+    public static CidsBean getAenderungsanfrageBean(final StacEntry stacEntry,
             final MetaService metaService,
             final ConnectionContext connectionContext) throws Exception {
         if (stacEntry != null) {
@@ -268,6 +265,19 @@ public class AenderungsanfrageUtils {
     /**
      * DOCUMENT ME!
      *
+     * @param   map  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static AenderungsanfrageJson createAenderungsanfrageJson(final Map<String, Object> map) throws Exception {
+        return createAenderungsanfrageJson(getInstance().getMapper().writeValueAsString(map));
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   json  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -275,7 +285,7 @@ public class AenderungsanfrageUtils {
      * @throws  Exception  DOCUMENT ME!
      */
     public static AenderungsanfrageJson createAenderungsanfrageJson(final String json) throws Exception {
-        return AenderungsanfrageUtils.getInstance().getMapper().readValue(json, AenderungsanfrageJson.class);
+        return getInstance().getMapper().readValue(json, AenderungsanfrageJson.class);
     }
 
     /**
@@ -288,7 +298,7 @@ public class AenderungsanfrageUtils {
      * @throws  Exception  DOCUMENT ME!
      */
     public static NachrichtAnhangJson createNachrichtAnhangJson(final String json) throws Exception {
-        return AenderungsanfrageUtils.getInstance().getMapper().readValue(json, NachrichtAnhangJson.class);
+        return getInstance().getMapper().readValue(json, NachrichtAnhangJson.class);
     }
 
     /**
@@ -301,7 +311,7 @@ public class AenderungsanfrageUtils {
      * @throws  Exception  DOCUMENT ME!
      */
     public static NachrichtParameterJson createNachrichtParameterJson(final String json) throws Exception {
-        return AenderungsanfrageUtils.getInstance().getMapper().readValue(json, NachrichtParameterJson.class);
+        return getInstance().getMapper().readValue(json, NachrichtParameterJson.class);
     }
 
     /**
