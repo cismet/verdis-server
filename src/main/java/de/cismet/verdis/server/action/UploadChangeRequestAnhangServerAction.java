@@ -72,20 +72,7 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
 
         //~ Enum constants -----------------------------------------------------
 
-        STAC {
-
-            @Override
-            public String toString() {
-                return "stac";
-            }
-        },
-        FILENAME {
-
-            @Override
-            public String toString() {
-                return "fileName";
-            }
-        }
+        STAC, FILENAME, WAIT_FOR_SUCCESS
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -96,11 +83,35 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
 
     //~ Methods ----------------------------------------------------------------
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   uploadFilePath  DOCUMENT ME!
+     * @param   bytes           DOCUMENT ME!
+     * @param   conf            DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    private static void upload(final String uploadFilePath, final byte[] bytes, final AenderungsanfrageConf conf)
+            throws Exception {
+        final InputStream data = new ByteArrayInputStream(bytes);
+
+        final WebDavClient webdavClient = new WebDavClient(
+                Proxy.fromPreferences(),
+                conf.getWebdavUser(),
+                conf.getWebdavPassword());
+        final int result = webdavClient.put(uploadFilePath, data);
+        if (result != 201) {
+            throw new Exception(String.format("upload to %s failed with status code %d", uploadFilePath, result));
+        }
+    }
+
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
         final byte[] bytes;
         String fileName = null;
         String stac = null;
+        boolean waitForSuccess = true;
 
         try {
             if (body == null) {
@@ -117,6 +128,12 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
                         stac = (String)value;
                     } else if (Parameter.FILENAME.toString().equalsIgnoreCase(key)) {
                         fileName = (String)value;
+                    } else if (Parameter.WAIT_FOR_SUCCESS.toString().equalsIgnoreCase(key)) {
+                        if (value instanceof String) {
+                            waitForSuccess = Boolean.parseBoolean((String)value);
+                        } else if (value instanceof Boolean) {
+                            waitForSuccess = (Boolean)value;
+                        }
                     }
                 }
             }
@@ -143,25 +160,27 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
                     uploadDirPath,
                     uuid,
                     URLEncoder.encode(fileName, "utf-8").replaceAll("\\+", "%20"));
-            new SwingWorker<Void, Void>() {
+            if (waitForSuccess) {
+                upload(uploadFilePath, bytes, conf);
+            } else {
+                new SwingWorker<Void, Void>() {
 
-                    @Override
-                    protected Void doInBackground() throws Exception {
-                        try {
-                            final InputStream data = new ByteArrayInputStream(bytes);
-
-                            final WebDavClient webdavClient = new WebDavClient(
-                                    Proxy.fromPreferences(),
-                                    conf.getWebdavUser(),
-                                    conf.getWebdavPassword());
-                            webdavClient.put(uploadFilePath, data);
-                        } catch (final Exception ex) {
-                            LOG.error(ex, ex);
+                        @Override
+                        protected Void doInBackground() throws Exception {
+                            upload(uploadFilePath, bytes, conf);
+                            return null;
                         }
-                        return null;
-                    }
-                }.execute();
 
+                        @Override
+                        protected void done() {
+                            try {
+                                get();
+                            } catch (final Exception ex) {
+                                LOG.error(ex, ex);
+                            }
+                        }
+                    }.execute();
+            }
             return new NachrichtAnhangJson(fileName, uuid).toJson();
         } catch (final Exception ex) {
             LOG.error(ex, ex);
