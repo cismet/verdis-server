@@ -17,8 +17,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
-
 /**
  * DOCUMENT ME!
  *

@@ -16,6 +16,8 @@ import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
 import Sirius.server.newuser.User;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import org.apache.log4j.Logger;
 
 import java.io.ByteArrayInputStream;
@@ -38,7 +40,7 @@ import de.cismet.connectioncontext.ConnectionContextStore;
 
 import de.cismet.netutil.Proxy;
 
-import de.cismet.verdis.server.json.NachrichtAnhangJson;
+import de.cismet.verdis.server.json.NachrichtAnhangUploadJson;
 import de.cismet.verdis.server.utils.AenderungsanfrageConf;
 import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
 import de.cismet.verdis.server.utils.StacEntry;
@@ -90,9 +92,11 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
      * @param   bytes           DOCUMENT ME!
      * @param   conf            DOCUMENT ME!
      *
+     * @return  DOCUMENT ME!
+     *
      * @throws  Exception  DOCUMENT ME!
      */
-    private static void upload(final String uploadFilePath, final byte[] bytes, final AenderungsanfrageConf conf)
+    private static int upload(final String uploadFilePath, final byte[] bytes, final AenderungsanfrageConf conf)
             throws Exception {
         final InputStream data = new ByteArrayInputStream(bytes);
 
@@ -100,14 +104,12 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
                 Proxy.fromPreferences(),
                 conf.getWebdavUser(),
                 conf.getWebdavPassword());
-        final int result = webdavClient.put(uploadFilePath, data);
-        if (result != 201) {
-            throw new Exception(String.format("upload to %s failed with status code %d", uploadFilePath, result));
-        }
+        return webdavClient.put(uploadFilePath, data);
     }
 
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
+        NachrichtAnhangUploadJson returnJson;
         final byte[] bytes;
         String fileName = null;
         String stac = null;
@@ -138,53 +140,72 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
                 }
             }
             if (stac == null) {
-                throw new Exception(Parameter.STAC.toString() + " parameter is missing");
+                throw new StatusException(
+                    412,
+                    String.format("Parameter '%s' nicht gesetzt", Parameter.STAC.toString()));
+            } else if (fileName == null) {
+                throw new StatusException(
+                    412,
+                    String.format("Parameter '%s' nicht gesetzt", Parameter.FILENAME.toString()));
             }
-            if (fileName == null) {
-                throw new Exception(Parameter.FILENAME.toString() + " parameter is missing");
-            }
+
             final StacEntry stacEntry = StacUtils.getStacEntry(
                     stac,
                     getMetaService(),
                     getConnectionContext());
             if (stacEntry == null) {
-                throw new Exception("STAC is invalid");
-            }
-
-            final String uuid = UUID.randomUUID().toString();
-            final AenderungsanfrageConf conf = AenderungsanfrageUtils.getConfFromServerResource();
-            final String webdavUrl = conf.getWebdavUrl();
-            final String uploadDirPath = webdavUrl.endsWith("/") ? webdavUrl : (webdavUrl + "/");
-            final String uploadFilePath = String.format(
-                    "%s%s_%s",
-                    uploadDirPath,
-                    uuid,
-                    URLEncoder.encode(fileName, "utf-8").replaceAll("\\+", "%20"));
-            if (waitForSuccess) {
-                upload(uploadFilePath, bytes, conf);
+                throw new StatusException(412, "STAC ist ungültig");
             } else {
-                new SwingWorker<Void, Void>() {
+                final String uuid = UUID.randomUUID().toString();
+                final AenderungsanfrageConf conf = AenderungsanfrageUtils.getConfFromServerResource();
+                final String webdavUrl = conf.getWebdavUrl();
+                final String uploadDirPath = webdavUrl.endsWith("/") ? webdavUrl : (webdavUrl + "/");
+                final String uploadFilePath = String.format(
+                        "%s%s_%s",
+                        uploadDirPath,
+                        uuid,
+                        URLEncoder.encode(fileName, "utf-8").replaceAll("\\+", "%20"));
+                final int status;
+                if (waitForSuccess) {
+                    status = upload(uploadFilePath, bytes, conf);
+                    if (status != 201) {
+                        LOG.error(String.format("upload to %s failed with status code %d", uploadFilePath, status));
+                        throw new StatusException(status, "Upload fehlgeschlagen");
+                    }
+                } else {
+                    status = 202;
+                    new SwingWorker<Void, Void>() {
 
-                        @Override
-                        protected Void doInBackground() throws Exception {
-                            upload(uploadFilePath, bytes, conf);
-                            return null;
-                        }
-
-                        @Override
-                        protected void done() {
-                            try {
-                                get();
-                            } catch (final Exception ex) {
-                                LOG.error(ex, ex);
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                upload(uploadFilePath, bytes, conf);
+                                return null;
                             }
-                        }
-                    }.execute();
+
+                            @Override
+                            protected void done() {
+                                try {
+                                    get();
+                                } catch (final Exception ex) {
+                                    LOG.error(ex, ex);
+                                }
+                            }
+                        }.execute();
+                }
+                returnJson = new NachrichtAnhangUploadJson(status, null, fileName, uuid);
             }
-            return new NachrichtAnhangJson(fileName, uuid).toJson();
+        } catch (final StatusException ex) {
+            returnJson = new NachrichtAnhangUploadJson(ex.getStatus(), ex.getMessage());
         } catch (final Exception ex) {
             LOG.error(ex, ex);
-            return ex;
+            returnJson = new NachrichtAnhangUploadJson(500, ex.getMessage());
+        }
+
+        try {
+            return returnJson.toJson();
+        } catch (final JsonProcessingException ex) {
+            LOG.error(ex, ex);
+            return null;
         }
     }
 
@@ -221,5 +242,55 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
     @Override
     public String getTaskName() {
         return TASKNAME;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    private static class StatusException extends Exception {
+
+        //~ Instance fields ----------------------------------------------------
+
+        private final int status;
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new StatusException object.
+         *
+         * @param  status   DOCUMENT ME!
+         * @param  message  DOCUMENT ME!
+         */
+        public StatusException(final int status, final String message) {
+            super(message);
+            this.status = status;
+        }
+
+        /**
+         * Creates a new StatusException object.
+         *
+         * @param  status   DOCUMENT ME!
+         * @param  message  DOCUMENT ME!
+         * @param  cause    DOCUMENT ME!
+         */
+        public StatusException(final int status, final String message, final Throwable cause) {
+            super(message, cause);
+            this.status = status;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        public int getStatus() {
+            return status;
+        }
     }
 }
