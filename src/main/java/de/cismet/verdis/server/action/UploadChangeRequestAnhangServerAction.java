@@ -41,6 +41,8 @@ import de.cismet.netutil.Proxy;
 import de.cismet.verdis.server.json.NachrichtAnhangJson;
 import de.cismet.verdis.server.utils.AenderungsanfrageConf;
 import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
+import de.cismet.verdis.server.utils.StacEntry;
+import de.cismet.verdis.server.utils.StacUtils;
 
 /**
  * DOCUMENT ME!
@@ -70,6 +72,13 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
 
         //~ Enum constants -----------------------------------------------------
 
+        STAC {
+
+            @Override
+            public String toString() {
+                return "stac";
+            }
+        },
         FILENAME {
 
             @Override
@@ -91,6 +100,7 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
     public Object execute(final Object body, final ServerActionParameter... params) {
         final byte[] bytes;
         String fileName = null;
+        String stac = null;
 
         try {
             if (body == null) {
@@ -103,13 +113,25 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
                 for (final ServerActionParameter sap : params) {
                     final String key = sap.getKey();
                     final Object value = sap.getValue();
-                    if (Parameter.FILENAME.toString().equals(key)) {
+                    if (Parameter.STAC.toString().equalsIgnoreCase(key)) {
+                        stac = (String)value;
+                    } else if (Parameter.FILENAME.toString().equalsIgnoreCase(key)) {
                         fileName = (String)value;
                     }
                 }
             }
+            if (stac == null) {
+                throw new Exception(Parameter.STAC.toString() + " parameter is missing");
+            }
             if (fileName == null) {
                 throw new Exception(Parameter.FILENAME.toString() + " parameter is missing");
+            }
+            final StacEntry stacEntry = StacUtils.getStacEntry(
+                    stac,
+                    getMetaService(),
+                    getConnectionContext());
+            if (stacEntry == null) {
+                throw new Exception("STAC is invalid");
             }
 
             final String uuid = UUID.randomUUID().toString();
