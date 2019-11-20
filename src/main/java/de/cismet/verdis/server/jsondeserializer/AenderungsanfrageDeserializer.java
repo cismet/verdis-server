@@ -20,6 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import org.geojson.GeoJsonObject;
+
 import java.io.IOException;
 
 import java.util.ArrayList;
@@ -81,10 +83,21 @@ public class AenderungsanfrageDeserializer extends StdDeserializer<Aenderungsanf
                     objectMapper.treeToValue(fieldEntry.getValue(), FlaecheAenderungJson.class));
             }
         }
+        final Map<String, GeoJsonObject> geometrien = new HashMap<>();
+        if (on.has("geometrien") && on.get("geometrien").isObject()) {
+            final Iterator<Map.Entry<String, JsonNode>> fieldIterator = on.get("geometrien").fields();
+            while (fieldIterator.hasNext()) {
+                final Map.Entry<String, JsonNode> fieldEntry = fieldIterator.next();
+                final String bezeichnung = fieldEntry.getKey();
+                geometrien.put(
+                    bezeichnung,
+                    objectMapper.treeToValue(fieldEntry.getValue(), GeoJsonObject.class));
+            }
+        }
 
         if (kassenzeichen == null) {
             throw new RuntimeException("invalid AnfrageJson: kassenzeichen is missing");
         }
-        return new AenderungsanfrageJson(kassenzeichen, flaechen, nachrichten);
+        return new AenderungsanfrageJson(kassenzeichen, flaechen, geometrien, nachrichten);
     }
 }

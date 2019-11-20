@@ -17,6 +17,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.geojson.GeoJsonObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +45,7 @@ public class AenderungsanfrageJson extends AbstractJson {
 
     private Integer kassenzeichen;
     private Map<String, FlaecheAenderungJson> flaechen;
+    private Map<String, GeoJsonObject> geometrien;
     private List<NachrichtJson> nachrichten;
 
     //~ Constructors -----------------------------------------------------------
@@ -53,7 +56,11 @@ public class AenderungsanfrageJson extends AbstractJson {
      * @param  kassenzeichen  DOCUMENT ME!
      */
     public AenderungsanfrageJson(final Integer kassenzeichen) {
-        this(kassenzeichen, new HashMap<String, FlaecheAenderungJson>(), new ArrayList<NachrichtJson>());
+        this(
+            kassenzeichen,
+            new HashMap<String, FlaecheAenderungJson>(),
+            new HashMap<String, GeoJsonObject>(),
+            new ArrayList<NachrichtJson>());
     }
 
     /**
@@ -63,6 +70,10 @@ public class AenderungsanfrageJson extends AbstractJson {
      * @param  flaechen       DOCUMENT ME!
      */
     public AenderungsanfrageJson(final Integer kassenzeichen, final Map<String, FlaecheAenderungJson> flaechen) {
-        this(kassenzeichen, new HashMap<String, FlaecheAenderungJson>(), new ArrayList<NachrichtJson>());
+        this(
+            kassenzeichen,
+            new HashMap<String, FlaecheAenderungJson>(),
+            new HashMap<String, GeoJsonObject>(),
+            new ArrayList<NachrichtJson>());
     }
 }

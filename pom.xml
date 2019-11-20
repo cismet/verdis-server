@@ -135,8 +135,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <scope>compile</scope>
-            <version>2.2.3</version> 
+            <scope>compile</scope> 
            <type>jar</type>
         </dependency>
                 
@@ -165,6 +164,11 @@
         
         <!-- END: Provided dependencies -->
        
+        <dependency>
+            <groupId>com.github.mastinno</groupId>
+            <artifactId>geojson-jackson-java</artifactId>
+            <version>1.0.2</version>
+        </dependency>       
         
         <!-- BEGIN: Runtime dependencies -->
         <dependency>
