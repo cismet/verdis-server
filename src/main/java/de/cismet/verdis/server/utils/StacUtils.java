@@ -73,47 +73,6 @@ public class StacUtils {
 
     private static Connection CONNECTION = null;
 
-    //~ Enums ------------------------------------------------------------------
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @version  $Revision$, $Date$
-     */
-    public enum AenderungsanfrageStatus {
-
-        //~ Enum constants -----------------------------------------------------
-
-        PENDING {
-
-            @Override
-            public String toString() {
-                return "ausstehend";
-            }
-        },
-        PROCESSING {
-
-            @Override
-            public String toString() {
-                return "in Bearbeitung";
-            }
-        },
-        PROCESSED {
-
-            @Override
-            public String toString() {
-                return "bearbeitet";
-            }
-        },
-        CLOSED {
-
-            @Override
-            public String toString() {
-                return "geschlossen";
-            }
-        }
-    }
-
     //~ Instance fields --------------------------------------------------------
 
     private final ObjectMapper mapper = new ObjectMapper();
