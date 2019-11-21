@@ -60,27 +60,18 @@ public class StacUtils {
 
     private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(StacUtils.class);
 
-    private static final String PREPARED_STATEMENT__STAC_CHECK =
-        "SELECT id, thehash, stac_options, base_login_name, expiration FROM cs_stac WHERE md5(salt || ? || stac_options || base_login_name) = thehash AND expiration > now();";
-    private static final String PREPARED_STATEMENT__STAC_CREATE = "SELECT create_stac(?, ?, ?);";
-    private static final String PREPARED_STATEMENT__STAC_SET_EXPIRATION =
-        "UPDATE cs_stac SET expiration = ? WHERE md5(salt || ? || stac_options || base_login_name) = thehash";
+    private static final String PREPARED_STATEMENT__STAC_CHECK = ""
+                + "SELECT id, thehash, stac_options, base_login_name, expiration "
+                + "FROM cs_stac "
+                + "WHERE md5(salt || ? || stac_options || base_login_name) = thehash AND expiration > now();";
+    private static final String PREPARED_STATEMENT__STAC_CREATE = ""
+                + "SELECT create_stac(?, ?, ?);";
+    private static final String PREPARED_STATEMENT__STAC_SET_EXPIRATION = ""
+                + "UPDATE cs_stac "
+                + "SET expiration = ? "
+                + "WHERE md5(salt || ? || stac_options || base_login_name) = thehash";
 
     private static Connection CONNECTION = null;
-
-    //~ Enums ------------------------------------------------------------------
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @version  $Revision$, $Date$
-     */
-    public enum AenderungsanfrageStatus {
-
-        //~ Enum constants -----------------------------------------------------
-
-        PENDING, PROCESSING, PROCESSED, CLOSED
-    }
 
     //~ Instance fields --------------------------------------------------------
 

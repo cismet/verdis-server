@@ -57,6 +57,7 @@ import de.cismet.verdis.server.jsondeserializer.PruefungAnschlussgradDeserialize
 import de.cismet.verdis.server.jsondeserializer.PruefungFlaechenartDeserializer;
 import de.cismet.verdis.server.jsondeserializer.PruefungGroesseDeserializer;
 import de.cismet.verdis.server.search.AenderungsanfrageSearchStatement;
+import de.cismet.verdis.server.search.AenderungsanfrageStatusSearchStatement;
 
 import static de.cismet.verdis.server.utils.StacUtils.getUser;
 
@@ -71,6 +72,20 @@ public class AenderungsanfrageUtils {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger LOG = Logger.getLogger(AenderungsanfrageUtils.class);
+
+    //~ Enums ------------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    public enum Status {
+
+        //~ Enum constants -----------------------------------------------------
+
+        NONE, PENDING, PROCESSING, CLOSED;
+    }
 
     //~ Instance fields --------------------------------------------------------
 
@@ -312,6 +327,50 @@ public class AenderungsanfrageUtils {
      */
     public static NachrichtParameterJson createNachrichtParameterJson(final String json) throws Exception {
         return getInstance().getMapper().readValue(json, NachrichtParameterJson.class);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   status             DOCUMENT ME!
+     * @param   stacEntry          DOCUMENT ME!
+     * @param   metaService        DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static CidsBean getStatusBean(final Status status,
+            final StacEntry stacEntry,
+            final MetaService metaService,
+            final ConnectionContext connectionContext) throws Exception {
+        if (stacEntry != null) {
+            final User user = getUser(stacEntry, metaService, connectionContext);
+
+            final Map localServers = new HashMap<>();
+            localServers.put(VerdisConstants.DOMAIN, metaService);
+            final AenderungsanfrageStatusSearchStatement search = new AenderungsanfrageStatusSearchStatement();
+            search.setActiveLocalServers(localServers);
+            search.setUser(user);
+            search.setSchluessel(status.toString());
+
+            final Collection<MetaObjectNode> mons = search.performServerSearch();
+
+            if ((mons != null) && !mons.isEmpty()) {
+                for (final MetaObjectNode mon : mons) {
+                    if (mon != null) {
+                        return metaService.getMetaObject(
+                                    user,
+                                    mon.getObjectId(),
+                                    mon.getClassId(),
+                                    connectionContext).getBean();
+                    }
+                }
+            }
+            return null;
+        }
+        return null;
     }
 
     /**
