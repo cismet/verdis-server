@@ -34,6 +34,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.IOUtils;
+import org.geojson.GeoJsonObject;
+import org.geojson.GeoJsonObjectVisitor;
+import org.geojson.Polygon;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -89,9 +92,11 @@ public class AenderungsanfrageJsonTest {
     private AenderungsanfrageJson getSimpleAnfrageJson() {
             final Map<String, FlaecheAenderungJson> flaechen = new HashMap<>();
             flaechen.put("5", new FlaecheAenderungGroesseJson(12));
+            final Map<String, GeoJsonObject> geometrien = new HashMap<>();
             final AenderungsanfrageJson anederungsanfrage = new AenderungsanfrageJson(
                     60004629,
                     flaechen,
+                    geometrien,
                     new ArrayList<>(
                         (List)Arrays.asList(
                             new NachrichtBuergerJson(
@@ -117,6 +122,8 @@ public class AenderungsanfrageJsonTest {
                         new PruefungFlaechenartJson(new FlaecheFlaechenartJson("Gründachfläche", "GDF"), "SteinbacherD102", new Date(47110815))
                 )
         ));
+        
+        final Map<String, GeoJsonObject> geometrien = new HashMap<>();        
 
         final List<NachrichtJson> nachrichten = new ArrayList<>();
         nachrichten.add(new NachrichtSachberarbeiterJson(
@@ -166,6 +173,7 @@ public class AenderungsanfrageJsonTest {
         final AenderungsanfrageJson aenderungsanfrage = new AenderungsanfrageJson(
                 60004629,
                 flaechen,
+                geometrien,
                 nachrichten
         );
         return aenderungsanfrage;

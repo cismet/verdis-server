@@ -93,18 +93,6 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
         }
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @version  $Revision$, $Date$
-     */
-    public enum Status {
-
-        //~ Enum constants -----------------------------------------------------
-
-        NONE, DRAFT, PENDING, PROCESSING, DONE, CLOSED
-    }
-
     //~ Instance fields --------------------------------------------------------
 
     private User user;
@@ -186,6 +174,15 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                     VerdisConstants.MC.AENDERUNGSANFRAGE,
                     getConnectionContext());
 
+            final String statusSchluessel = (String)aenderungsanfrageBean.getProperty(
+                    VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS
+                            + ".schluessel");
+            if (AenderungsanfrageUtils.Status.PROCESSING.toString().equals(statusSchluessel)
+                        || AenderungsanfrageUtils.Status.CLOSED.toString().equals(statusSchluessel)) {
+                // todo ein resusal json-object zur unterscheidung der ablehnung ?
+                return false;
+            }
+
             aenderungsanfrageBean.setProperty(
                 VerdisConstants.PROP.AENDERUNGSANFRAGE.CHANGES_JSON,
                 aenderungsanfrage.toJson());
@@ -197,7 +194,13 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             aenderungsanfrageBean.setProperty(
                 VerdisConstants.PROP.AENDERUNGSANFRAGE.TIMESTAMP,
                 new Timestamp(new Date().getTime()));
-            aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS, "PENDING");
+            aenderungsanfrageBean.setProperty(
+                VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS,
+                AenderungsanfrageUtils.getInstance().getStatusBean(
+                    AenderungsanfrageUtils.Status.PENDING,
+                    stacEntry,
+                    getMetaService(),
+                    getConnectionContext()));
 
             if (MetaObject.NEW == aenderungsanfrageBean.getMetaObject().getStatus()) {
                 DomainServerImpl.getServerInstance()

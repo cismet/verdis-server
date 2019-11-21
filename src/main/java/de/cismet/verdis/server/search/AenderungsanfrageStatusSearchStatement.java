@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 
@@ -38,12 +37,13 @@ import de.cismet.verdis.commons.constants.VerdisConstants;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = RestApiCidsServerSearch.class)
-public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch implements RestApiCidsServerSearch {
+public class AenderungsanfrageStatusSearchStatement extends AbstractCidsServerSearch
+        implements RestApiCidsServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
 
     /** LOGGER. */
-    private static final transient Logger LOG = Logger.getLogger(AenderungsanfrageSearchStatement.class);
+    private static final transient Logger LOG = Logger.getLogger(AenderungsanfrageStatusSearchStatement.class);
 
     //~ Enums ------------------------------------------------------------------
 
@@ -61,13 +61,7 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
 
     //~ Instance fields --------------------------------------------------------
 
-    @Getter @Setter private Integer stacId;
-
-    @Getter @Setter private Integer kassenzeichennummer;
-
-    @Getter @Setter private Set<String> statii;
-
-    @Getter @Setter private SearchMode searchMode = SearchMode.AND;
+    @Getter @Setter private String schluessel;
 
     @Getter private final SearchInfo searchInfo;
 
@@ -76,26 +70,16 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
     /**
      * Creates a new AenderungsanfrageSearchStatement object.
      */
-    public AenderungsanfrageSearchStatement() {
+    public AenderungsanfrageStatusSearchStatement() {
         searchInfo = new SearchInfo();
         searchInfo.setKey(this.getClass().getName());
         searchInfo.setName(this.getClass().getSimpleName());
-        searchInfo.setDescription("Search for Aenderungsanfrage");
+        searchInfo.setDescription("Search for AenderungsanfrageStatus");
 
         final List<SearchParameterInfo> parameterDescription = new LinkedList<>();
         final SearchParameterInfo searchParameterInfo = new SearchParameterInfo();
 
-        searchParameterInfo.setKey("stacId");
-        searchParameterInfo.setType(Type.INTEGER);
-        parameterDescription.add(searchParameterInfo);
-        searchInfo.setParameterDescription(parameterDescription);
-
-        searchParameterInfo.setKey("kassenzeichenNummer");
-        searchParameterInfo.setType(Type.INTEGER);
-        parameterDescription.add(searchParameterInfo);
-        searchInfo.setParameterDescription(parameterDescription);
-
-        searchParameterInfo.setKey("statii");
+        searchParameterInfo.setKey("schluessel");
         searchParameterInfo.setType(Type.STRING);
         parameterDescription.add(searchParameterInfo);
         searchInfo.setParameterDescription(parameterDescription);
@@ -110,11 +94,11 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
     /**
      * Creates a new AenderungsanfrageSearchStatement object.
      *
-     * @param  stacId  DOCUMENT ME!
+     * @param  schluessel  stacId DOCUMENT ME!
      */
-    public AenderungsanfrageSearchStatement(final Integer stacId) {
+    public AenderungsanfrageStatusSearchStatement(final String schluessel) {
         this();
-        this.stacId = stacId;
+        this.schluessel = schluessel;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -125,54 +109,23 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
             final Collection<String> froms = new ArrayList<>();
             final Collection<String> wheres = new ArrayList<>();
 
-            boolean joinKassenzeichen = false;
-            boolean joinStacId = false;
-            if (stacId != null) {
-                wheres.add("a." + VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID
-                            + " = " + stacId + "");
-                joinStacId = true;
-            }
-            if (kassenzeichennummer != null) {
-                joinKassenzeichen = true;
-                wheres.add("k." + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER + " = " + kassenzeichennummer);
-            }
-
-            froms.add(VerdisConstants.MC.AENDERUNGSANFRAGE + " AS a");
-            if (joinStacId) {
-                froms.add("cs_stac ON a." + VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID + " = cs_stac.id");
-            }
-            if (joinKassenzeichen) {
-                froms.add(VerdisConstants.MC.KASSENZEICHEN + " AS k ON a."
-                            + VerdisConstants.PROP.AENDERUNGSANFRAGE.KASSENZEICHEN_NUMMER + " = k."
-                            + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER);
-            }
+            froms.add(VerdisConstants.MC.AENDERUNGSANFRAGE_STATUS + " AS s");
             final String from = String.join(" LEFT JOIN ", froms);
             final String where;
+
+            if (getSchluessel() != null) {
+                wheres.add("s.schluessel ILIKE '" + getSchluessel() + "'");
+            }
             if (wheres.isEmpty()) {
                 where = "WHERE true";
             } else {
-                switch (searchMode) {
-                    case AND: {
-                        wheres.add("TRUE");
-                        where = "WHERE " + String.join(" AND ", wheres);
-                        break;
-                    }
-                    case OR: {
-                        wheres.add("FALSE");
-                        where = "WHERE " + String.join(" OR ", wheres);
-                        break;
-                    }
-                    default: {
-                        where = "WHERE false";
-                        break;
-                    }
-                }
+                where = "WHERE " + String.join(" AND ", wheres);
             }
 
             final String cidSubQuery = "SELECT id "
                         + "FROM cs_class "
-                        + "WHERE table_name ILIKE '" + VerdisConstants.MC.AENDERUNGSANFRAGE + "'";
-            final String query = "SELECT (" + cidSubQuery + ") as cid, a.id as oid "
+                        + "WHERE table_name ILIKE '" + VerdisConstants.MC.AENDERUNGSANFRAGE_STATUS + "'";
+            final String query = "SELECT (" + cidSubQuery + ") as cid, s.id as oid "
                         + "FROM " + from + " "
                         + where;
 
@@ -191,7 +144,7 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
             }
             return result;
         } catch (final Exception ex) {
-            LOG.error("problem during Aenderungsanfrage search", ex); // NOI18N
+            LOG.error("problem during AenderungsanfrageStatus search", ex); // NOI18N
             return null;
         }
     }
