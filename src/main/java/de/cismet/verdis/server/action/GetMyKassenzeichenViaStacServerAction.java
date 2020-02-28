@@ -25,8 +25,9 @@ import de.cismet.connectioncontext.ConnectionContextStore;
 
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
+import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
+import de.cismet.verdis.server.utils.StacEntry;
 import de.cismet.verdis.server.utils.StacUtils;
-import de.cismet.verdis.server.utils.aenderungsanfrage.AenderungsanfrageUtils;
 
 /**
  * DOCUMENT ME!
@@ -103,7 +104,7 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore, 
                     LOG.debug("STAC=" + stac);
                 }
 
-                final StacUtils.StacEntry stacEntry = StacUtils.getStacEntry(
+                final StacEntry stacEntry = StacUtils.getStacEntry(
                         stac,
                         getMetaService(),
                         getConnectionContext());
@@ -116,7 +117,9 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore, 
                         getMetaService(),
                         getConnectionContext());
 
-                kassenzeichenBean.setProperty(VerdisConstants.PROP.KASSENZEICHEN.STAC_OPTION, stacEntry.getOptions());
+                kassenzeichenBean.setProperty(
+                    VerdisConstants.PROP.KASSENZEICHEN.STAC_OPTIONS,
+                    stacEntry.getStacOptions());
                 kassenzeichenBean.setProperty(
                     VerdisConstants.PROP.KASSENZEICHEN.STAC_EXPIRATION,
                     stacEntry.getExpiration());

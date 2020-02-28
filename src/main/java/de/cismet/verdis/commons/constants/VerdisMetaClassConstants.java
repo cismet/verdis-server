@@ -34,6 +34,7 @@ public final class VerdisMetaClassConstants {
     //~ Static fields/initializers ---------------------------------------------
 
     public static final String AENDERUNGSANFRAGE = "aenderungsanfrage";
+    public static final String AENDERUNGSANFRAGE_STATUS = "aenderungsanfrage_status";
     public static final String ANSCHLUSSGRAD = "anschlussgrad";
     public static final String ANSCHLUSSSTATUS = "anschlussstatus";
     public static final String ARBEITSPAKET = "arbeitspaket";

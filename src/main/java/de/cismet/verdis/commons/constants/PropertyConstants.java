@@ -13,7 +13,7 @@ package de.cismet.verdis.commons.constants;
  * @author   jruiz
  * @version  $Revision$, $Date$
  */
-class PropertyConstants {
+public class PropertyConstants {
 
     //~ Static fields/initializers ---------------------------------------------
 
