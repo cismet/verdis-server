@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import org.apache.log4j.Logger;
 
+import org.geojson.GeoJsonObject;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -234,6 +236,18 @@ public class AenderungsanfrageUtils {
                             flaecheOrig.setAnschlussgrad(null);
                         }
                     }
+                }
+            }
+
+            for (final String bezeichnung : anfrageOrigCopy.getGeometrien().keySet()) {
+                final GeoJsonObject geoJson = anfrageOrigCopy.getGeometrien().get(bezeichnung);
+                anfrageProcessed.getGeometrien().put(bezeichnung, geoJson);
+            }
+            for (final String bezeichnung : anfrage.getGeometrien().keySet()) {
+                if (!anfrageOrigCopy.getGeometrien().containsKey(bezeichnung)) {
+                    // neue Geometrien übernehmen
+                    final GeoJsonObject geoJson = anfrage.getGeometrien().get(bezeichnung);
+                    anfrageProcessed.getGeometrien().put(bezeichnung, geoJson);
                 }
             }
         }
