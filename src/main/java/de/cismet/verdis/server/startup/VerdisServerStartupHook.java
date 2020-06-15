@@ -17,11 +17,8 @@ import Sirius.server.middleware.interfaces.domainserver.DomainServerStartupHook;
 
 import org.apache.log4j.Logger;
 
-import org.openide.util.Exceptions;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
@@ -60,7 +57,7 @@ public class VerdisServerStartupHook implements DomainServerStartupHook {
                         } catch (InterruptedException ex) {
                         }
                     }
-                    deleteOldStacs(domainServer);
+                    // deleteOldStacs(domainServer);
                 }
             }) {
             }.start();

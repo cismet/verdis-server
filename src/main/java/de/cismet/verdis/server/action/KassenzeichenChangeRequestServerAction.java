@@ -209,12 +209,11 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                 DomainServerImpl.getServerInstance()
                         .updateMetaObject(getUser(), aenderungsanfrageBean.getMetaObject(), getConnectionContext());
             }
-            
+
             // stac prolongation temporary disabled (vzkat meeting)
             /*if (stacEntry.getStacOptions() != null) {
-                final Timestamp expiration = StacUtils.createTimestampFrom(stacEntry.getStacOptions().getDuration());
-                StacUtils.updateStacExpiration(stac, expiration, getMetaService(), getConnectionContext());
-            }*/
+             *  final Timestamp expiration = StacUtils.createTimestampFrom(stacEntry.getStacOptions().getDuration());
+             * StacUtils.updateStacExpiration(stac, expiration, getMetaService(), getConnectionContext());}*/
             return true;
         } catch (final Exception ex) {
             LOG.error(ex, ex);
