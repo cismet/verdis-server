@@ -24,6 +24,7 @@ import java.util.Map;
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
 
 import de.cismet.connectioncontext.ConnectionContext;
+import de.cismet.connectioncontext.ConnectionContextStore;
 
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
@@ -33,18 +34,18 @@ import de.cismet.verdis.commons.constants.VerdisConstants;
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public class StacInfoSearchStatement extends AbstractCidsServerSearch {
+public class StacInfoSearchStatement extends AbstractCidsServerSearch implements ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
     private static final transient Logger LOG = Logger.getLogger(StacInfoSearchStatement.class);
     private static final String FIELD_KASSENZEICHENID = "kassenzeichenid";
     private static final String QUERY_TEMPLATE_KASSENZEICHENID =
-        "SELECT base_login_name, expiration, stac_options FROM cs_stac WHERE stac_options ilike '%%\""
+        "SELECT id, base_login_name, expiration, stac_options FROM cs_stac WHERE stac_options ilike '%%\""
                 + FIELD_KASSENZEICHENID
                 + "\":%d%%'";
     private static final String QUERY_TEMPLATE_STACID =
-        "SELECT base_login_name, expiration, stac_options FROM cs_stac WHERE id = %d";
+        "SELECT id, base_login_name, expiration, stac_options FROM cs_stac WHERE id = %d";
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -71,10 +72,12 @@ public class StacInfoSearchStatement extends AbstractCidsServerSearch {
 
         //~ Enum constants -----------------------------------------------------
 
-        BASE_LOGIN_NAME, TIMESTAMP, STAC_OPTIONS_JSON
+        ID, BASE_LOGIN_NAME, EXPIRATION, STAC_OPTIONS_JSON
     }
 
     //~ Instance fields --------------------------------------------------------
+
+    private ConnectionContext connectionContext = ConnectionContext.createDummy();
 
     private final SearchBy searchBy;
     private Integer kassenzeichenId = null;
@@ -92,6 +95,16 @@ public class StacInfoSearchStatement extends AbstractCidsServerSearch {
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    @Override
+    public void initWithConnectionContext(final ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
+    }
+
+    @Override
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
+    }
 
     /**
      * DOCUMENT ME!
@@ -118,13 +131,14 @@ public class StacInfoSearchStatement extends AbstractCidsServerSearch {
                 ? String.format(QUERY_TEMPLATE_KASSENZEICHENID, kassenzeichenId)
                 : String.format(QUERY_TEMPLATE_STACID, stacId);
             final MetaService ms = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);
-            final ArrayList<ArrayList> result = ms.performCustomSearch(sql, ConnectionContext.createDummy());
+            final ArrayList<ArrayList> result = ms.performCustomSearch(sql, connectionContext);
 
             final ArrayList<Map> aln = new ArrayList<>();
             for (final ArrayList al : result) {
-                final String baseLoginName = (String)al.get(0);
-                final Timestamp timestamp = (Timestamp)al.get(1);
-                final String stacOptions = (String)al.get(2);
+                final Integer id = (Integer)al.get(0);
+                final String baseLoginName = (String)al.get(1);
+                final Timestamp expiration = (Timestamp)al.get(2);
+                final String stacOptions = (String)al.get(3);
 
                 final Map<String, Object> stacOptionsMap = OBJECT_MAPPER.readValue(
                         stacOptions,
@@ -134,8 +148,9 @@ public class StacInfoSearchStatement extends AbstractCidsServerSearch {
                             || (stacOptionsMap.containsKey(FIELD_KASSENZEICHENID)
                                 && kassenzeichenId.equals(stacOptionsMap.get(FIELD_KASSENZEICHENID)))) {
                     final Map objectArray = new HashMap<>();
+                    objectArray.put(Fields.ID, id);
                     objectArray.put(Fields.BASE_LOGIN_NAME, baseLoginName);
-                    objectArray.put(Fields.TIMESTAMP, timestamp);
+                    objectArray.put(Fields.EXPIRATION, expiration);
                     objectArray.put(Fields.STAC_OPTIONS_JSON, stacOptionsMap);
                     aln.add(objectArray);
                 }
@@ -143,7 +158,7 @@ public class StacInfoSearchStatement extends AbstractCidsServerSearch {
             return aln;
         } catch (final Exception ex) {
             LOG.error("problem during search", ex); // NOI18N
-            return null;
+            throw new RuntimeException(ex);
         }
     }
 }

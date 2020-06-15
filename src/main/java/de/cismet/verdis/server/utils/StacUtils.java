@@ -69,7 +69,7 @@ public class StacUtils {
     private static final String PREPARED_STATEMENT__STAC_SET_EXPIRATION = ""
                 + "UPDATE cs_stac "
                 + "SET expiration = ? "
-                + "WHERE md5(salt || ? || stac_options || base_login_name) = thehash";
+                + "WHERE id = ?";
 
     private static Connection CONNECTION = null;
 
@@ -153,20 +153,20 @@ public class StacUtils {
     /**
      * DOCUMENT ME!
      *
-     * @param   stac               DOCUMENT ME!
+     * @param   stacId             DOCUMENT ME!
      * @param   timestamp          DOCUMENT ME!
      * @param   metaService        DOCUMENT ME!
      * @param   connectionContext  DOCUMENT ME!
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public static void updateStacExpiration(final String stac,
+    public static void updateStacExpiration(final int stacId,
             final Timestamp timestamp,
             final MetaService metaService,
             final ConnectionContext connectionContext) throws Exception {
         final PreparedStatement ps = getConnection().prepareStatement(PREPARED_STATEMENT__STAC_SET_EXPIRATION);
         ps.setTimestamp(1, timestamp);
-        ps.setString(2, stac);
+        ps.setInt(2, stacId);
         if (LOG.isDebugEnabled()) {
             LOG.debug(ps.toString());
         }
