@@ -25,6 +25,7 @@ import de.cismet.verdis.server.json.FlaecheAnschlussgradJson;
 import de.cismet.verdis.server.json.FlaecheFlaechenartJson;
 import de.cismet.verdis.server.json.NachrichtJson;
 import de.cismet.verdis.server.json.NachrichtParameterJson;
+import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
 
 /**
  * DOCUMENT ME!
@@ -56,6 +57,8 @@ public class NachrichtParameterDeserializer extends StdDeserializer<NachrichtPar
         JsonProcessingException {
         final ObjectNode on = jp.readValueAsTree();
 
+        final AenderungsanfrageUtils.Status status = on.has("status")
+            ? AenderungsanfrageUtils.Status.valueOf(on.get("status").textValue()) : null;
         final NachrichtParameterJson.Type type = on.has("type")
             ? NachrichtParameterJson.Type.valueOf(on.get("type").textValue()) : null;
         final String flaeche = on.has("flaeche") ? on.get("flaeche").asText() : null;
@@ -65,10 +68,10 @@ public class NachrichtParameterDeserializer extends StdDeserializer<NachrichtPar
         final FlaecheAnschlussgradJson anschlussgrad = on.has("anschlussgrad")
             ? objectMapper.treeToValue(on.get("anschlussgrad"), FlaecheAnschlussgradJson.class) : null;
 
-        if ((groesse == null) && (flaechenart == null) && (anschlussgrad == null)) {
+        if ((status == null) && (groesse == null) && (flaechenart == null) && (anschlussgrad == null)) {
             throw new RuntimeException(
                 "invalid NachrichtSystemParametersJson: neither groesse nor flaechenart nor anschlussgrad is set");
         }
-        return new NachrichtParameterJson(type, flaeche, groesse, flaechenart, anschlussgrad);
+        return new NachrichtParameterJson(type, status, flaeche, groesse, flaechenart, anschlussgrad);
     }
 }
