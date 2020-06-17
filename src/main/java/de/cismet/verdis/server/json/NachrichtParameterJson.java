@@ -17,6 +17,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
+import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
+
 /**
  * DOCUMENT ME!
  *
@@ -53,12 +55,20 @@ public class NachrichtParameterJson extends AbstractJson {
             public String toString() {
                 return "rejected";
             }
+        },
+        STATUS {
+
+            @Override
+            public String toString() {
+                return "status";
+            }
         }
     }
 
     //~ Instance fields --------------------------------------------------------
 
     private Type type;
+    private AenderungsanfrageUtils.Status status;
     private String flaeche;
     private Integer groesse;
     private FlaecheFlaechenartJson flaechenart;
