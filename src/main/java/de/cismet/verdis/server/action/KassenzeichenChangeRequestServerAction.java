@@ -163,53 +163,55 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                 return false;
             }
 
-            final CidsBean existingAenderungsanfrageBean = AenderungsanfrageUtils.getAenderungsanfrageBean(
-                    stacEntry,
-                    getMetaService(),
-                    getConnectionContext());
-            final CidsBean aenderungsanfrageBean = (existingAenderungsanfrageBean != null)
-                ? existingAenderungsanfrageBean
-                : CidsBean.createNewCidsBeanFromTableName(
-                    VerdisConstants.DOMAIN,
-                    VerdisConstants.MC.AENDERUNGSANFRAGE,
-                    getConnectionContext());
+            synchronized (this) {
+                final CidsBean existingAenderungsanfrageBean = AenderungsanfrageUtils.getAenderungsanfrageBean(
+                        stacEntry,
+                        getMetaService(),
+                        getConnectionContext());
+                final boolean aenderungsanfrageAlreadyExists = existingAenderungsanfrageBean != null;
+                final CidsBean aenderungsanfrageBean = aenderungsanfrageAlreadyExists
+                    ? existingAenderungsanfrageBean
+                    : CidsBean.createNewCidsBeanFromTableName(
+                        VerdisConstants.DOMAIN,
+                        VerdisConstants.MC.AENDERUNGSANFRAGE,
+                        getConnectionContext());
 
-            final String statusSchluessel = (String)aenderungsanfrageBean.getProperty(
-                    VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS
-                            + ".schluessel");
-            if (AenderungsanfrageUtils.Status.PROCESSING.toString().equals(statusSchluessel)
-                        || AenderungsanfrageUtils.Status.CLOSED.toString().equals(statusSchluessel)) {
-                // todo ein resusal json-object zur unterscheidung der ablehnung ?
-                return false;
+                final String statusSchluessel = (String)aenderungsanfrageBean.getProperty(
+                        VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS
+                                + ".schluessel");
+                if (AenderungsanfrageUtils.Status.PROCESSING.toString().equals(statusSchluessel)
+                            || AenderungsanfrageUtils.Status.CLOSED.toString().equals(statusSchluessel)) {
+                    // todo ein resusal json-object zur unterscheidung der ablehnung ?
+                    return false;
+                }
+
+                aenderungsanfrageBean.setProperty(
+                    VerdisConstants.PROP.AENDERUNGSANFRAGE.CHANGES_JSON,
+                    aenderungsanfrage.toJson());
+                aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID, stacEntry.getId());
+                aenderungsanfrageBean.setProperty(
+                    VerdisConstants.PROP.AENDERUNGSANFRAGE.KASSENZEICHEN_NUMMER,
+                    (Integer)kassenzeichenBean.getProperty(VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER));
+                aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.EMAIL, email);
+                aenderungsanfrageBean.setProperty(
+                    VerdisConstants.PROP.AENDERUNGSANFRAGE.TIMESTAMP,
+                    new Timestamp(new Date().getTime()));
+                aenderungsanfrageBean.setProperty(
+                    VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS,
+                    AenderungsanfrageUtils.getInstance().getStatusBean(
+                        AenderungsanfrageUtils.Status.PENDING,
+                        stacEntry,
+                        getMetaService(),
+                        getConnectionContext()));
+
+                if (aenderungsanfrageAlreadyExists) {
+                    DomainServerImpl.getServerInstance()
+                            .updateMetaObject(getUser(), aenderungsanfrageBean.getMetaObject(), getConnectionContext());
+                } else {
+                    DomainServerImpl.getServerInstance()
+                            .insertMetaObject(getUser(), aenderungsanfrageBean.getMetaObject(), getConnectionContext());
+                }
             }
-
-            aenderungsanfrageBean.setProperty(
-                VerdisConstants.PROP.AENDERUNGSANFRAGE.CHANGES_JSON,
-                aenderungsanfrage.toJson());
-            aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID, stacEntry.getId());
-            aenderungsanfrageBean.setProperty(
-                VerdisConstants.PROP.AENDERUNGSANFRAGE.KASSENZEICHEN_NUMMER,
-                (Integer)kassenzeichenBean.getProperty(VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER));
-            aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.EMAIL, email);
-            aenderungsanfrageBean.setProperty(
-                VerdisConstants.PROP.AENDERUNGSANFRAGE.TIMESTAMP,
-                new Timestamp(new Date().getTime()));
-            aenderungsanfrageBean.setProperty(
-                VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS,
-                AenderungsanfrageUtils.getInstance().getStatusBean(
-                    AenderungsanfrageUtils.Status.PENDING,
-                    stacEntry,
-                    getMetaService(),
-                    getConnectionContext()));
-
-            if (MetaObject.NEW == aenderungsanfrageBean.getMetaObject().getStatus()) {
-                DomainServerImpl.getServerInstance()
-                        .insertMetaObject(getUser(), aenderungsanfrageBean.getMetaObject(), getConnectionContext());
-            } else {
-                DomainServerImpl.getServerInstance()
-                        .updateMetaObject(getUser(), aenderungsanfrageBean.getMetaObject(), getConnectionContext());
-            }
-
             // stac prolongation temporary disabled (vzkat meeting)
             /*if (stacEntry.getStacOptions() != null) {
              *  final Timestamp expiration = StacUtils.createTimestampFrom(stacEntry.getStacOptions().getDuration());
