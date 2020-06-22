@@ -29,6 +29,7 @@ import de.cismet.cidsx.server.api.types.SearchInfo;
 import de.cismet.cidsx.server.api.types.SearchParameterInfo;
 import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
 
+import de.cismet.verdis.commons.constants.AenderungsanfragePropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
 /**
@@ -169,12 +170,14 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
                 }
             }
 
-            final String cidSubQuery = "SELECT id "
+            final String cidSubQuery = ""
+                        + "SELECT id "
                         + "FROM cs_class "
                         + "WHERE table_name ILIKE '" + VerdisConstants.MC.AENDERUNGSANFRAGE + "'";
             final String query = "SELECT (" + cidSubQuery + ") as cid, a.id as oid "
                         + "FROM " + from + " "
-                        + where;
+                        + where + " "
+                        + "ORDER BY a." + AenderungsanfragePropertyConstants.TIMESTAMP + " DESC";
 
             final MetaService ms = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);
             final List<MetaObjectNode> result = new ArrayList<>();
