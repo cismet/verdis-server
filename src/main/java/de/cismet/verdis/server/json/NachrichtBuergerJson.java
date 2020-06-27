@@ -35,8 +35,10 @@ public class NachrichtBuergerJson extends NachrichtJson {
     public NachrichtBuergerJson(final Date timestamp, final String nachricht, final String absender) {
         super(
             null,
+            null,
             NachrichtJson.Typ.CITIZEN,
             timestamp,
+            null,
             nachricht,
             null,
             absender,
@@ -55,25 +57,29 @@ public class NachrichtBuergerJson extends NachrichtJson {
             final String nachricht,
             final String absender,
             final List<NachrichtAnhangJson> anhang) {
-        super(null, NachrichtJson.Typ.CITIZEN, timestamp, nachricht, null, absender, anhang);
+        super(null, null, NachrichtJson.Typ.CITIZEN, timestamp, null, nachricht, null, absender, anhang);
     }
 
     /**
      * Creates a new Buerger object.
      *
-     * @param  timestamp  DOCUMENT ME!
-     * @param  nachricht  DOCUMENT ME!
-     * @param  absender   DOCUMENT ME!
-     * @param  draft      DOCUMENT ME!
+     * @param  identifier  DOCUMENT ME!
+     * @param  timestamp   DOCUMENT ME!
+     * @param  nachricht   DOCUMENT ME!
+     * @param  absender    DOCUMENT ME!
+     * @param  draft       DOCUMENT ME!
      */
-    public NachrichtBuergerJson(final Date timestamp,
+    public NachrichtBuergerJson(final String identifier,
+            final Date timestamp,
             final String nachricht,
             final String absender,
             final boolean draft) {
         super(
+            identifier,
             draft,
             NachrichtJson.Typ.CITIZEN,
             timestamp,
+            null,
             nachricht,
             null,
             absender,
@@ -83,17 +89,22 @@ public class NachrichtBuergerJson extends NachrichtJson {
     /**
      * Creates a new Buerger object.
      *
-     * @param  timestamp  DOCUMENT ME!
-     * @param  nachricht  DOCUMENT ME!
-     * @param  absender   DOCUMENT ME!
-     * @param  anhang     DOCUMENT ME!
-     * @param  draft      DOCUMENT ME!
+     * @param  identifier  DOCUMENT ME!
+     * @param  timestamp   DOCUMENT ME!
+     * @param  order       DOCUMENT ME!
+     * @param  nachricht   DOCUMENT ME!
+     * @param  absender    DOCUMENT ME!
+     * @param  anhang      DOCUMENT ME!
+     * @param  draft       DOCUMENT ME!
      */
-    public NachrichtBuergerJson(final Date timestamp,
+    public NachrichtBuergerJson(
+            final String identifier,
+            final Date timestamp,
+            final Integer order,
             final String nachricht,
             final String absender,
             final List<NachrichtAnhangJson> anhang,
             final boolean draft) {
-        super(draft, NachrichtJson.Typ.CITIZEN, timestamp, nachricht, null, absender, anhang);
+        super(identifier, draft, NachrichtJson.Typ.CITIZEN, timestamp, order, nachricht, null, absender, anhang);
     }
 }

@@ -34,8 +34,10 @@ public class NachrichtSachberarbeiterJson extends NachrichtJson {
     public NachrichtSachberarbeiterJson(final Date timestamp, final String nachricht, final String absender) {
         super(
             null,
+            null,
             NachrichtJson.Typ.CLERK,
             timestamp,
+            null,
             nachricht,
             null,
             absender,
@@ -45,19 +47,26 @@ public class NachrichtSachberarbeiterJson extends NachrichtJson {
     /**
      * Creates a new Sachberarbeiter object.
      *
-     * @param  draft      DOCUMENT ME!
-     * @param  timestamp  DOCUMENT ME!
-     * @param  nachricht  DOCUMENT ME!
-     * @param  absender   DOCUMENT ME!
+     * @param  identifier  DOCUMENT ME!
+     * @param  draft       DOCUMENT ME!
+     * @param  timestamp   DOCUMENT ME!
+     * @param  order       DOCUMENT ME!
+     * @param  nachricht   DOCUMENT ME!
+     * @param  absender    DOCUMENT ME!
      */
-    public NachrichtSachberarbeiterJson(final boolean draft,
+    public NachrichtSachberarbeiterJson(
+            final String identifier,
+            final boolean draft,
             final Date timestamp,
+            final Integer order,
             final String nachricht,
             final String absender) {
         super(
+            identifier,
             draft,
             NachrichtJson.Typ.CLERK,
             timestamp,
+            order,
             nachricht,
             null,
             absender,

@@ -6,21 +6,36 @@
     }
   },
   "nachrichten" : [ {
+    "identifier" : "7edd4400a32f79e801f304ed8690cbf9",
     "typ" : "CITIZEN",
-    "timestamp" : 1,
+    "timestamp" : 1100000000000,
     "nachricht" : "Alte Nachricht."
   }, {
+    "identifier" : "80c98b7715f13384af547a0fa7988906",
     "typ" : "CLERK",
-    "timestamp" : 3,
+    "timestamp" : 1200000000000,
     "nachricht" : "Alte Antwort.",
     "absender" : "Mustermann"
   }, {
+    "identifier" : "52830b34aa37f0113a36ec2e60d98db8",
     "typ" : "SYSTEM",
-    "timestamp" : 4,
+    "timestamp" : 1300000000000,
     "nachricht" : "FUNCTION( {} )"
   }, {
+    "identifier" : "f468088c0507d9b3979fc7d238c4e93f",
     "typ" : "CITIZEN",
-    "timestamp" : 5,
+    "timestamp" : 2500000000000,
     "nachricht" : "Neue Nachricht."
+  }, {
+    "identifier" : "0da0f09f3aeb23adfafaee9b85a4e0cf",
+    "typ" : "CITIZEN",
+    "timestamp" : 2500000000000,
+    "nachricht" : "Alte Nachricht."
+  }, {
+    "identifier" : "2ecf95f8c6e9d663b9ad281ba1e0bea2",
+    "typ" : "CITIZEN",
+    "timestamp" : 2500000000000,
+    "nachricht" : "Eingeschmuggelte neue alte Nachricht.",
+    "absender" : "Hacker"
   } ]
 }

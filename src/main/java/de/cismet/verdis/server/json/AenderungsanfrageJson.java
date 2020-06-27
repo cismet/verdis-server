@@ -62,18 +62,4 @@ public class AenderungsanfrageJson extends AbstractJson {
             new HashMap<String, GeoJsonObject>(),
             new ArrayList<NachrichtJson>());
     }
-
-    /**
-     * Creates a new AnfrageJson object.
-     *
-     * @param  kassenzeichen  DOCUMENT ME!
-     * @param  flaechen       DOCUMENT ME!
-     */
-    public AenderungsanfrageJson(final Integer kassenzeichen, final Map<String, FlaecheAenderungJson> flaechen) {
-        this(
-            kassenzeichen,
-            new HashMap<String, FlaecheAenderungJson>(),
-            new HashMap<String, GeoJsonObject>(),
-            new ArrayList<NachrichtJson>());
-    }
 }

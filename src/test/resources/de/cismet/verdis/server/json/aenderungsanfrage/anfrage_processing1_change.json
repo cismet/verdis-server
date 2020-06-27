@@ -7,17 +7,17 @@
   },
   "nachrichten" : [ {
     "typ" : "CLERK",
-    "timestamp" : 1,
+    "timestamp" : 1000000000000,
     "nachricht" : "Versuch eine CLERK Nachricht zu pushen",
     "absender" : "Hacker"
   }, {
     "typ" : "SYSTEM",
-    "timestamp" : 2,
+    "timestamp" : 2000000000000,
     "nachricht" : "Versuch eine SYSTEM Nachricht zu pushen",
     "absender" : "Hacker"
   }, {
     "typ" : "CITIZEN",
-    "timestamp" : 3,
+    "timestamp" : 3000000000000,
     "nachricht" : "Normale Nachricht.",
     "absender" : "Bürger"
   } ]

@@ -36,8 +36,10 @@ public class NachrichtSystemJson extends NachrichtJson {
             final String verursacher) {
         super(
             null,
+            null,
             NachrichtJson.Typ.SYSTEM,
             timestamp,
+            null,
             null,
             nachrichtenParameter,
             verursacher,

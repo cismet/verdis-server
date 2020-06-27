@@ -6,17 +6,19 @@
     }
   },
   "nachrichten" : [ {
-    "typ" : "CITIZEN",
-    "timestamp" : 1,
-    "nachricht" : "Alte Nachricht."
+    "identifier" : "bb0b28a48f2943c3c96bc865561ff6ee",
+    "typ" : "CITIZEN",    
+    "timestamp" : 1000000000000,
+    "nachricht" : "Alte Nachricht.",
+    "draft" : true
   }, {
     "typ" : "CLERK",
-    "timestamp" : 2,
+    "timestamp" : 2000000000000,
     "nachricht" : "Alte Antwort.",
     "absender" : "Mustermann"
   }, {
     "typ" : "SYSTEM",
-    "timestamp" : 3,
+    "timestamp" : 3000000000000,
     "nachricht" : "FUNCTION( {} )"
   } ]
 }

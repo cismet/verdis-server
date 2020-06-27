@@ -26,7 +26,6 @@ import de.cismet.verdis.server.json.NachrichtParameterAnschlussgradJson;
 import de.cismet.verdis.server.json.PruefungFlaechenartJson;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -35,8 +34,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.geojson.GeoJsonObject;
-import org.geojson.GeoJsonObjectVisitor;
-import org.geojson.Polygon;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -82,7 +79,7 @@ public class AenderungsanfrageJsonTest {
     public void testTest() {
         try {
             final String aenderungsanfrageTestJson = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(JSON_ANFRAGE_TEST), "UTF-8");
-            final AenderungsanfrageJson aenderungsanfrageDeserialized = AenderungsanfrageUtils.createAenderungsanfrageJson(aenderungsanfrageTestJson);                            
+            final AenderungsanfrageJson aenderungsanfrageDeserialized = AenderungsanfrageUtils.getInstance().createAenderungsanfrageJson(aenderungsanfrageTestJson);                            
             Assert.assertNotNull(aenderungsanfrageDeserialized);
         } catch (final Exception ex) {
             Assert.fail(ex.getMessage());
@@ -163,7 +160,7 @@ public class AenderungsanfrageJsonTest {
             new NachrichtParameterAnschlussgradJson(NachrichtParameterJson.Type.CHANGED, "1", new FlaecheAnschlussgradJson("Dachfläche", "DF")), 
             "Dirk Steinbacher"                
         ));
-        nachrichten.add(new NachrichtBuergerJson(
+        nachrichten.add(new NachrichtBuergerJson(null,
             new Date(1562486760000l),
             "So wird eine Nachricht visualisiert, die noch nicht abgesschickt ist.",
             "Bürger",
@@ -180,13 +177,16 @@ public class AenderungsanfrageJsonTest {
     }
 
     private void testProcessing(final String aenderungsanfrageOrigJson, final String aenderungsanfrageChangeJson, final String aenderungsanfrageProcessedJson) throws Exception {
-        final AenderungsanfrageJson aenderungsanfrageOrig = aenderungsanfrageOrigJson != null ? AenderungsanfrageUtils.createAenderungsanfrageJson(aenderungsanfrageOrigJson) : null;
-        final AenderungsanfrageJson aenderungsanfrageChange = aenderungsanfrageChangeJson != null ? AenderungsanfrageUtils.createAenderungsanfrageJson(aenderungsanfrageChangeJson) : null;
+        AenderungsanfrageUtils.getInstance().setUnitTestContext(true);
+        
+        final Integer kassenzeichen = 60004629;
+        final AenderungsanfrageJson aenderungsanfrageOrig = aenderungsanfrageOrigJson != null ? AenderungsanfrageUtils.getInstance().createAenderungsanfrageJson(aenderungsanfrageOrigJson) : new AenderungsanfrageJson(kassenzeichen);
+        final AenderungsanfrageJson aenderungsanfrageChange = aenderungsanfrageChangeJson != null ? AenderungsanfrageUtils.getInstance().createAenderungsanfrageJson(aenderungsanfrageChangeJson) : new AenderungsanfrageJson(kassenzeichen);
 
-        final AenderungsanfrageJson aenderungsanfrageNew = AenderungsanfrageUtils.getInstance().processAnfrage(60004629, aenderungsanfrageOrig, aenderungsanfrageChange);               
+        final AenderungsanfrageJson aenderungsanfrageNew = AenderungsanfrageUtils.getInstance().processAnfrageCitizen(kassenzeichen, aenderungsanfrageOrig, aenderungsanfrageChange);               
         final String aenderungsanfrageNewJson = aenderungsanfrageNew.toPrettyJson();
         //System.out.println(aenderungsanfrageNewJson);                            
-        Assert.assertEquals(aenderungsanfrageNewJson, aenderungsanfrageProcessedJson);        
+        Assert.assertEquals(aenderungsanfrageProcessedJson, aenderungsanfrageNewJson);        
     }
     
     @Test
@@ -279,7 +279,7 @@ public class AenderungsanfrageJsonTest {
         Assert.assertNotNull(aenderungsanfrageJson);
         //System.out.println(aenderungsanfrageJson);            
 
-        final AenderungsanfrageJson aenderungsanfrageDeserialized = AenderungsanfrageUtils.createAenderungsanfrageJson(aenderungsanfrage.toPrettyJson());                    
+        final AenderungsanfrageJson aenderungsanfrageDeserialized = AenderungsanfrageUtils.getInstance().createAenderungsanfrageJson(aenderungsanfrage.toPrettyJson());                    
         final String aenderungsanfrageDeserializedJson = aenderungsanfrageDeserialized.toPrettyJson();        
         //System.out.println(aenderungsanfrageDeserializedJson);            
         Assert.assertEquals(aenderungsanfrageJson, aenderungsanfrageDeserializedJson);        
@@ -292,7 +292,7 @@ public class AenderungsanfrageJsonTest {
         Assert.assertNotNull(aenderungsanfrageJson);
         //System.out.println(aenderungsanfrageJson);
 
-        final AenderungsanfrageJson aenderungsanfrageDeserialized = AenderungsanfrageUtils.createAenderungsanfrageJson(aenderungsanfrage.toPrettyJson());            
+        final AenderungsanfrageJson aenderungsanfrageDeserialized = AenderungsanfrageUtils.getInstance().createAenderungsanfrageJson(aenderungsanfrage.toPrettyJson());            
         final String aenderungsanfrageDeserializedJson = aenderungsanfrageDeserialized.toPrettyJson();
         //System.out.println(aenderungsanfrageDeserializedJson);            
         Assert.assertEquals(aenderungsanfrageJson, aenderungsanfrageDeserializedJson);        

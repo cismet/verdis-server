@@ -15,7 +15,6 @@ package de.cismet.verdis.server.action;
 import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
-import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 
 import org.apache.log4j.Logger;
@@ -35,9 +34,11 @@ import de.cismet.cids.server.actions.UserAwareServerAction;
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextStore;
 
+import de.cismet.verdis.commons.constants.KassenzeichenPropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
 import de.cismet.verdis.server.json.AenderungsanfrageJson;
+import de.cismet.verdis.server.json.AenderungsanfrageResultJson;
 import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
 import de.cismet.verdis.server.utils.StacEntry;
 import de.cismet.verdis.server.utils.StacUtils;
@@ -124,11 +125,17 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
 
             if (stac == null) {
                 LOG.info("stac is null, returning false");
-                return false;
+                return new AenderungsanfrageResultJson(
+                        AenderungsanfrageResultJson.ResultStatus.ERROR,
+                        null,
+                        "request is null").toJson();
             }
             if (aenderungsanfrageMap == null) {
                 LOG.info("aenderungsanfrageMap is null, returning false");
-                return false;
+                return new AenderungsanfrageResultJson(
+                        AenderungsanfrageResultJson.ResultStatus.ERROR,
+                        null,
+                        "request is empty").toJson();
             }
 
             final StacEntry stacEntry = StacUtils.getStacEntry(
@@ -137,7 +144,10 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                     getConnectionContext());
             if (stacEntry == null) {
                 LOG.info("stacEntry not found, returning false");
-                return false;
+                return new AenderungsanfrageResultJson(
+                        AenderungsanfrageResultJson.ResultStatus.ERROR,
+                        null,
+                        "stacEntry not found").toJson();
             }
 
             final CidsBean kassenzeichenBean = StacUtils.getKassenzeichenBean(
@@ -146,28 +156,36 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                     getConnectionContext());
             if (kassenzeichenBean == null) {
                 LOG.info("kassenzeichen for stacEntry not found, returning false");
-                return false;
+                return new AenderungsanfrageResultJson(
+                        AenderungsanfrageResultJson.ResultStatus.ERROR,
+                        null,
+                        "kassenzeichen not found").toJson();
             }
 
-            final AenderungsanfrageJson aenderungsanfrage = AenderungsanfrageUtils.createAenderungsanfrageJson(
-                    aenderungsanfrageMap);
+            final AenderungsanfrageJson aenderungsanfrageRequest = AenderungsanfrageUtils.getInstance()
+                        .createAenderungsanfrageJson(
+                            aenderungsanfrageMap);
 
             final Integer kassenzeichenNummerFromBean = (Integer)kassenzeichenBean.getProperty(
                     VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER);
-            final Integer kassenzeichenNummerFromObject = aenderungsanfrage.getKassenzeichen();
+            final Integer kassenzeichenNummerFromObject = aenderungsanfrageRequest.getKassenzeichen();
             if (!Objects.equals(kassenzeichenNummerFromBean, kassenzeichenNummerFromObject)) {
                 LOG.info(String.format(
                         "kassenzeichennummer from json (%d) not equals kassenzeichennummer from bean (%d), returning false",
                         kassenzeichenNummerFromBean,
                         kassenzeichenNummerFromObject));
-                return false;
+                return new AenderungsanfrageResultJson(
+                        AenderungsanfrageResultJson.ResultStatus.ERROR,
+                        null,
+                        "kassenzeichen of stac is not corresponding to the requested change").toJson();
             }
 
             synchronized (this) {
-                final CidsBean existingAenderungsanfrageBean = AenderungsanfrageUtils.getAenderungsanfrageBean(
-                        stacEntry,
-                        getMetaService(),
-                        getConnectionContext());
+                final CidsBean existingAenderungsanfrageBean = AenderungsanfrageUtils.getInstance()
+                            .getAenderungsanfrageBean(
+                                stacEntry,
+                                getMetaService(),
+                                getConnectionContext());
                 final boolean aenderungsanfrageAlreadyExists = existingAenderungsanfrageBean != null;
                 final CidsBean aenderungsanfrageBean = aenderungsanfrageAlreadyExists
                     ? existingAenderungsanfrageBean
@@ -179,15 +197,37 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                 final String statusSchluessel = (String)aenderungsanfrageBean.getProperty(
                         VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS
                                 + ".schluessel");
-                if (AenderungsanfrageUtils.Status.PROCESSING.toString().equals(statusSchluessel)
-                            || AenderungsanfrageUtils.Status.CLOSED.toString().equals(statusSchluessel)) {
+                if (AenderungsanfrageUtils.Status.CLOSED.toString().equals(statusSchluessel)) {
                     // todo ein resusal json-object zur unterscheidung der ablehnung ?
-                    return false;
+                    return new AenderungsanfrageResultJson(
+                            AenderungsanfrageResultJson.ResultStatus.ERROR,
+                            null,
+                            "CLOSED").toJson();
+                }
+
+                final String aenderungsanfrageOrigJson = (String)kassenzeichenBean.getProperty(
+                        KassenzeichenPropertyConstants.AENDERUNGSANFRAGE);
+                final AenderungsanfrageJson aenderungsanfrageOrig = (aenderungsanfrageOrigJson != null)
+                    ? AenderungsanfrageUtils.getInstance().createAenderungsanfrageJson(aenderungsanfrageOrigJson)
+                    : new AenderungsanfrageJson(kassenzeichenNummerFromBean);
+                final AenderungsanfrageJson aenderungsanfrageProcessed;
+                if ("stac".equals(user.getName())) {
+                    aenderungsanfrageProcessed = AenderungsanfrageUtils.getInstance()
+                                .processAnfrageCitizen(
+                                        kassenzeichenNummerFromBean,
+                                        aenderungsanfrageOrig,
+                                        aenderungsanfrageRequest);
+                } else {
+                    aenderungsanfrageProcessed = AenderungsanfrageUtils.getInstance()
+                                .processAnfrageClerk(
+                                        kassenzeichenNummerFromBean,
+                                        aenderungsanfrageOrig,
+                                        aenderungsanfrageRequest);
                 }
 
                 aenderungsanfrageBean.setProperty(
                     VerdisConstants.PROP.AENDERUNGSANFRAGE.CHANGES_JSON,
-                    aenderungsanfrage.toJson());
+                    aenderungsanfrageProcessed.toJson());
                 aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID, stacEntry.getId());
                 aenderungsanfrageBean.setProperty(
                     VerdisConstants.PROP.AENDERUNGSANFRAGE.KASSENZEICHEN_NUMMER,
@@ -211,12 +251,19 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                     DomainServerImpl.getServerInstance()
                             .insertMetaObject(getUser(), aenderungsanfrageBean.getMetaObject(), getConnectionContext());
                 }
+
+                if ((stacEntry.getStacOptions() != null) && (stacEntry.getStacOptions().getDuration() != null)) {
+                    StacUtils.updateStacExpiration(
+                        stacEntry.getId(),
+                        StacUtils.createTimestampFrom(stacEntry.getStacOptions().getDuration()),
+                        getMetaService(),
+                        getConnectionContext());
+                }
             }
-            // stac prolongation temporary disabled (vzkat meeting)
-            /*if (stacEntry.getStacOptions() != null) {
-             *  final Timestamp expiration = StacUtils.createTimestampFrom(stacEntry.getStacOptions().getDuration());
-             * StacUtils.updateStacExpiration(stac, expiration, getMetaService(), getConnectionContext());}*/
-            return true;
+            return new AenderungsanfrageResultJson(
+                    AenderungsanfrageResultJson.ResultStatus.SUCCESS,
+                    aenderungsanfrageRequest,
+                    null).toJson();
         } catch (final Exception ex) {
             LOG.error(ex, ex);
             return ex;
