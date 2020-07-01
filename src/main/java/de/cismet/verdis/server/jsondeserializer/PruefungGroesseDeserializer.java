@@ -52,9 +52,10 @@ public class PruefungGroesseDeserializer extends StdDeserializer<PruefungGroesse
         final Integer value = on.has("value") ? on.get("value").intValue() : null;
         final String von = on.has("von") ? on.get("von").textValue() : null;
         final Date timestamp = on.has("timestamp") ? new Date(on.get("timestamp").longValue()) : null;
-        if ((value == null)) {
+        final Boolean pending = on.has("pending") ? on.get("pending").asBoolean() : null;
+        if (!Boolean.TRUE.equals(pending) && (value == null)) {
             throw new RuntimeException("invalid StatusJson: status is not set");
         }
-        return new PruefungGroesseJson(value, von, timestamp);
+        return new PruefungGroesseJson(pending, value, von, timestamp);
     }
 }

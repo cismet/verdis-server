@@ -20,13 +20,18 @@ public class PruefungAnschlussgradJson extends PruefungJson<FlaecheAnschlussgrad
 
     /**
      * Creates a new PruefungAnschlussgradJson object.
-     *
-     * @param  value      DOCUMENT ME!
-     * @param  von        DOCUMENT ME!
-     * @param  timestamp  DOCUMENT ME!
      */
-    public PruefungAnschlussgradJson(final FlaecheAnschlussgradJson value, final String von, final Date timestamp) {
-        this(false, value, von, timestamp);
+    public PruefungAnschlussgradJson() {
+        this(true, null, null, null);
+    }
+
+    /**
+     * Creates a new PruefungAnschlussgradJson object.
+     *
+     * @param  value  DOCUMENT ME!
+     */
+    public PruefungAnschlussgradJson(final FlaecheAnschlussgradJson value) {
+        this(null, value, null, null);
     }
 
     /**
@@ -37,7 +42,7 @@ public class PruefungAnschlussgradJson extends PruefungJson<FlaecheAnschlussgrad
      * @param  von        DOCUMENT ME!
      * @param  timestamp  DOCUMENT ME!
      */
-    public PruefungAnschlussgradJson(final boolean pending,
+    public PruefungAnschlussgradJson(final Boolean pending,
             final FlaecheAnschlussgradJson value,
             final String von,
             final Date timestamp) {

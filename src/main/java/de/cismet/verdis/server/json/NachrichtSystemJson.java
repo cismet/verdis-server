@@ -27,19 +27,23 @@ public class NachrichtSystemJson extends NachrichtJson {
     /**
      * Creates a new System object.
      *
+     * @param  identifier            DOCUMENT ME!
      * @param  timestamp             DOCUMENT ME!
+     * @param  order                 DOCUMENT ME!
      * @param  nachrichtenParameter  DOCUMENT ME!
      * @param  verursacher           DOCUMENT ME!
      */
-    public NachrichtSystemJson(final Date timestamp,
+    public NachrichtSystemJson(final String identifier,
+            final Date timestamp,
+            final Integer order,
             final NachrichtParameterJson nachrichtenParameter,
             final String verursacher) {
         super(
-            null,
+            identifier,
             null,
             NachrichtJson.Typ.SYSTEM,
             timestamp,
-            null,
+            order,
             null,
             nachrichtenParameter,
             verursacher,

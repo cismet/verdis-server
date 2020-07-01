@@ -76,10 +76,10 @@ public class NachrichtDeserializer extends StdDeserializer<NachrichtJson> {
                 anhang.add(objectMapper.treeToValue(iterator.next(), NachrichtAnhangJson.class));
             }
         }
-        if ((nachricht == null) && (timestamp == null)) {
-            throw new RuntimeException(
-                "invalid NachrichtJson: neither nachricht nor timestamp is set");
-        }
+//        if ((nachricht == null) && (timestamp == null)) {
+//            throw new RuntimeException(
+//                "invalid NachrichtJson: neither nachricht nor timestamp is set");
+//        }
         return new NachrichtJson(
                 identifier,
                 draft,
