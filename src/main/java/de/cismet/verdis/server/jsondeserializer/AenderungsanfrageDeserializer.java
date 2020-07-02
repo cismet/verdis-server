@@ -77,6 +77,9 @@ public class AenderungsanfrageDeserializer extends StdDeserializer<Aenderungsanf
             while (fieldIterator.hasNext()) {
                 final Map.Entry<String, JsonNode> fieldEntry = fieldIterator.next();
                 final String bezeichnung = fieldEntry.getKey();
+                if (bezeichnung == null) {
+                    throw new RuntimeException("flaeche key is null");
+                }
                 // TODO: check for valid bezeichnung.
                 flaechen.put(
                     bezeichnung,
