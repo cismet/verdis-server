@@ -637,11 +637,16 @@ public class AenderungsanfrageUtils {
                         "groesse, anschlussgrad or flachenart request did change. clerk is not allowed to do this");
                 }
 
-                if (!Boolean.TRUE.equals(flaecheAenderungBefore.getDraft())
-                            && ((flaecheAenderungBefore.getGroesse() != null)
-                                || (flaecheAenderungBefore.getAnschlussgrad() != null)
-                                || (flaecheAenderungBefore.getFlaechenart() != null))) {
-                    aenderungCount++;
+                if (!Boolean.TRUE.equals(flaecheAenderungBefore.getDraft())) {
+                    if (flaecheAenderungBefore.getGroesse() != null) {
+                        aenderungCount++;
+                    }
+                    if (flaecheAenderungBefore.getAnschlussgrad() != null) {
+                        aenderungCount++;
+                    }
+                    if (flaecheAenderungBefore.getFlaechenart() != null) {
+                        aenderungCount++;
+                    }
                 }
                 if (flaecheAenderungAfter.getPruefung() != null) {
                     if (flaecheAenderungAfter.getPruefung().getGroesse() != null) {

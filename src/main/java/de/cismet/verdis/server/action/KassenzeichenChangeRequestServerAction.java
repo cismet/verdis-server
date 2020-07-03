@@ -17,7 +17,12 @@ import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
 import Sirius.server.newuser.User;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
 import org.apache.log4j.Logger;
+
+import java.io.Serializable;
 
 import java.sql.Timestamp;
 
@@ -31,6 +36,7 @@ import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
 import de.cismet.cids.server.actions.UserAwareServerAction;
+import de.cismet.cids.server.messages.CidsServerMessageManagerImpl;
 
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextStore;
@@ -59,6 +65,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
 
     private static final Logger LOG = Logger.getLogger(KassenzeichenChangeRequestServerAction.class);
     public static final String TASKNAME = "kassenzeichenChangeRequest";
+    public static final String CSM_NEWREQUEST = "newChangerequest";
 
     //~ Enums ------------------------------------------------------------------
 
@@ -357,6 +364,9 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                                 getUser().getName(),
                                 now);
 
+                final AenderungsanfrageUtils.Status newStatus = (status != null)
+                    ? status : ((oldStatus != null) ? oldStatus : AenderungsanfrageUtils.Status.PENDING);
+
                 // PERSISTING
                 persistAenderungsanfrage(
                     aenderungsanfrageBean,
@@ -364,8 +374,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                     aenderungsanfrageProcessed,
                     kassenzeichennummer,
                     email,
-                    (status != null) ? status
-                                     : ((oldStatus != null) ? oldStatus : AenderungsanfrageUtils.Status.PENDING),
+                    newStatus,
                     existingAenderungsanfrageBean
                             != null);
 
@@ -373,6 +382,17 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                 if (!Objects.equals(oldStatus, status)) {
                     updateExpiration(stacEntry);
                 }
+
+                CidsServerMessageManagerImpl.getInstance()
+                        .publishMessage(
+                            CSM_NEWREQUEST,
+                            new ServerMessage(
+                                (Integer)aenderungsanfrageBean.getProperty(
+                                    VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID),
+                                (aenderungsanfrageProcessed != null) ? aenderungsanfrageProcessed.toJson() : null,
+                                newStatus),
+                            false,
+                            getConnectionContext());
 
                 // RESULT
                 return new AenderungsanfrageResultJson(
@@ -495,5 +515,23 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
     @Override
     public String getTaskName() {
         return TASKNAME;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    @AllArgsConstructor
+    @Getter
+    public static class ServerMessage implements Serializable {
+
+        //~ Instance fields ----------------------------------------------------
+
+        private final Integer stacId;
+        private final String aenderungsanfrage;
+        private final AenderungsanfrageUtils.Status status;
     }
 }
