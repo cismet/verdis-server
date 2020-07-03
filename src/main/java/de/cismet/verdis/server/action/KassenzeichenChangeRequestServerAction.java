@@ -304,17 +304,29 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                                 stacEntry,
                                 getMetaService(),
                                 getConnectionContext());
-                final boolean aenderungsanfrageAlreadyExists = existingAenderungsanfrageBean != null;
 
-                final CidsBean aenderungsanfrageBean = aenderungsanfrageAlreadyExists
-                    ? existingAenderungsanfrageBean
-                    : CidsBean.createNewCidsBeanFromTableName(
-                        VerdisConstants.DOMAIN,
-                        VerdisConstants.MC.AENDERUNGSANFRAGE,
-                        getConnectionContext());
-                final String statusSchluessel = (String)aenderungsanfrageBean.getProperty(
+                final CidsBean aenderungsanfrageBean;
+                if (existingAenderungsanfrageBean != null) {
+                    aenderungsanfrageBean = existingAenderungsanfrageBean;
+                } else {
+                    aenderungsanfrageBean = CidsBean.createNewCidsBeanFromTableName(
+                            VerdisConstants.DOMAIN,
+                            VerdisConstants.MC.AENDERUNGSANFRAGE,
+                            getConnectionContext());
+                    aenderungsanfrageBean.setProperty(
+                        VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS,
+                        AenderungsanfrageUtils.getInstance().getStatusBean(
+                            AenderungsanfrageUtils.Status.PENDING,
+                            stacEntry,
+                            getMetaService(),
+                            getConnectionContext()));
+                }
+
+                final String statusSchluessel =
+                    (aenderungsanfrageBean.getProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS) != null)
+                    ? (String)aenderungsanfrageBean.getProperty(
                         VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS
-                                + ".schluessel");
+                                + ".schluessel") : null;
 
                 // PROCESSING
                 if (AenderungsanfrageUtils.Status.CLOSED.toString().equals(statusSchluessel)) {
@@ -334,11 +346,8 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                                 now);
 
                 // STATUS
-                final AenderungsanfrageUtils.Status oldStatus =
-                    (aenderungsanfrageBean.getProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS) != null)
-                    ? AenderungsanfrageUtils.Status.valueOf((String)aenderungsanfrageBean.getProperty(
-                            VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS
-                                    + ".schluessel")) : null;
+                final AenderungsanfrageUtils.Status oldStatus = (statusSchluessel != null)
+                    ? AenderungsanfrageUtils.Status.valueOf(statusSchluessel) : null;
                 final AenderungsanfrageUtils.Status status = AenderungsanfrageUtils.getInstance()
                             .identifyNewStatus(
                                 oldStatus,
@@ -355,8 +364,10 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                     aenderungsanfrageProcessed,
                     kassenzeichennummer,
                     email,
-                    (status != null) ? status : oldStatus,
-                    aenderungsanfrageAlreadyExists);
+                    (status != null) ? status
+                                     : ((oldStatus != null) ? oldStatus : AenderungsanfrageUtils.Status.PENDING),
+                    existingAenderungsanfrageBean
+                            != null);
 
                 // UPDATING EXPIRATION
                 if (!Objects.equals(oldStatus, status)) {
