@@ -6,8 +6,9 @@
     }
   },
   "nachrichten" : [ {
+    "identifier" : "2735d6cd466fbdaaf56f2268638c17e1",
     "typ" : "CITIZEN",
-    "timestamp" : 3,
+    "timestamp" : 2500000000000,
     "nachricht" : "Normale Nachricht.",
     "absender" : "Bürger"
   } ]

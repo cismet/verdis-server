@@ -112,10 +112,11 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore, 
                         stacEntry,
                         getMetaService(),
                         getConnectionContext());
-                final CidsBean aenderungsanfrageBean = AenderungsanfrageUtils.getAenderungsanfrageBean(
-                        stacEntry,
-                        getMetaService(),
-                        getConnectionContext());
+                final CidsBean aenderungsanfrageBean = AenderungsanfrageUtils.getInstance()
+                            .getAenderungsanfrageBean(
+                                stacEntry,
+                                getMetaService(),
+                                getConnectionContext());
 
                 kassenzeichenBean.setProperty(
                     VerdisConstants.PROP.KASSENZEICHEN.STAC_OPTIONS,

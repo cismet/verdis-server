@@ -13,23 +13,19 @@
 package de.cismet.verdis.server.json;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Date;
-import java.util.List;
 
 /**
  * DOCUMENT ME!
  *
+ * @author   jruiz
  * @version  $Revision$, $Date$
  */
 @Getter
 @Setter
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = false)
-public class NachrichtJson extends AbstractJson {
+public class AenderungsanfrageResultJson extends AbstractJson {
 
     //~ Enums ------------------------------------------------------------------
 
@@ -38,22 +34,29 @@ public class NachrichtJson extends AbstractJson {
      *
      * @version  $Revision$, $Date$
      */
-    public enum Typ {
+    public enum ResultStatus {
 
         //~ Enum constants -----------------------------------------------------
 
-        CLERK, CITIZEN, SYSTEM
+        SUCCESS {
+
+            @Override
+            public String toString() {
+                return "success";
+            }
+        },
+        ERROR {
+
+            @Override
+            public String toString() {
+                return "error";
+            }
+        }
     }
 
     //~ Instance fields --------------------------------------------------------
 
-    private String identifier;
-    private Boolean draft;
-    private Typ typ;
-    private Date timestamp;
-    private Integer order;
-    private String nachricht;
-    private NachrichtParameterJson nachrichtenParameter;
-    private String absender;
-    private List<NachrichtAnhangJson> anhang;
+    private final ResultStatus resultStatus;
+    private final AenderungsanfrageJson aenderungsanfrage;
+    private final String errorMessage;
 }

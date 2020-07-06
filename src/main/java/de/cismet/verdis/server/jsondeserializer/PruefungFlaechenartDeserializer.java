@@ -60,9 +60,10 @@ public class PruefungFlaechenartDeserializer extends StdDeserializer<PruefungFla
             ? objectMapper.treeToValue(on.get("value"), FlaecheFlaechenartJson.class) : null;
         final String von = on.has("von") ? on.get("von").textValue() : null;
         final Date timestamp = on.has("timestamp") ? new Date(on.get("timestamp").longValue()) : null;
-        if ((value == null)) {
-            throw new RuntimeException("invalid StatusJson: value is not set");
+        final Boolean pending = on.has("pending") ? on.get("pending").asBoolean() : null;
+        if (!Boolean.TRUE.equals(pending) && (value == null)) {
+            throw new RuntimeException("invalid StatusJson: status is not set");
         }
-        return new PruefungFlaechenartJson(value, von, timestamp);
+        return new PruefungFlaechenartJson(pending, value, von, timestamp);
     }
 }

@@ -55,9 +55,10 @@ public class PruefungAnschlussgradDeserializer extends StdDeserializer<PruefungA
             ? objectMapper.treeToValue(on.get("value"), FlaecheAnschlussgradJson.class) : null;
         final String von = on.has("von") ? on.get("von").textValue() : null;
         final Date timestamp = on.has("timestamp") ? new Date(on.get("timestamp").longValue()) : null;
-        if ((value == null)) {
+        final Boolean pending = on.has("pending") ? on.get("pending").asBoolean() : null;
+        if (!Boolean.TRUE.equals(pending) && (value == null)) {
             throw new RuntimeException("invalid StatusJson: status is not set");
         }
-        return new PruefungAnschlussgradJson(value, von, timestamp);
+        return new PruefungAnschlussgradJson(pending, value, von, timestamp);
     }
 }

@@ -64,6 +64,10 @@ public class StacUtils {
                 + "SELECT id, thehash, stac_options, base_login_name, expiration "
                 + "FROM cs_stac "
                 + "WHERE md5(salt || ? || stac_options || base_login_name) = thehash AND expiration > now();";
+    private static final String PREPARED_STATEMENT__STACID_CHECK = ""
+                + "SELECT id, thehash, stac_options, base_login_name, expiration "
+                + "FROM cs_stac "
+                + "WHERE id = ?;";
     private static final String PREPARED_STATEMENT__STAC_CREATE = ""
                 + "SELECT create_stac(?, ?, ?);";
     private static final String PREPARED_STATEMENT__STAC_SET_EXPIRATION = ""
@@ -248,6 +252,53 @@ public class StacUtils {
             final ConnectionContext connectionContext) throws Exception {
         final PreparedStatement ps = getConnection().prepareStatement(PREPARED_STATEMENT__STAC_CHECK);
         ps.setString(1, stac);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(ps.toString());
+        }
+        final ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            final Integer id = rs.getInt("id");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("id: " + id);
+            }
+            final String hash = rs.getString("thehash");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("hash: " + hash);
+            }
+            final String optionsJson = rs.getString("stac_options");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("options: " + optionsJson);
+            }
+            final String baseUser = rs.getString("base_login_name");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("user: " + baseUser);
+            }
+            final Timestamp expiration = rs.getTimestamp("expiration");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("expiration: " + expiration);
+            }
+            return new StacEntry(id, hash, optionsJson, baseUser, expiration);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   stacId             DOCUMENT ME!
+     * @param   metaService        DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static StacEntry getStacEntry(final Integer stacId,
+            final MetaService metaService,
+            final ConnectionContext connectionContext) throws Exception {
+        final PreparedStatement ps = getConnection().prepareStatement(PREPARED_STATEMENT__STACID_CHECK);
+        ps.setInt(1, stacId);
         if (LOG.isDebugEnabled()) {
             LOG.debug(ps.toString());
         }

@@ -10,7 +10,7 @@
 
     <groupId>de.cismet.verdis</groupId>
     <artifactId>verdis-server</artifactId>
-    <version>6.10.6</version>
+    <version>6.11</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -24,7 +24,7 @@
         <connection>https://github.com/cismet/verdis-server.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/verdis-server.git</developerConnection>
         <url>https://github.com/cismet/verdis-server</url>
-        <tag>v6.10.6</tag>
+        <tag>v6.11</tag>
     </scm>
 
     <issueManagement>
@@ -140,6 +140,18 @@
         </dependency>
                 
         <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <scope>compile</scope>
+        </dependency>       
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <scope>compile</scope>
+        </dependency>       
+                
+        <dependency>
             <groupId>org.postgis</groupId>
             <artifactId>postgis-jdbc</artifactId>
             <!--
@@ -161,7 +173,7 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
         </dependency>        
-        
+               
         <!-- END: Provided dependencies -->
        
         <dependency>
@@ -169,7 +181,7 @@
             <artifactId>geojson-jackson-java</artifactId>
             <version>1.0.2</version>
         </dependency>       
-        
+                                
         <!-- BEGIN: Runtime dependencies -->
         <dependency>
             <groupId>org.slf4j</groupId>
