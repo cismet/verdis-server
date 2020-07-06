@@ -140,6 +140,18 @@
         </dependency>
                 
         <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <scope>compile</scope>
+        </dependency>       
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <scope>compile</scope>
+        </dependency>       
+                
+        <dependency>
             <groupId>org.postgis</groupId>
             <artifactId>postgis-jdbc</artifactId>
             <!--
@@ -161,7 +173,7 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
         </dependency>        
-        
+               
         <!-- END: Provided dependencies -->
        
         <dependency>
@@ -169,7 +181,7 @@
             <artifactId>geojson-jackson-java</artifactId>
             <version>1.0.2</version>
         </dependency>       
-        
+                                
         <!-- BEGIN: Runtime dependencies -->
         <dependency>
             <groupId>org.slf4j</groupId>

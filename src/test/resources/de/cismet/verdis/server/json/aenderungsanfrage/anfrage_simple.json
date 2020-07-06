@@ -6,6 +6,7 @@
     }
   },
   "nachrichten" : [ {
+    "identifier" : "test-simple-1",
     "typ" : "CITIZEN",
     "timestamp" : 47110815,
     "nachricht" : "Da passt was nicht weil isso, siehe lustiges pdf !",

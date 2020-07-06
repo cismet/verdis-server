@@ -60,9 +60,11 @@ public class NachrichtDeserializer extends StdDeserializer<NachrichtJson> {
     public NachrichtJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
         JsonProcessingException {
         final ObjectNode on = jp.readValueAsTree();
+        final String identifier = on.has("identifier") ? on.get("identifier").textValue() : null;
         final Boolean draft = on.has("draft") ? on.get("draft").asBoolean() : null;
         final NachrichtJson.Typ typ = on.has("typ") ? NachrichtJson.Typ.valueOf(on.get("typ").textValue()) : null;
         final Date timestamp = on.has("timestamp") ? new Date(on.get("timestamp").longValue()) : null;
+        final Integer order = on.has("order") ? on.get("order").asInt() : null;
         final String absender = on.has("absender") ? on.get("absender").textValue() : null;
         final String nachricht = on.has("nachricht") ? on.get("nachricht").textValue() : null;
         final NachrichtParameterJson nachrichtenParameter = on.has("nachrichtenParameter")
@@ -74,10 +76,19 @@ public class NachrichtDeserializer extends StdDeserializer<NachrichtJson> {
                 anhang.add(objectMapper.treeToValue(iterator.next(), NachrichtAnhangJson.class));
             }
         }
-        if ((nachricht == null) && (timestamp == null)) {
-            throw new RuntimeException(
-                "invalid NachrichtJson: neither nachricht nor timestamp is set");
-        }
-        return new NachrichtJson(draft, typ, timestamp, nachricht, nachrichtenParameter, absender, anhang);
+//        if ((nachricht == null) && (timestamp == null)) {
+//            throw new RuntimeException(
+//                "invalid NachrichtJson: neither nachricht nor timestamp is set");
+//        }
+        return new NachrichtJson(
+                identifier,
+                draft,
+                typ,
+                timestamp,
+                order,
+                nachricht,
+                nachrichtenParameter,
+                absender,
+                anhang);
     }
 }
