@@ -6,21 +6,25 @@
     }
   },
   "nachrichten" : [ {
-    "typ" : "CITIZEN",
-    "timestamp" : 1,
-    "nachricht" : "Alte Nachricht."
-  }, {
+    "identifier" : "d70b50b6c57401f0a534db1f84eb1749",
     "typ" : "CLERK",
-    "timestamp" : 2,
+    "timestamp" : 2000000000000,
     "nachricht" : "Alte Antwort.",
     "absender" : "Mustermann"
   }, {
-    "typ" : "SYSTEM",
-    "timestamp" : 3,
-    "nachricht" : "FUNCTION( {} )"
-  }, {
+    "identifier" : "bb0b28a48f2943c3c96bc865561ff6ee",
     "typ" : "CITIZEN",
-    "timestamp" : 4,
+    "timestamp" : 2500000000000,
+    "nachricht" : "Änderung Alte Nachricht."
+  }, {
+    "identifier" : "f468088c0507d9b3979fc7d238c4e93f",
+    "typ" : "CITIZEN",
+    "timestamp" : 2500000000000,
     "nachricht" : "Neue Nachricht."
+  }, {
+    "identifier" : "542aa90241feadeed7669d4be5194b9b",
+    "typ" : "SYSTEM",
+    "timestamp" : 3000000000000,
+    "nachricht" : "FUNCTION( {} )"
   } ]
 }

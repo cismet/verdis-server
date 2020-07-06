@@ -25,13 +25,18 @@ public class PruefungFlaechenartJson extends PruefungJson<FlaecheFlaechenartJson
 
     /**
      * Creates a new PruefungFlaechenartJson object.
-     *
-     * @param  value      DOCUMENT ME!
-     * @param  von        DOCUMENT ME!
-     * @param  timestamp  DOCUMENT ME!
      */
-    public PruefungFlaechenartJson(final FlaecheFlaechenartJson value, final String von, final Date timestamp) {
-        this(false, value, von, timestamp);
+    public PruefungFlaechenartJson() {
+        this(true, null, null, null);
+    }
+
+    /**
+     * Creates a new PruefungFlaechenartJson object.
+     *
+     * @param  value  DOCUMENT ME!
+     */
+    public PruefungFlaechenartJson(final FlaecheFlaechenartJson value) {
+        this(null, value, null, null);
     }
 
     /**
@@ -42,7 +47,7 @@ public class PruefungFlaechenartJson extends PruefungJson<FlaecheFlaechenartJson
      * @param  von        DOCUMENT ME!
      * @param  timestamp  DOCUMENT ME!
      */
-    public PruefungFlaechenartJson(final boolean pending,
+    public PruefungFlaechenartJson(final Boolean pending,
             final FlaecheFlaechenartJson value,
             final String von,
             final Date timestamp) {
