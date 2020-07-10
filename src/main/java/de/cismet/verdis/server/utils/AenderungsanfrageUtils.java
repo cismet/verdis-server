@@ -437,21 +437,20 @@ public class AenderungsanfrageUtils {
         final boolean isClerk = Boolean.FALSE.equals(citizenOrClerk);
         final Map<String, GeoJsonObject> geometrienProcessed = new HashMap<>();
 
-        // alle Originalgeometrien erst einmal pauschal übernehmen
-        for (final String bezeichnung : geometrienOrig.keySet()) {
-            final GeoJsonObject geoJson = geometrienOrig.get(bezeichnung);
-            geometrienProcessed.put(bezeichnung, geoJson);
-        }
-
-        // neue Geometrien übernehmen (darf nur der Eigentümer)
         if (isCitizen) {
+            // alle neue Geometrien (und Änderungen) übernehmen (darf nur der Eigentümer)
             for (final String bezeichnung : geometrienNew.keySet()) {
-                if (!geometrienOrig.containsKey(bezeichnung)) {
-                    final GeoJsonObject geoJson = geometrienNew.get(bezeichnung);
-                    geometrienProcessed.put(bezeichnung, geoJson);
-                }
+                final GeoJsonObject geoJson = geometrienNew.get(bezeichnung);
+                geometrienProcessed.put(bezeichnung, geoJson);
+            }
+        } else {
+            // alle Originalgeometrien übernehmen
+            for (final String bezeichnung : geometrienOrig.keySet()) {
+                final GeoJsonObject geoJson = geometrienOrig.get(bezeichnung);
+                geometrienProcessed.put(bezeichnung, geoJson);
             }
         }
+
         return geometrienProcessed;
     }
 
