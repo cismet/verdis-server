@@ -25,6 +25,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.log4j.Logger;
 
+import org.geojson.Feature;
 import org.geojson.GeoJsonObject;
 
 import java.util.ArrayList;
@@ -218,6 +219,8 @@ public class AenderungsanfrageUtils {
             final List<NachrichtJson> nachrichtenNew,
             final Boolean citizenOrClerk,
             final Date timestamp) throws Exception {
+        final boolean isCitizen = Boolean.TRUE.equals(citizenOrClerk);
+        final boolean isClerk = Boolean.FALSE.equals(citizenOrClerk);
         final List<NachrichtJson> nachrichtenProcessed = new ArrayList<>();
         // zum identifizieren alter drafts die neu eingereicht wurden
         final Map<String, NachrichtJson> origNachrichtenMap = new HashMap<>();
@@ -233,30 +236,28 @@ public class AenderungsanfrageUtils {
             origNachrichtenMap.put(origNachricht.getIdentifier(), origNachricht);
 
             final boolean isDraft = Boolean.TRUE.equals(origNachricht.getDraft());
-            final boolean isCitizen = NachrichtJson.Typ.CITIZEN.equals(origNachricht.getTyp());
-            final boolean isClerk = NachrichtJson.Typ.CLERK.equals(origNachricht.getTyp());
-            final boolean isOwn = Boolean.TRUE.equals(citizenOrClerk)
-                ? isCitizen : (Boolean.FALSE.equals(citizenOrClerk) ? isClerk : false);
+            final boolean isCitizenMessage = NachrichtJson.Typ.CITIZEN.equals(origNachricht.getTyp());
+            final boolean isClerkMessage = NachrichtJson.Typ.CLERK.equals(origNachricht.getTyp());
+            final boolean isOwnMessage = isCitizen ? isCitizenMessage : (isClerk ? isClerkMessage : false);
 
             // alle vorhandenen Fremdnachrichten, die kein Draft sind, werden auf alle Fälle übernommen
-            if (!isDraft || !isOwn) {
+            if (!isDraft || !isOwnMessage) {
                 nachrichtenProcessed.add(origNachricht);
             }
         }
 
         nachrichtenNew.sort(NACHRICHTEN_TIMEORDER_COMPARATOR);
         for (final NachrichtJson newNachricht : nachrichtenNew) {
-            final boolean isCitizen = NachrichtJson.Typ.CITIZEN.equals(newNachricht.getTyp());
-            final boolean isClerk = NachrichtJson.Typ.CLERK.equals(newNachricht.getTyp());
-            final boolean isOwn = Boolean.TRUE.equals(citizenOrClerk)
-                ? isCitizen : (Boolean.FALSE.equals(citizenOrClerk) ? isClerk : false);
+            final boolean isCitizenMessage = NachrichtJson.Typ.CITIZEN.equals(newNachricht.getTyp());
+            final boolean isClerkMessage = NachrichtJson.Typ.CLERK.equals(newNachricht.getTyp());
+            final boolean isOwnMessage = isCitizen ? isCitizenMessage : (isClerk ? isClerkMessage : false);
             final boolean isNew = (newNachricht.getIdentifier() == null)
                         || !origNachrichtenMap.containsKey(newNachricht.getIdentifier());
             final boolean wasPrefiouslyDraft = (origNachrichtenMap.get(newNachricht.getIdentifier()) != null)
                         && Boolean.TRUE.equals(origNachrichtenMap.get(newNachricht.getIdentifier()).getDraft());
 
             // nur eigene neue Nachrichten betrachten
-            if (isOwn && (isNew || wasPrefiouslyDraft)) {
+            if (isOwnMessage && (isNew || wasPrefiouslyDraft)) {
                 final NachrichtJson origNachricht =
                     ((newNachricht.getIdentifier() != null)
                                 && origNachrichtenMap.containsKey(newNachricht.getIdentifier()))
@@ -299,6 +300,8 @@ public class AenderungsanfrageUtils {
             final Boolean citizenOrClerk,
             final String username,
             final Date timestamp) throws Exception {
+        final boolean isCitizen = Boolean.TRUE.equals(citizenOrClerk);
+        final boolean isClerk = Boolean.FALSE.equals(citizenOrClerk);
         final Map<String, FlaecheAenderungJson> flaechenProcessed = new HashMap<>();
 
         if (flaechenOrig == null) { // ???
@@ -329,8 +332,6 @@ public class AenderungsanfrageUtils {
                     flaecheProcessed = getMapper().readValue(flaecheNew.toJson(), FlaecheAenderungJson.class);
                     flaecheProcessed.setPruefung(null);
                 } else {
-                    final boolean isCitizen = Boolean.TRUE.equals(citizenOrClerk);
-                    final boolean isClerk = Boolean.FALSE.equals(citizenOrClerk);
                     flaecheProcessed = getMapper().readValue(flaecheOrig.toJson(), FlaecheAenderungJson.class);
 
                     // nur der eigentümer darf die flächenanfragen verändern
@@ -438,19 +439,57 @@ public class AenderungsanfrageUtils {
         final Map<String, GeoJsonObject> geometrienProcessed = new HashMap<>();
 
         if (isCitizen) {
-            // alle neue Geometrien (und Änderungen) übernehmen (darf nur der Eigentümer)
             for (final String bezeichnung : geometrienNew.keySet()) {
-                final GeoJsonObject geoJson = geometrienNew.get(bezeichnung);
-                geometrienProcessed.put(bezeichnung, geoJson);
+                final Feature featureOrig = (Feature)geometrienOrig.get(bezeichnung);
+                final Feature featureNew = (Feature)geometrienNew.get(bezeichnung);
+
+                if (featureNew != null) {
+                    final Feature featureProcessed = new Feature();
+
+                    featureProcessed.setId(featureNew.getId());
+                    featureProcessed.setGeometry(featureNew.getGeometry());
+                    featureProcessed.setProperties(featureNew.getProperties());
+
+                    // bei jeder Änderung => pruefung zurücksetzen
+                    final String geoJsonOrigString = (featureOrig != null)
+                        ? new ObjectMapper().writeValueAsString(featureOrig) : null;
+                    final String geoJsonNewString = new ObjectMapper().writeValueAsString(featureNew);
+                    if (!Boolean.TRUE.equals(featureNew.getProperty("draft"))
+                                && !Objects.equals(geoJsonOrigString, geoJsonNewString)) {
+                        featureProcessed.getProperties().remove("pruefung");
+                        featureProcessed.getProperties().remove("pruefungTimestamp");
+                    }
+
+                    geometrienProcessed.put(bezeichnung, featureProcessed);
+                }
             }
         } else {
-            // alle Originalgeometrien übernehmen
+            // alle original anmerkungen übernehmen und ggf pruefung
             for (final String bezeichnung : geometrienOrig.keySet()) {
-                final GeoJsonObject geoJson = geometrienOrig.get(bezeichnung);
-                geometrienProcessed.put(bezeichnung, geoJson);
+                final Feature featureOrig = (Feature)geometrienOrig.get(bezeichnung);
+                final Feature featureNew = (Feature)geometrienNew.get(bezeichnung);
+
+                final Feature featureProcessed = new Feature();
+                featureProcessed.setId(featureOrig.getId());
+                featureProcessed.setGeometry(featureOrig.getGeometry());
+                featureProcessed.setProperties(featureOrig.getProperties());
+
+                if (isClerk && (featureNew != null)) { // Prüfer darf prüfen
+                    final Boolean pruefungOrig = featureOrig.getProperty("pruefung");
+                    final Boolean pruefungNew = featureNew.getProperty("pruefung");
+                    if (pruefungNew != null) {
+                        featureProcessed.setProperty("pruefung", pruefungNew);
+                    }
+                    if (!Objects.equals(pruefungOrig, pruefungNew)) {
+                        if (pruefungNew != null) {
+                            featureProcessed.setProperty("pruefungTimestamp", timestamp);
+                        }
+                    }
+                }
+
+                geometrienProcessed.put(bezeichnung, featureProcessed);
             }
         }
-
         return geometrienProcessed;
     }
 
@@ -551,14 +590,19 @@ public class AenderungsanfrageUtils {
     public AenderungsanfrageUtils.Status identifyNewStatus(final Status oldStatus,
             final AenderungsanfrageJson aenderungsanfrageBefore,
             final AenderungsanfrageJson aenderungsanfrageAfter,
-            final boolean citizenOrClerk,
+            final Boolean citizenOrClerk,
             final String username,
             final Date timestamp) throws Exception {
-        final Status status;
-        if (citizenOrClerk) {
+        final boolean isCitizen = Boolean.TRUE.equals(citizenOrClerk);
+        final boolean isClerk = Boolean.FALSE.equals(citizenOrClerk);
+
+        final Status changeStatusTo;
+        if (isCitizen) {
             boolean anyChanges = false;
-            if (aenderungsanfrageBefore.getFlaechen().size() != aenderungsanfrageAfter.getFlaechen().size()) {
-                status = AenderungsanfrageUtils.Status.PENDING;
+            if ((aenderungsanfrageBefore.getFlaechen().size() != aenderungsanfrageAfter.getFlaechen().size())
+                        || (aenderungsanfrageBefore.getGeometrien().size()
+                            != aenderungsanfrageAfter.getGeometrien().size())) {
+                changeStatusTo = AenderungsanfrageUtils.Status.PENDING;
             } else {
                 for (final String bezeichnung : aenderungsanfrageAfter.getFlaechen().keySet()) {
                     final FlaecheAenderungJson flaecheAenderungBefore = aenderungsanfrageBefore.getFlaechen()
@@ -594,13 +638,43 @@ public class AenderungsanfrageUtils {
                     }
                 }
 
+                for (final String bezeichnung : aenderungsanfrageAfter.getGeometrien().keySet()) {
+                    final org.geojson.Feature anmerkungBefore = (org.geojson.Feature)
+                        aenderungsanfrageBefore.getGeometrien().get(bezeichnung);
+                    final org.geojson.Feature anmerkungAfter = (org.geojson.Feature)
+                        aenderungsanfrageAfter.getGeometrien().get(bezeichnung);
+
+                    final Feature anmerkungBeforeWithoutPruefung;
+                    if (anmerkungBefore != null) {
+                        anmerkungBeforeWithoutPruefung = new Feature();
+                        anmerkungBeforeWithoutPruefung.setId(anmerkungBefore.getId());
+                        anmerkungBeforeWithoutPruefung.setGeometry(anmerkungBefore.getGeometry());
+                        anmerkungBeforeWithoutPruefung.setProperties(anmerkungBefore.getProperties());
+                        anmerkungBeforeWithoutPruefung.getProperties().remove("pruefung");
+                        anmerkungBeforeWithoutPruefung.getProperties().remove("pruefungTimestamp");
+                    } else {
+                        anmerkungBeforeWithoutPruefung = null;
+                    }
+
+                    final String anmerkungBeforeString = (anmerkungBeforeWithoutPruefung != null)
+                        ? new ObjectMapper().writeValueAsString(anmerkungBeforeWithoutPruefung) : null;
+                    final String anmerkungAfterString = (anmerkungAfter != null)
+                        ? new ObjectMapper().writeValueAsString(anmerkungAfter) : null;
+
+                    if ((anmerkungBeforeWithoutPruefung == null)
+                                || !Objects.equals(anmerkungBeforeString, anmerkungAfterString)) {
+                        anyChanges = true;
+                        break;
+                    }
+                }
+
                 if (anyChanges) {
-                    status = AenderungsanfrageUtils.Status.PENDING;
+                    changeStatusTo = AenderungsanfrageUtils.Status.PENDING;
                 } else {
-                    status = null;
+                    changeStatusTo = null;
                 }
             }
-        } else {
+        } else if (isClerk) {
             if (aenderungsanfrageBefore.getFlaechen().size() != aenderungsanfrageAfter.getFlaechen().size()) {
                 throw new Exception("flaeche sizes not matching. clerk is not allowed to add or remove new flaeche");
             }
@@ -756,25 +830,43 @@ public class AenderungsanfrageUtils {
                                     username));
                 }
             }
-            if (acceptedOrRejectedCount == aenderungCount) {
-                status = AenderungsanfrageUtils.Status.NONE;
-            } else if (doneAndPendingPruefungCount == aenderungCount) {
-                status = AenderungsanfrageUtils.Status.PROCESSING;
-            } else {
-                status = null;
+
+            for (final String bezeichnung : aenderungsanfrageAfter.getGeometrien().keySet()) {
+                final org.geojson.Feature anmerkungAfter = (org.geojson.Feature)aenderungsanfrageAfter
+                            .getGeometrien().get(bezeichnung);
+
+                if ((anmerkungAfter != null) && !Boolean.TRUE.equals(anmerkungAfter.getProperty("draft"))) {
+                    aenderungCount++;
+
+                    final Boolean pruefungAfter = (Boolean)anmerkungAfter.getProperty("pruefung");
+                    if (pruefungAfter != null) {
+                        doneAndPendingPruefungCount++;
+                        acceptedOrRejectedCount++;
+                    }
+                }
             }
+
+            if (acceptedOrRejectedCount == aenderungCount) {
+                changeStatusTo = AenderungsanfrageUtils.Status.NONE;
+            } else if (doneAndPendingPruefungCount == aenderungCount) {
+                changeStatusTo = AenderungsanfrageUtils.Status.PROCESSING;
+            } else {
+                changeStatusTo = null;
+            }
+        } else {
+            changeStatusTo = null;
         }
-        final boolean statusChanged = (status != null) && !status.equals(oldStatus);
+        final boolean statusChanged = (changeStatusTo != null) && !changeStatusTo.equals(oldStatus);
         if (statusChanged) {
             aenderungsanfrageAfter.getNachrichten()
                     .add(new NachrichtSystemJson(
                             createIdentifier(null),
                             timestamp,
                             null,
-                            new NachrichtParameterStatusJson(status),
+                            new NachrichtParameterStatusJson(changeStatusTo),
                             username));
         }
-        return status;
+        return changeStatusTo;
     }
 
     /**

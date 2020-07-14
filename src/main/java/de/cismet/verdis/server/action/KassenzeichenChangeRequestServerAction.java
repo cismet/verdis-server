@@ -323,7 +323,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                     aenderungsanfrageBean.setProperty(
                         VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS,
                         AenderungsanfrageUtils.getInstance().getStatusBean(
-                            AenderungsanfrageUtils.Status.PENDING,
+                            AenderungsanfrageUtils.Status.NONE,
                             stacEntry,
                             getMetaService(),
                             getConnectionContext()));
