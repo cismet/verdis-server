@@ -424,6 +424,7 @@ public class AenderungsanfrageUtils {
      * @param   geometrienOrig  DOCUMENT ME!
      * @param   geometrienNew   DOCUMENT ME!
      * @param   citizenOrClerk  DOCUMENT ME!
+     * @param   username        DOCUMENT ME!
      * @param   timestamp       DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -433,6 +434,7 @@ public class AenderungsanfrageUtils {
     private Map<String, GeoJsonObject> processAnmerkungen(final Map<String, GeoJsonObject> geometrienOrig,
             final Map<String, GeoJsonObject> geometrienNew,
             final Boolean citizenOrClerk,
+            final String username,
             final Date timestamp) throws Exception {
         final boolean isCitizen = Boolean.TRUE.equals(citizenOrClerk);
         final boolean isClerk = Boolean.FALSE.equals(citizenOrClerk);
@@ -455,8 +457,10 @@ public class AenderungsanfrageUtils {
                         ? new ObjectMapper().writeValueAsString(featureOrig) : null;
                     final String geoJsonNewString = new ObjectMapper().writeValueAsString(featureNew);
                     if (!Boolean.TRUE.equals(featureNew.getProperty("draft"))
-                                && !Objects.equals(geoJsonOrigString, geoJsonNewString)) {
+                                && !Objects.equals(geoJsonOrigString, geoJsonNewString)
+                                && (featureProcessed.getProperties() != null)) {
                         featureProcessed.getProperties().remove("pruefung");
+                        featureProcessed.getProperties().remove("pruefungVon");
                         featureProcessed.getProperties().remove("pruefungTimestamp");
                     }
 
@@ -482,6 +486,7 @@ public class AenderungsanfrageUtils {
                     }
                     if (!Objects.equals(pruefungOrig, pruefungNew)) {
                         if (pruefungNew != null) {
+                            featureProcessed.setProperty("pruefungVon", username);
                             featureProcessed.setProperty("pruefungTimestamp", timestamp);
                         }
                     }
@@ -563,8 +568,11 @@ public class AenderungsanfrageUtils {
                     citizenOrClerk,
                     username,
                     timestamp),
-                processAnmerkungen(anfrageOrig.getGeometrien(), anfrageNew.getGeometrien(),
+                processAnmerkungen(
+                    anfrageOrig.getGeometrien(),
+                    anfrageNew.getGeometrien(),
                     citizenOrClerk,
+                    username,
                     timestamp),
                 processNachrichten(
                     anfrageOrig.getNachrichten(),
@@ -650,8 +658,11 @@ public class AenderungsanfrageUtils {
                         anmerkungBeforeWithoutPruefung.setId(anmerkungBefore.getId());
                         anmerkungBeforeWithoutPruefung.setGeometry(anmerkungBefore.getGeometry());
                         anmerkungBeforeWithoutPruefung.setProperties(anmerkungBefore.getProperties());
-                        anmerkungBeforeWithoutPruefung.getProperties().remove("pruefung");
-                        anmerkungBeforeWithoutPruefung.getProperties().remove("pruefungTimestamp");
+                        if (anmerkungBeforeWithoutPruefung.getProperties() != null) {
+                            anmerkungBeforeWithoutPruefung.getProperties().remove("pruefung");
+                            anmerkungBeforeWithoutPruefung.getProperties().remove("pruefungVon");
+                            anmerkungBeforeWithoutPruefung.getProperties().remove("pruefungTimestamp");
+                        }
                     } else {
                         anmerkungBeforeWithoutPruefung = null;
                     }
@@ -867,6 +878,137 @@ public class AenderungsanfrageUtils {
                             username));
         }
         return changeStatusTo;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   aenderungsanfrage  DOCUMENT ME!
+     * @param   citizenOrClerk     DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public AenderungsanfrageJson doFilteringOutWhatIShouldntSee(final AenderungsanfrageJson aenderungsanfrage,
+            final boolean citizenOrClerk) throws Exception {
+        final boolean isCitizen = Boolean.TRUE.equals(citizenOrClerk);
+        final boolean isClerk = Boolean.FALSE.equals(citizenOrClerk);
+
+        if (aenderungsanfrage == null) {
+            return null;
+        } else {
+            final AenderungsanfrageJson aenderungsanfrageFiltered = new AenderungsanfrageJson(
+                    aenderungsanfrage.getKassenzeichen());
+
+            // Nachrichten filtern
+            if (aenderungsanfrage.getNachrichten() != null) {
+                for (final NachrichtJson nachricht : aenderungsanfrage.getNachrichten()) {
+                    if (nachricht != null) {
+                        // kopieren
+                        final NachrichtJson nachrichtFiltered = getMapper().readValue(nachricht.toJson(),
+                                NachrichtJson.class);
+
+                        final boolean isDraft = Boolean.TRUE.equals(nachricht.getDraft());
+                        final boolean isCitizenMessage = NachrichtJson.Typ.CITIZEN.equals(nachricht.getTyp());
+                        final boolean isClerkMessage = NachrichtJson.Typ.CLERK.equals(nachricht.getTyp());
+                        final boolean isOwnMessage = isCitizen ? isCitizenMessage : (isClerk ? isClerkMessage : false);
+
+                        // nur eigene oder nicht gedraftete Nachrichten raus geben
+                        final boolean include = isOwnMessage || !isDraft;
+                        if (include) {
+                            if (isCitizen) {
+                                nachrichtFiltered.setAbsender(null); // Absender anonymisieren
+                            }
+                            aenderungsanfrageFiltered.getNachrichten().add(nachrichtFiltered);
+                        }
+                    }
+                }
+            }
+
+            // Flächenänderungen filtern
+            if (aenderungsanfrage.getFlaechen() != null) {
+                for (final String bezeichnung : aenderungsanfrage.getFlaechen().keySet()) {
+                    final FlaecheAenderungJson flaeche = aenderungsanfrage.getFlaechen().get(bezeichnung);
+                    if (flaeche != null) {
+                        // kopieren
+                        final FlaecheAenderungJson flaecheFiltered = getMapper().readValue(flaeche.toJson(),
+                                FlaecheAenderungJson.class);
+
+                        final boolean isDraft = Boolean.TRUE.equals(flaeche.getDraft());
+
+                        // Eigentümer sieht alle seine Änderungswünsche
+                        // Sachbearbeiter sieht nur ungedraftete
+                        final boolean include = isCitizen || (isClerk && !isDraft);
+                        if (include) {
+                            if (isCitizen) {
+                                // pending prüfungen raus nehmen
+                                // und prüfer ("von") anonymisieren
+                                if (flaecheFiltered.getPruefung() != null) {
+                                    if (flaecheFiltered.getPruefung().getGroesse() != null) {
+                                        flaecheFiltered.getPruefung().getGroesse().setVon(null);
+                                        if (Boolean.TRUE.equals(
+                                                        flaecheFiltered.getPruefung().getGroesse().getPending())) {
+                                            flaecheFiltered.getPruefung().setGroesse(null);
+                                        }
+                                    }
+                                    if (flaecheFiltered.getPruefung().getFlaechenart() != null) {
+                                        flaecheFiltered.getPruefung().getFlaechenart().setVon(null);
+                                        if (Boolean.TRUE.equals(
+                                                        flaecheFiltered.getPruefung().getFlaechenart().getPending())) {
+                                            flaecheFiltered.getPruefung().setFlaechenart(null);
+                                        }
+                                    }
+                                    if (flaecheFiltered.getPruefung().getAnschlussgrad() != null) {
+                                        flaecheFiltered.getPruefung().getAnschlussgrad().setVon(null);
+                                        if (Boolean.TRUE.equals(
+                                                        flaecheFiltered.getPruefung().getAnschlussgrad().getPending())) {
+                                            flaecheFiltered.getPruefung().setAnschlussgrad(null);
+                                        }
+                                    }
+                                    // wenn alle Prüfungen null sind, kann das
+                                    // Prüfungsobjekt komplett raus fallen.
+                                    if ((flaecheFiltered.getPruefung().getGroesse() == null)
+                                                && (flaecheFiltered.getPruefung().getFlaechenart() == null)
+                                                && (flaecheFiltered.getPruefung().getAnschlussgrad() == null)) {
+                                        flaecheFiltered.setPruefung(null);
+                                    }
+                                }
+                            }
+                            aenderungsanfrageFiltered.getFlaechen().put(bezeichnung, flaecheFiltered);
+                        }
+                    }
+                }
+            }
+
+            // Anmerkungen filtern
+            if (aenderungsanfrage.getGeometrien() != null) {
+                for (final String bezeichnung : aenderungsanfrage.getGeometrien().keySet()) {
+                    final org.geojson.Feature anmerkung = (org.geojson.Feature)aenderungsanfrage.getGeometrien()
+                                .get(bezeichnung);
+                    if (anmerkung != null) {
+                        // kopieren
+                        final org.geojson.Feature anmerkungFitlered = getMapper().readValue(getMapper()
+                                        .writeValueAsString(anmerkung),
+                                org.geojson.Feature.class);
+
+                        final boolean isDraft = Boolean.TRUE.equals(anmerkung.getProperty("draft"));
+
+                        // Eigentümer sieht alle seine Anmerkungen
+                        // Sachbearbeiter sieht nur ungedraftete
+                        final boolean include = isCitizen || !isDraft;
+                        if (include) {
+                            if (isCitizen && (anmerkungFitlered.getProperties() != null)) {
+                                anmerkungFitlered.getProperties().remove("pruefungTimestamp");
+                            }
+                            aenderungsanfrageFiltered.getGeometrien().put(bezeichnung, anmerkungFitlered);
+                        }
+                    }
+                }
+            }
+
+            return aenderungsanfrageFiltered;
+        }
     }
 
     /**
