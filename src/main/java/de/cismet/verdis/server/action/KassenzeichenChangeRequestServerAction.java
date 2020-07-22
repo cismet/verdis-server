@@ -383,21 +383,30 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                     updateExpiration(stacEntry);
                 }
 
+                final AenderungsanfrageJson anderungsanfrageFilteredForClerk = AenderungsanfrageUtils.getInstance()
+                            .doFilteringOutWhatIShouldntSee(aenderungsanfrageProcessed, false);
+
                 CidsServerMessageManagerImpl.getInstance()
                         .publishMessage(
                             CSM_NEWREQUEST,
                             new ServerMessage(
                                 (Integer)aenderungsanfrageBean.getProperty(
                                     VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID),
-                                (aenderungsanfrageProcessed != null) ? aenderungsanfrageProcessed.toJson() : null,
+                                (anderungsanfrageFilteredForClerk != null) ? anderungsanfrageFilteredForClerk.toJson()
+                                                                           : null,
                                 newStatus),
                             false,
                             getConnectionContext());
 
+                final AenderungsanfrageJson anderungsanfrageFiltered = AenderungsanfrageUtils.getInstance()
+                            .doFilteringOutWhatIShouldntSee(
+                                aenderungsanfrageProcessed,
+                                "stac".equals(getUser().getName()));
+
                 // RESULT
                 return new AenderungsanfrageResultJson(
                         AenderungsanfrageResultJson.ResultStatus.SUCCESS,
-                        aenderungsanfrageProcessed,
+                        anderungsanfrageFiltered,
                         null).toJson();
             }
         } catch (final Exception ex) {
