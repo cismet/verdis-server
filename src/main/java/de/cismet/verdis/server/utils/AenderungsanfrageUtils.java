@@ -807,7 +807,7 @@ public class AenderungsanfrageUtils {
                                             ? NachrichtParameterJson.Type.CHANGED
                                             : NachrichtParameterJson.Type.REJECTED,
                                         bezeichnung,
-                                        pruefungGroesseAfter),
+                                        groesseBefore),
                                     username));
                 }
                 if (isAnschlussgradAcceptedOrRejected
@@ -822,7 +822,7 @@ public class AenderungsanfrageUtils {
                                             ? NachrichtParameterJson.Type.CHANGED
                                             : NachrichtParameterJson.Type.REJECTED,
                                         bezeichnung,
-                                        pruefungAnschlussgradAfter),
+                                        anschlussgradBefore),
                                     username));
                 }
                 if (isFlaechenartAcceptedOrRejected
@@ -837,7 +837,7 @@ public class AenderungsanfrageUtils {
                                             ? NachrichtParameterJson.Type.CHANGED
                                             : NachrichtParameterJson.Type.REJECTED,
                                         bezeichnung,
-                                        pruefungFlaechenartAfter),
+                                        flaechenartBefore),
                                     username));
                 }
             }
