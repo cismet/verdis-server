@@ -607,83 +607,82 @@ public class AenderungsanfrageUtils {
         final Status changeStatusTo;
         if (isCitizen) {
             boolean anyChanges = false;
-            if ((aenderungsanfrageBefore.getFlaechen().size() != aenderungsanfrageAfter.getFlaechen().size())
-                        || (aenderungsanfrageBefore.getGeometrien().size()
-                            != aenderungsanfrageAfter.getGeometrien().size())) {
+            for (final String bezeichnung : aenderungsanfrageAfter.getFlaechen().keySet()) {
+                final FlaecheAenderungJson flaecheAenderungBefore = aenderungsanfrageBefore.getFlaechen()
+                            .get(bezeichnung);
+                final FlaecheAenderungJson flaecheAenderungAfter = aenderungsanfrageAfter.getFlaechen()
+                            .get(bezeichnung);
+
+                final Boolean draftBefore = (flaecheAenderungBefore != null) ? flaecheAenderungBefore.getDraft() : null;
+                final Integer groesseBefore = (flaecheAenderungBefore != null) ? flaecheAenderungBefore.getGroesse()
+                                                                               : null;
+                final FlaecheAnschlussgradJson anschlussgradBefore = (flaecheAenderungBefore != null)
+                    ? flaecheAenderungBefore.getAnschlussgrad() : null;
+                final FlaecheFlaechenartJson flaechenartBefore = (flaecheAenderungBefore != null)
+                    ? flaecheAenderungBefore.getFlaechenart() : null;
+
+                final Boolean draftAfter = (flaecheAenderungAfter != null) ? flaecheAenderungAfter.getDraft() : null;
+                final Integer groesseAfter = (flaecheAenderungAfter != null) ? flaecheAenderungAfter.getGroesse()
+                                                                             : null;
+                final FlaecheAnschlussgradJson anschlussgradAfter = (flaecheAenderungAfter != null)
+                    ? flaecheAenderungAfter.getAnschlussgrad() : null;
+                final FlaecheFlaechenartJson flaechenartAfter = (flaecheAenderungAfter != null)
+                    ? flaecheAenderungAfter.getFlaechenart() : null;
+
+                if ((flaecheAenderungBefore == null)
+                            || !Objects.equals(draftBefore, draftAfter)
+                            || !Objects.equals(groesseBefore, groesseAfter)
+                            || !Objects.equals(anschlussgradBefore, anschlussgradAfter)
+                            || !Objects.equals(flaechenartBefore, flaechenartAfter)) {
+                    anyChanges = true;
+                    break;
+                }
+            }
+
+            for (final String bezeichnung : aenderungsanfrageAfter.getGeometrien().keySet()) {
+                final org.geojson.Feature anmerkungBefore = (org.geojson.Feature)aenderungsanfrageBefore
+                            .getGeometrien().get(bezeichnung);
+                final org.geojson.Feature anmerkungAfter = (org.geojson.Feature)aenderungsanfrageAfter
+                            .getGeometrien().get(bezeichnung);
+
+                final org.geojson.Feature anmerkungBeforeNoDraft =
+                    ((anmerkungBefore != null) && !Boolean.TRUE.equals(anmerkungBefore.getProperty("draft")))
+                    ? anmerkungBefore : null;
+                final org.geojson.Feature anmerkungAfterNoDraft =
+                    ((anmerkungAfter != null) && !Boolean.TRUE.equals(anmerkungAfter.getProperty("draft")))
+                    ? anmerkungAfter : null;
+
+                final Feature anmerkungBeforeWithoutPruefung;
+                if (anmerkungBeforeNoDraft != null) {
+                    anmerkungBeforeWithoutPruefung = new Feature();
+                    anmerkungBeforeWithoutPruefung.setId(anmerkungBeforeNoDraft.getId());
+                    anmerkungBeforeWithoutPruefung.setGeometry(anmerkungBeforeNoDraft.getGeometry());
+                    anmerkungBeforeWithoutPruefung.setProperties(anmerkungBeforeNoDraft.getProperties());
+                    if (anmerkungBeforeWithoutPruefung.getProperties() != null) {
+                        anmerkungBeforeWithoutPruefung.getProperties().remove("pruefung");
+                        anmerkungBeforeWithoutPruefung.getProperties().remove("pruefungVon");
+                        anmerkungBeforeWithoutPruefung.getProperties().remove("pruefungTimestamp");
+                    }
+                } else {
+                    anmerkungBeforeWithoutPruefung = null;
+                }
+
+                final String anmerkungBeforeString = (anmerkungBeforeWithoutPruefung != null)
+                    ? new ObjectMapper().writeValueAsString(anmerkungBeforeWithoutPruefung) : null;
+                final String anmerkungAfterString = (anmerkungAfterNoDraft != null)
+                    ? new ObjectMapper().writeValueAsString(anmerkungAfterNoDraft) : null;
+
+                if ((anmerkungBeforeWithoutPruefung == null)
+                            || !Objects.equals(anmerkungBeforeString, anmerkungAfterString)) {
+                    anyChanges = true;
+                    break;
+                }
+            }
+
+            if (anyChanges) {
                 changeStatusTo = AenderungsanfrageUtils.Status.PENDING;
             } else {
-                for (final String bezeichnung : aenderungsanfrageAfter.getFlaechen().keySet()) {
-                    final FlaecheAenderungJson flaecheAenderungBefore = aenderungsanfrageBefore.getFlaechen()
-                                .get(bezeichnung);
-                    final FlaecheAenderungJson flaecheAenderungAfter = aenderungsanfrageAfter.getFlaechen()
-                                .get(bezeichnung);
-
-                    final Boolean draftBefore = (flaecheAenderungBefore != null) ? flaecheAenderungBefore.getDraft()
-                                                                                 : null;
-                    final Integer groesseBefore = (flaecheAenderungBefore != null) ? flaecheAenderungBefore
-                                    .getGroesse() : null;
-                    final FlaecheAnschlussgradJson anschlussgradBefore = (flaecheAenderungBefore != null)
-                        ? flaecheAenderungBefore.getAnschlussgrad() : null;
-                    final FlaecheFlaechenartJson flaechenartBefore = (flaecheAenderungBefore != null)
-                        ? flaecheAenderungBefore.getFlaechenart() : null;
-
-                    final Boolean draftAfter = (flaecheAenderungAfter != null) ? flaecheAenderungAfter.getDraft()
-                                                                               : null;
-                    final Integer groesseAfter = (flaecheAenderungAfter != null) ? flaecheAenderungAfter.getGroesse()
-                                                                                 : null;
-                    final FlaecheAnschlussgradJson anschlussgradAfter = (flaecheAenderungAfter != null)
-                        ? flaecheAenderungAfter.getAnschlussgrad() : null;
-                    final FlaecheFlaechenartJson flaechenartAfter = (flaecheAenderungAfter != null)
-                        ? flaecheAenderungAfter.getFlaechenart() : null;
-
-                    if ((flaecheAenderungBefore == null)
-                                || !Objects.equals(draftBefore, draftAfter)
-                                || !Objects.equals(groesseBefore, groesseAfter)
-                                || !Objects.equals(anschlussgradBefore, anschlussgradAfter)
-                                || !Objects.equals(flaechenartBefore, flaechenartAfter)) {
-                        anyChanges = true;
-                        break;
-                    }
-                }
-
-                for (final String bezeichnung : aenderungsanfrageAfter.getGeometrien().keySet()) {
-                    final org.geojson.Feature anmerkungBefore = (org.geojson.Feature)
-                        aenderungsanfrageBefore.getGeometrien().get(bezeichnung);
-                    final org.geojson.Feature anmerkungAfter = (org.geojson.Feature)
-                        aenderungsanfrageAfter.getGeometrien().get(bezeichnung);
-
-                    final Feature anmerkungBeforeWithoutPruefung;
-                    if (anmerkungBefore != null) {
-                        anmerkungBeforeWithoutPruefung = new Feature();
-                        anmerkungBeforeWithoutPruefung.setId(anmerkungBefore.getId());
-                        anmerkungBeforeWithoutPruefung.setGeometry(anmerkungBefore.getGeometry());
-                        anmerkungBeforeWithoutPruefung.setProperties(anmerkungBefore.getProperties());
-                        if (anmerkungBeforeWithoutPruefung.getProperties() != null) {
-                            anmerkungBeforeWithoutPruefung.getProperties().remove("pruefung");
-                            anmerkungBeforeWithoutPruefung.getProperties().remove("pruefungVon");
-                            anmerkungBeforeWithoutPruefung.getProperties().remove("pruefungTimestamp");
-                        }
-                    } else {
-                        anmerkungBeforeWithoutPruefung = null;
-                    }
-
-                    final String anmerkungBeforeString = (anmerkungBeforeWithoutPruefung != null)
-                        ? new ObjectMapper().writeValueAsString(anmerkungBeforeWithoutPruefung) : null;
-                    final String anmerkungAfterString = (anmerkungAfter != null)
-                        ? new ObjectMapper().writeValueAsString(anmerkungAfter) : null;
-
-                    if ((anmerkungBeforeWithoutPruefung == null)
-                                || !Objects.equals(anmerkungBeforeString, anmerkungAfterString)) {
-                        anyChanges = true;
-                        break;
-                    }
-                }
-
-                if (anyChanges) {
-                    changeStatusTo = AenderungsanfrageUtils.Status.PENDING;
-                } else {
-                    changeStatusTo = null;
-                }
+                changeStatusTo = null;
             }
         } else if (isClerk) {
             if (aenderungsanfrageBefore.getFlaechen().size() != aenderungsanfrageAfter.getFlaechen().size()) {
