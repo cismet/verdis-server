@@ -613,25 +613,28 @@ public class AenderungsanfrageUtils {
                 final FlaecheAenderungJson flaecheAenderungAfter = aenderungsanfrageAfter.getFlaechen()
                             .get(bezeichnung);
 
-                final Boolean draftBefore = (flaecheAenderungBefore != null) ? flaecheAenderungBefore.getDraft() : null;
-                final Integer groesseBefore = (flaecheAenderungBefore != null) ? flaecheAenderungBefore.getGroesse()
-                                                                               : null;
-                final FlaecheAnschlussgradJson anschlussgradBefore = (flaecheAenderungBefore != null)
-                    ? flaecheAenderungBefore.getAnschlussgrad() : null;
-                final FlaecheFlaechenartJson flaechenartBefore = (flaecheAenderungBefore != null)
-                    ? flaecheAenderungBefore.getFlaechenart() : null;
+                final FlaecheAenderungJson flaecheAenderungBeforeNoDraft =
+                    ((flaecheAenderungBefore != null) && !Boolean.TRUE.equals(flaecheAenderungBefore.getDraft()))
+                    ? flaecheAenderungBefore : null;
+                final FlaecheAenderungJson flaecheAenderungAfterNoDraft =
+                    ((flaecheAenderungAfter != null) && !Boolean.TRUE.equals(flaecheAenderungAfter.getDraft()))
+                    ? flaecheAenderungAfter : null;
 
-                final Boolean draftAfter = (flaecheAenderungAfter != null) ? flaecheAenderungAfter.getDraft() : null;
-                final Integer groesseAfter = (flaecheAenderungAfter != null) ? flaecheAenderungAfter.getGroesse()
-                                                                             : null;
-                final FlaecheAnschlussgradJson anschlussgradAfter = (flaecheAenderungAfter != null)
-                    ? flaecheAenderungAfter.getAnschlussgrad() : null;
-                final FlaecheFlaechenartJson flaechenartAfter = (flaecheAenderungAfter != null)
-                    ? flaecheAenderungAfter.getFlaechenart() : null;
+                final Integer groesseBefore = (flaecheAenderungBeforeNoDraft != null)
+                    ? flaecheAenderungBeforeNoDraft.getGroesse() : null;
+                final FlaecheAnschlussgradJson anschlussgradBefore = (flaecheAenderungBeforeNoDraft != null)
+                    ? flaecheAenderungBeforeNoDraft.getAnschlussgrad() : null;
+                final FlaecheFlaechenartJson flaechenartBefore = (flaecheAenderungBeforeNoDraft != null)
+                    ? flaecheAenderungBeforeNoDraft.getFlaechenart() : null;
 
-                if ((flaecheAenderungBefore == null)
-                            || !Objects.equals(draftBefore, draftAfter)
-                            || !Objects.equals(groesseBefore, groesseAfter)
+                final Integer groesseAfter = (flaecheAenderungAfterNoDraft != null)
+                    ? flaecheAenderungAfterNoDraft.getGroesse() : null;
+                final FlaecheAnschlussgradJson anschlussgradAfter = (flaecheAenderungAfterNoDraft != null)
+                    ? flaecheAenderungAfterNoDraft.getAnschlussgrad() : null;
+                final FlaecheFlaechenartJson flaechenartAfter = (flaecheAenderungAfterNoDraft != null)
+                    ? flaecheAenderungAfterNoDraft.getFlaechenart() : null;
+
+                if (!Objects.equals(groesseBefore, groesseAfter)
                             || !Objects.equals(anschlussgradBefore, anschlussgradAfter)
                             || !Objects.equals(flaechenartBefore, flaechenartAfter)) {
                     anyChanges = true;
