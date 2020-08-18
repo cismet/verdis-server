@@ -123,7 +123,7 @@ public class AenderungsanfrageUtils {
 
         //~ Enum constants -----------------------------------------------------
 
-        NONE, PENDING, PROCESSING, CLOSED;
+        NONE, NEW_CITIZEN_MESSAGE, PENDING, PROCESSING, CLOSED;
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -606,84 +606,112 @@ public class AenderungsanfrageUtils {
 
         final Status changeStatusTo;
         if (isCitizen) {
-            boolean anyChanges = false;
-            for (final String bezeichnung : aenderungsanfrageAfter.getFlaechen().keySet()) {
-                final FlaecheAenderungJson flaecheAenderungBefore = aenderungsanfrageBefore.getFlaechen()
-                            .get(bezeichnung);
-                final FlaecheAenderungJson flaecheAenderungAfter = aenderungsanfrageAfter.getFlaechen()
-                            .get(bezeichnung);
+            boolean newMessage = false;
 
-                final FlaecheAenderungJson flaecheAenderungBeforeNoDraft =
-                    ((flaecheAenderungBefore != null) && !Boolean.TRUE.equals(flaecheAenderungBefore.getDraft()))
-                    ? flaecheAenderungBefore : null;
-                final FlaecheAenderungJson flaecheAenderungAfterNoDraft =
-                    ((flaecheAenderungAfter != null) && !Boolean.TRUE.equals(flaecheAenderungAfter.getDraft()))
-                    ? flaecheAenderungAfter : null;
-
-                final Integer groesseBefore = (flaecheAenderungBeforeNoDraft != null)
-                    ? flaecheAenderungBeforeNoDraft.getGroesse() : null;
-                final FlaecheAnschlussgradJson anschlussgradBefore = (flaecheAenderungBeforeNoDraft != null)
-                    ? flaecheAenderungBeforeNoDraft.getAnschlussgrad() : null;
-                final FlaecheFlaechenartJson flaechenartBefore = (flaecheAenderungBeforeNoDraft != null)
-                    ? flaecheAenderungBeforeNoDraft.getFlaechenart() : null;
-
-                final Integer groesseAfter = (flaecheAenderungAfterNoDraft != null)
-                    ? flaecheAenderungAfterNoDraft.getGroesse() : null;
-                final FlaecheAnschlussgradJson anschlussgradAfter = (flaecheAenderungAfterNoDraft != null)
-                    ? flaecheAenderungAfterNoDraft.getAnschlussgrad() : null;
-                final FlaecheFlaechenartJson flaechenartAfter = (flaecheAenderungAfterNoDraft != null)
-                    ? flaecheAenderungAfterNoDraft.getFlaechenart() : null;
-
-                if (!Objects.equals(groesseBefore, groesseAfter)
-                            || !Objects.equals(anschlussgradBefore, anschlussgradAfter)
-                            || !Objects.equals(flaechenartBefore, flaechenartAfter)) {
-                    anyChanges = true;
-                    break;
+            final HashMap<String, NachrichtJson> nachrichtenPerUUid = new HashMap<>();
+            if (aenderungsanfrageBefore.getNachrichten() != null) {
+                for (final NachrichtJson nachricht : aenderungsanfrageBefore.getNachrichten()) {
+                    if ((nachricht != null) && (nachricht.getIdentifier() != null)) {
+                        nachrichtenPerUUid.put(nachricht.getIdentifier(), nachricht);
+                    }
                 }
             }
 
-            for (final String bezeichnung : aenderungsanfrageAfter.getGeometrien().keySet()) {
-                final org.geojson.Feature anmerkungBefore = (org.geojson.Feature)aenderungsanfrageBefore
-                            .getGeometrien().get(bezeichnung);
-                final org.geojson.Feature anmerkungAfter = (org.geojson.Feature)aenderungsanfrageAfter
-                            .getGeometrien().get(bezeichnung);
-
-                final org.geojson.Feature anmerkungBeforeNoDraft =
-                    ((anmerkungBefore != null) && !Boolean.TRUE.equals(anmerkungBefore.getProperty("draft")))
-                    ? anmerkungBefore : null;
-                final org.geojson.Feature anmerkungAfterNoDraft =
-                    ((anmerkungAfter != null) && !Boolean.TRUE.equals(anmerkungAfter.getProperty("draft")))
-                    ? anmerkungAfter : null;
-
-                final Feature anmerkungBeforeWithoutPruefung;
-                if (anmerkungBeforeNoDraft != null) {
-                    anmerkungBeforeWithoutPruefung = new Feature();
-                    anmerkungBeforeWithoutPruefung.setId(anmerkungBeforeNoDraft.getId());
-                    anmerkungBeforeWithoutPruefung.setGeometry(anmerkungBeforeNoDraft.getGeometry());
-                    anmerkungBeforeWithoutPruefung.setProperties(anmerkungBeforeNoDraft.getProperties());
-                    if (anmerkungBeforeWithoutPruefung.getProperties() != null) {
-                        anmerkungBeforeWithoutPruefung.getProperties().remove("pruefung");
-                        anmerkungBeforeWithoutPruefung.getProperties().remove("pruefungVon");
-                        anmerkungBeforeWithoutPruefung.getProperties().remove("pruefungTimestamp");
+            if (aenderungsanfrageAfter.getNachrichten() != null) {
+                for (final NachrichtJson nachricht : aenderungsanfrageAfter.getNachrichten()) {
+                    if (nachricht != null) {
+                        if (!nachrichtenPerUUid.containsKey(nachricht.getIdentifier())) {
+                            newMessage = true;
+                            break;
+                        }
                     }
-                } else {
-                    anmerkungBeforeWithoutPruefung = null;
                 }
+            }
 
-                final String anmerkungBeforeString = (anmerkungBeforeWithoutPruefung != null)
-                    ? new ObjectMapper().writeValueAsString(anmerkungBeforeWithoutPruefung) : null;
-                final String anmerkungAfterString = (anmerkungAfterNoDraft != null)
-                    ? new ObjectMapper().writeValueAsString(anmerkungAfterNoDraft) : null;
+            boolean anyChanges = false;
+            if (aenderungsanfrageAfter.getFlaechen() != null) {
+                for (final String bezeichnung : aenderungsanfrageAfter.getFlaechen().keySet()) {
+                    final FlaecheAenderungJson flaecheAenderungBefore = aenderungsanfrageBefore.getFlaechen()
+                                .get(bezeichnung);
+                    final FlaecheAenderungJson flaecheAenderungAfter = aenderungsanfrageAfter.getFlaechen()
+                                .get(bezeichnung);
 
-                if ((anmerkungBeforeWithoutPruefung == null)
-                            || !Objects.equals(anmerkungBeforeString, anmerkungAfterString)) {
-                    anyChanges = true;
-                    break;
+                    final FlaecheAenderungJson flaecheAenderungBeforeNoDraft =
+                        ((flaecheAenderungBefore != null) && !Boolean.TRUE.equals(flaecheAenderungBefore.getDraft()))
+                        ? flaecheAenderungBefore : null;
+                    final FlaecheAenderungJson flaecheAenderungAfterNoDraft =
+                        ((flaecheAenderungAfter != null) && !Boolean.TRUE.equals(flaecheAenderungAfter.getDraft()))
+                        ? flaecheAenderungAfter : null;
+
+                    final Integer groesseBefore = (flaecheAenderungBeforeNoDraft != null)
+                        ? flaecheAenderungBeforeNoDraft.getGroesse() : null;
+                    final FlaecheAnschlussgradJson anschlussgradBefore = (flaecheAenderungBeforeNoDraft != null)
+                        ? flaecheAenderungBeforeNoDraft.getAnschlussgrad() : null;
+                    final FlaecheFlaechenartJson flaechenartBefore = (flaecheAenderungBeforeNoDraft != null)
+                        ? flaecheAenderungBeforeNoDraft.getFlaechenart() : null;
+
+                    final Integer groesseAfter = (flaecheAenderungAfterNoDraft != null)
+                        ? flaecheAenderungAfterNoDraft.getGroesse() : null;
+                    final FlaecheAnschlussgradJson anschlussgradAfter = (flaecheAenderungAfterNoDraft != null)
+                        ? flaecheAenderungAfterNoDraft.getAnschlussgrad() : null;
+                    final FlaecheFlaechenartJson flaechenartAfter = (flaecheAenderungAfterNoDraft != null)
+                        ? flaecheAenderungAfterNoDraft.getFlaechenart() : null;
+
+                    if (!Objects.equals(groesseBefore, groesseAfter)
+                                || !Objects.equals(anschlussgradBefore, anschlussgradAfter)
+                                || !Objects.equals(flaechenartBefore, flaechenartAfter)) {
+                        anyChanges = true;
+                        break;
+                    }
+                }
+            }
+
+            if (aenderungsanfrageAfter.getGeometrien() != null) {
+                for (final String bezeichnung : aenderungsanfrageAfter.getGeometrien().keySet()) {
+                    final org.geojson.Feature anmerkungBefore = (org.geojson.Feature)
+                        aenderungsanfrageBefore.getGeometrien().get(bezeichnung);
+                    final org.geojson.Feature anmerkungAfter = (org.geojson.Feature)
+                        aenderungsanfrageAfter.getGeometrien().get(bezeichnung);
+
+                    final org.geojson.Feature anmerkungBeforeNoDraft =
+                        ((anmerkungBefore != null) && !Boolean.TRUE.equals(anmerkungBefore.getProperty("draft")))
+                        ? anmerkungBefore : null;
+                    final org.geojson.Feature anmerkungAfterNoDraft =
+                        ((anmerkungAfter != null) && !Boolean.TRUE.equals(anmerkungAfter.getProperty("draft")))
+                        ? anmerkungAfter : null;
+
+                    final Feature anmerkungBeforeWithoutPruefung;
+                    if (anmerkungBeforeNoDraft != null) {
+                        anmerkungBeforeWithoutPruefung = new Feature();
+                        anmerkungBeforeWithoutPruefung.setId(anmerkungBeforeNoDraft.getId());
+                        anmerkungBeforeWithoutPruefung.setGeometry(anmerkungBeforeNoDraft.getGeometry());
+                        anmerkungBeforeWithoutPruefung.setProperties(anmerkungBeforeNoDraft.getProperties());
+                        if (anmerkungBeforeWithoutPruefung.getProperties() != null) {
+                            anmerkungBeforeWithoutPruefung.getProperties().remove("pruefung");
+                            anmerkungBeforeWithoutPruefung.getProperties().remove("pruefungVon");
+                            anmerkungBeforeWithoutPruefung.getProperties().remove("pruefungTimestamp");
+                        }
+                    } else {
+                        anmerkungBeforeWithoutPruefung = null;
+                    }
+
+                    final String anmerkungBeforeString = (anmerkungBeforeWithoutPruefung != null)
+                        ? new ObjectMapper().writeValueAsString(anmerkungBeforeWithoutPruefung) : null;
+                    final String anmerkungAfterString = (anmerkungAfterNoDraft != null)
+                        ? new ObjectMapper().writeValueAsString(anmerkungAfterNoDraft) : null;
+
+                    if ((anmerkungBeforeWithoutPruefung == null)
+                                || !Objects.equals(anmerkungBeforeString, anmerkungAfterString)) {
+                        anyChanges = true;
+                        break;
+                    }
                 }
             }
 
             if (anyChanges) {
                 changeStatusTo = AenderungsanfrageUtils.Status.PENDING;
+            } else if (newMessage) {
+                changeStatusTo = AenderungsanfrageUtils.Status.NEW_CITIZEN_MESSAGE;
             } else {
                 changeStatusTo = null;
             }
@@ -870,7 +898,8 @@ public class AenderungsanfrageUtils {
             changeStatusTo = null;
         }
         final boolean statusChanged = (changeStatusTo != null) && !changeStatusTo.equals(oldStatus);
-        if (statusChanged) {
+        if (statusChanged
+                    && ((Status.NEW_CITIZEN_MESSAGE != changeStatusTo) && (Status.NEW_CITIZEN_MESSAGE != oldStatus))) {
             aenderungsanfrageAfter.getNachrichten()
                     .add(new NachrichtSystemJson(
                             createIdentifier(null),
