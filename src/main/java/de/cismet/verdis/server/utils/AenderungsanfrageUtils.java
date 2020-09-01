@@ -776,139 +776,144 @@ public class AenderungsanfrageUtils {
                     throw new Exception("flaeche disappeared. clerk is not allowed to delete flaeche");
                 }
 
-                final Integer groesseBefore = flaecheAenderungBefore.getGroesse();
-                final FlaecheAnschlussgradJson anschlussgradBefore = flaecheAenderungBefore.getAnschlussgrad();
-                final FlaecheFlaechenartJson flaechenartBefore = flaecheAenderungBefore.getFlaechenart();
+                if (flaecheAenderungAfter != null) {
+                    final Integer groesseBefore = flaecheAenderungBefore.getGroesse();
+                    final FlaecheAnschlussgradJson anschlussgradBefore = flaecheAenderungBefore.getAnschlussgrad();
+                    final FlaecheFlaechenartJson flaechenartBefore = flaecheAenderungBefore.getFlaechenart();
 
-                final Integer groesseAfter = flaecheAenderungAfter.getGroesse();
-                final FlaecheAnschlussgradJson anschlussgradAfter = flaecheAenderungAfter.getAnschlussgrad();
-                final FlaecheFlaechenartJson flaechenartAfter = flaecheAenderungAfter.getFlaechenart();
+                    final Integer groesseAfter = flaecheAenderungAfter.getGroesse();
+                    final FlaecheAnschlussgradJson anschlussgradAfter = flaecheAenderungAfter.getAnschlussgrad();
+                    final FlaecheFlaechenartJson flaechenartAfter = flaecheAenderungAfter.getFlaechenart();
 
-                if (!Objects.equals(groesseBefore, groesseAfter)
-                            || !Objects.equals(anschlussgradBefore, anschlussgradAfter)
-                            || !Objects.equals(flaechenartBefore, flaechenartAfter)) {
-                    throw new Exception(
-                        "groesse, anschlussgrad or flachenart request did change. clerk is not allowed to do this");
-                }
-
-                if (!Boolean.TRUE.equals(flaecheAenderungBefore.getDraft())) {
-                    if (flaecheAenderungBefore.getGroesse() != null) {
-                        aenderungCount++;
+                    if (!Objects.equals(groesseBefore, groesseAfter)
+                                || !Objects.equals(anschlussgradBefore, anschlussgradAfter)
+                                || !Objects.equals(flaechenartBefore, flaechenartAfter)) {
+                        throw new Exception(
+                            "groesse, anschlussgrad or flachenart request did change. clerk is not allowed to do this");
                     }
-                    if (flaecheAenderungBefore.getAnschlussgrad() != null) {
-                        aenderungCount++;
-                    }
-                    if (flaecheAenderungBefore.getFlaechenart() != null) {
-                        aenderungCount++;
-                    }
-                }
-                if (flaecheAenderungAfter.getPruefung() != null) {
-                    if (flaecheAenderungAfter.getPruefung().getGroesse() != null) {
-                        doneAndPendingPruefungCount++;
-                    }
-                    if (flaecheAenderungAfter.getPruefung().getAnschlussgrad() != null) {
-                        doneAndPendingPruefungCount++;
-                    }
-                    if (flaecheAenderungAfter.getPruefung().getFlaechenart() != null) {
-                        doneAndPendingPruefungCount++;
-                    }
-                }
 
-                final Integer pruefungGroesseBefore =
-                    ((flaecheAenderungBefore.getPruefung() != null)
-                                && (flaecheAenderungBefore.getPruefung().getGroesse() != null)
-                                && !Boolean.TRUE.equals(flaecheAenderungBefore.getPruefung().getGroesse().getPending()))
-                    ? flaecheAenderungBefore.getPruefung().getGroesse().getValue() : null;
-                final FlaecheAnschlussgradJson pruefungAnschlussgradBefore =
-                    ((flaecheAenderungBefore.getPruefung() != null)
-                                && (flaecheAenderungBefore.getPruefung().getAnschlussgrad() != null)
-                                && !Boolean.TRUE.equals(
-                                    flaecheAenderungBefore.getPruefung().getAnschlussgrad().getPending()))
-                    ? flaecheAenderungBefore.getPruefung().getAnschlussgrad().getValue() : null;
-                final FlaecheFlaechenartJson pruefungflaechenartBefore =
-                    ((flaecheAenderungBefore.getPruefung() != null)
-                                && (flaecheAenderungBefore.getPruefung().getFlaechenart() != null)
-                                && !Boolean.TRUE.equals(
-                                    flaecheAenderungBefore.getPruefung().getFlaechenart().getPending()))
-                    ? flaecheAenderungBefore.getPruefung().getFlaechenart().getValue() : null;
+                    if (!Boolean.TRUE.equals(flaecheAenderungBefore.getDraft())) {
+                        if (flaecheAenderungBefore.getGroesse() != null) {
+                            aenderungCount++;
+                        }
+                        if (flaecheAenderungBefore.getAnschlussgrad() != null) {
+                            aenderungCount++;
+                        }
+                        if (flaecheAenderungBefore.getFlaechenart() != null) {
+                            aenderungCount++;
+                        }
+                    }
+                    if (flaecheAenderungAfter.getPruefung() != null) {
+                        if (flaecheAenderungAfter.getPruefung().getGroesse() != null) {
+                            doneAndPendingPruefungCount++;
+                        }
+                        if (flaecheAenderungAfter.getPruefung().getAnschlussgrad() != null) {
+                            doneAndPendingPruefungCount++;
+                        }
+                        if (flaecheAenderungAfter.getPruefung().getFlaechenart() != null) {
+                            doneAndPendingPruefungCount++;
+                        }
+                    }
 
-                final Integer pruefungGroesseAfter =
-                    ((flaecheAenderungAfter.getPruefung() != null)
-                                && (flaecheAenderungAfter.getPruefung().getGroesse() != null)
-                                && !Boolean.TRUE.equals(flaecheAenderungAfter.getPruefung().getGroesse().getPending()))
-                    ? flaecheAenderungAfter.getPruefung().getGroesse().getValue() : null;
-                final FlaecheAnschlussgradJson pruefungAnschlussgradAfter =
-                    ((flaecheAenderungAfter.getPruefung() != null)
-                                && (flaecheAenderungAfter.getPruefung().getAnschlussgrad() != null)
-                                && !Boolean.TRUE.equals(
-                                    flaecheAenderungAfter.getPruefung().getAnschlussgrad().getPending()))
-                    ? flaecheAenderungAfter.getPruefung().getAnschlussgrad().getValue() : null;
-                final FlaecheFlaechenartJson pruefungFlaechenartAfter =
-                    ((flaecheAenderungAfter.getPruefung() != null)
-                                && (flaecheAenderungAfter.getPruefung().getFlaechenart() != null)
-                                && !Boolean.TRUE.equals(
-                                    flaecheAenderungAfter.getPruefung().getFlaechenart().getPending()))
-                    ? flaecheAenderungAfter.getPruefung().getFlaechenart().getValue() : null;
+                    final Integer pruefungGroesseBefore =
+                        ((flaecheAenderungBefore.getPruefung() != null)
+                                    && (flaecheAenderungBefore.getPruefung().getGroesse() != null)
+                                    && !Boolean.TRUE.equals(
+                                        flaecheAenderungBefore.getPruefung().getGroesse().getPending()))
+                        ? flaecheAenderungBefore.getPruefung().getGroesse().getValue() : null;
+                    final FlaecheAnschlussgradJson pruefungAnschlussgradBefore =
+                        ((flaecheAenderungBefore.getPruefung() != null)
+                                    && (flaecheAenderungBefore.getPruefung().getAnschlussgrad() != null)
+                                    && !Boolean.TRUE.equals(
+                                        flaecheAenderungBefore.getPruefung().getAnschlussgrad().getPending()))
+                        ? flaecheAenderungBefore.getPruefung().getAnschlussgrad().getValue() : null;
+                    final FlaecheFlaechenartJson pruefungflaechenartBefore =
+                        ((flaecheAenderungBefore.getPruefung() != null)
+                                    && (flaecheAenderungBefore.getPruefung().getFlaechenart() != null)
+                                    && !Boolean.TRUE.equals(
+                                        flaecheAenderungBefore.getPruefung().getFlaechenart().getPending()))
+                        ? flaecheAenderungBefore.getPruefung().getFlaechenart().getValue() : null;
 
-                final boolean isGroesseAcceptedOrRejected = (groesseBefore != null) && (pruefungGroesseAfter != null);
-                final boolean isAnschlussgradAcceptedOrRejected = (anschlussgradBefore != null)
-                            && (pruefungAnschlussgradAfter != null);
-                final boolean isFlaechenartAcceptedOrRejected = (flaechenartBefore != null)
-                            && (pruefungFlaechenartAfter != null);
+                    final Integer pruefungGroesseAfter =
+                        ((flaecheAenderungAfter.getPruefung() != null)
+                                    && (flaecheAenderungAfter.getPruefung().getGroesse() != null)
+                                    && !Boolean.TRUE.equals(
+                                        flaecheAenderungAfter.getPruefung().getGroesse().getPending()))
+                        ? flaecheAenderungAfter.getPruefung().getGroesse().getValue() : null;
+                    final FlaecheAnschlussgradJson pruefungAnschlussgradAfter =
+                        ((flaecheAenderungAfter.getPruefung() != null)
+                                    && (flaecheAenderungAfter.getPruefung().getAnschlussgrad() != null)
+                                    && !Boolean.TRUE.equals(
+                                        flaecheAenderungAfter.getPruefung().getAnschlussgrad().getPending()))
+                        ? flaecheAenderungAfter.getPruefung().getAnschlussgrad().getValue() : null;
+                    final FlaecheFlaechenartJson pruefungFlaechenartAfter =
+                        ((flaecheAenderungAfter.getPruefung() != null)
+                                    && (flaecheAenderungAfter.getPruefung().getFlaechenart() != null)
+                                    && !Boolean.TRUE.equals(
+                                        flaecheAenderungAfter.getPruefung().getFlaechenart().getPending()))
+                        ? flaecheAenderungAfter.getPruefung().getFlaechenart().getValue() : null;
 
-                if (isGroesseAcceptedOrRejected) {
-                    acceptedOrRejectedCount++;
-                }
-                if (isAnschlussgradAcceptedOrRejected) {
-                    acceptedOrRejectedCount++;
-                }
-                if (isFlaechenartAcceptedOrRejected) {
-                    acceptedOrRejectedCount++;
-                }
+                    final boolean isGroesseAcceptedOrRejected = (groesseBefore != null)
+                                && (pruefungGroesseAfter != null);
+                    final boolean isAnschlussgradAcceptedOrRejected = (anschlussgradBefore != null)
+                                && (pruefungAnschlussgradAfter != null);
+                    final boolean isFlaechenartAcceptedOrRejected = (flaechenartBefore != null)
+                                && (pruefungFlaechenartAfter != null);
 
-                if (isGroesseAcceptedOrRejected && !Objects.equals(pruefungGroesseBefore, pruefungGroesseAfter)) {
-                    aenderungsanfrageAfter.getNachrichten()
-                            .add(new NachrichtSystemJson(
-                                    createIdentifier(null),
-                                    timestamp,
-                                    null,
-                                    new NachrichtParameterGroesseJson(
-                                        Objects.equals(groesseBefore, pruefungGroesseAfter)
-                                            ? NachrichtParameterJson.Type.CHANGED
-                                            : NachrichtParameterJson.Type.REJECTED,
-                                        bezeichnung,
-                                        groesseBefore),
-                                    username));
-                }
-                if (isAnschlussgradAcceptedOrRejected
-                            && !Objects.equals(pruefungAnschlussgradBefore, pruefungAnschlussgradAfter)) {
-                    aenderungsanfrageAfter.getNachrichten()
-                            .add(new NachrichtSystemJson(
-                                    createIdentifier(null),
-                                    timestamp,
-                                    null,
-                                    new NachrichtParameterAnschlussgradJson(
-                                        Objects.equals(anschlussgradBefore, pruefungAnschlussgradAfter)
-                                            ? NachrichtParameterJson.Type.CHANGED
-                                            : NachrichtParameterJson.Type.REJECTED,
-                                        bezeichnung,
-                                        anschlussgradBefore),
-                                    username));
-                }
-                if (isFlaechenartAcceptedOrRejected
-                            && !Objects.equals(pruefungflaechenartBefore, pruefungFlaechenartAfter)) {
-                    aenderungsanfrageAfter.getNachrichten()
-                            .add(new NachrichtSystemJson(
-                                    createIdentifier(null),
-                                    timestamp,
-                                    null,
-                                    new NachrichtParameterFlaechenartJson(
-                                        Objects.equals(flaechenartBefore, pruefungFlaechenartAfter)
-                                            ? NachrichtParameterJson.Type.CHANGED
-                                            : NachrichtParameterJson.Type.REJECTED,
-                                        bezeichnung,
-                                        flaechenartBefore),
-                                    username));
+                    if (isGroesseAcceptedOrRejected) {
+                        acceptedOrRejectedCount++;
+                    }
+                    if (isAnschlussgradAcceptedOrRejected) {
+                        acceptedOrRejectedCount++;
+                    }
+                    if (isFlaechenartAcceptedOrRejected) {
+                        acceptedOrRejectedCount++;
+                    }
+
+                    if (isGroesseAcceptedOrRejected && !Objects.equals(pruefungGroesseBefore, pruefungGroesseAfter)) {
+                        aenderungsanfrageAfter.getNachrichten()
+                                .add(new NachrichtSystemJson(
+                                        createIdentifier(null),
+                                        timestamp,
+                                        null,
+                                        new NachrichtParameterGroesseJson(
+                                            Objects.equals(groesseBefore, pruefungGroesseAfter)
+                                                ? NachrichtParameterJson.Type.CHANGED
+                                                : NachrichtParameterJson.Type.REJECTED,
+                                            bezeichnung,
+                                            groesseBefore),
+                                        username));
+                    }
+                    if (isAnschlussgradAcceptedOrRejected
+                                && !Objects.equals(pruefungAnschlussgradBefore, pruefungAnschlussgradAfter)) {
+                        aenderungsanfrageAfter.getNachrichten()
+                                .add(new NachrichtSystemJson(
+                                        createIdentifier(null),
+                                        timestamp,
+                                        null,
+                                        new NachrichtParameterAnschlussgradJson(
+                                            Objects.equals(anschlussgradBefore, pruefungAnschlussgradAfter)
+                                                ? NachrichtParameterJson.Type.CHANGED
+                                                : NachrichtParameterJson.Type.REJECTED,
+                                            bezeichnung,
+                                            anschlussgradBefore),
+                                        username));
+                    }
+                    if (isFlaechenartAcceptedOrRejected
+                                && !Objects.equals(pruefungflaechenartBefore, pruefungFlaechenartAfter)) {
+                        aenderungsanfrageAfter.getNachrichten()
+                                .add(new NachrichtSystemJson(
+                                        createIdentifier(null),
+                                        timestamp,
+                                        null,
+                                        new NachrichtParameterFlaechenartJson(
+                                            Objects.equals(flaechenartBefore, pruefungFlaechenartAfter)
+                                                ? NachrichtParameterJson.Type.CHANGED
+                                                : NachrichtParameterJson.Type.REJECTED,
+                                            bezeichnung,
+                                            flaechenartBefore),
+                                        username));
+                    }
                 }
             }
 
