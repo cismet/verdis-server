@@ -623,6 +623,7 @@ public class AenderungsanfrageUtils {
      * DOCUMENT ME!
      *
      * @param   oldStatus                DOCUMENT ME!
+     * @param   existingFlaechen         DOCUMENT ME!
      * @param   aenderungsanfrageBefore  DOCUMENT ME!
      * @param   aenderungsanfrageAfter   DOCUMENT ME!
      * @param   citizenOrClerk           DOCUMENT ME!
@@ -634,6 +635,7 @@ public class AenderungsanfrageUtils {
      * @throws  Exception  DOCUMENT ME!
      */
     public AenderungsanfrageUtils.Status identifyNewStatus(final Status oldStatus,
+            final Set<String> existingFlaechen,
             final AenderungsanfrageJson aenderungsanfrageBefore,
             final AenderungsanfrageJson aenderungsanfrageAfter,
             final Boolean citizenOrClerk,
@@ -757,8 +759,8 @@ public class AenderungsanfrageUtils {
                 changeStatusTo = null;
             }
         } else if (isClerk) {
-            if (aenderungsanfrageBefore.getFlaechen().size() != aenderungsanfrageAfter.getFlaechen().size()) {
-                throw new Exception("flaeche sizes not matching. clerk is not allowed to add or remove new flaeche");
+            if (aenderungsanfrageBefore.getFlaechen().size() < aenderungsanfrageAfter.getFlaechen().size()) {
+                throw new Exception("flaeche added. clerk is not allowed to add flaeche");
             }
 
             int doneAndPendingPruefungCount = 0;
@@ -770,10 +772,7 @@ public class AenderungsanfrageUtils {
                             .get(bezeichnung);
                 final FlaecheAenderungJson flaecheAenderungAfter = aenderungsanfrageAfter.getFlaechen()
                             .get(bezeichnung);
-                if (flaecheAenderungBefore == null) {
-                    throw new Exception("flaeche added. clerk is not allowed to add flaeche");
-                }
-                if (flaecheAenderungAfter == null) {
+                if (existingFlaechen.contains(bezeichnung) && (flaecheAenderungAfter == null)) {
                     throw new Exception("flaeche disappeared. clerk is not allowed to delete flaeche");
                 }
 
