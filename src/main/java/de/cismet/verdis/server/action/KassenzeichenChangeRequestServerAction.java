@@ -370,6 +370,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                 final AenderungsanfrageUtils.Status status = AenderungsanfrageUtils.getInstance()
                             .identifyNewStatus(
                                 oldStatus,
+                                existingFlaechen,
                                 aenderungsanfrageOrig,
                                 aenderungsanfrageProcessed,
                                 "stac".equals(getUser().getName()),
