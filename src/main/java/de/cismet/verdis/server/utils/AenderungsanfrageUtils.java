@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 
 import de.cismet.cids.dynamics.CidsBean;
@@ -284,17 +285,19 @@ public class AenderungsanfrageUtils {
     /**
      * DOCUMENT ME!
      *
-     * @param   flaechenOrig    DOCUMENT ME!
-     * @param   flaechenNew     DOCUMENT ME!
-     * @param   citizenOrClerk  DOCUMENT ME!
-     * @param   username        DOCUMENT ME!
-     * @param   timestamp       DOCUMENT ME!
+     * @param   existingFlaechen  DOCUMENT ME!
+     * @param   flaechenOrig      DOCUMENT ME!
+     * @param   flaechenNew       DOCUMENT ME!
+     * @param   citizenOrClerk    DOCUMENT ME!
+     * @param   username          DOCUMENT ME!
+     * @param   timestamp         DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      *
      * @throws  Exception  DOCUMENT ME!
      */
     private Map<String, FlaecheAenderungJson> processFlaechen(
+            final Set<String> existingFlaechen,
             final Map<String, FlaecheAenderungJson> flaechenOrig,
             final Map<String, FlaecheAenderungJson> flaechenNew,
             final Boolean citizenOrClerk,
@@ -307,112 +310,126 @@ public class AenderungsanfrageUtils {
         if (flaechenOrig == null) { // ???
             // keine pruefung übernehmen (ist neu, kann noch nicht geprueft worden sein)
             for (final String bezeichnung : flaechenNew.keySet()) {
-                final FlaecheAenderungJson flaeche = flaechenNew.get(bezeichnung);
-                flaeche.setPruefung(null);
-                flaechenProcessed.put(bezeichnung, flaeche);
+                if (existingFlaechen.contains(bezeichnung)) {
+                    final FlaecheAenderungJson flaeche = flaechenNew.get(bezeichnung);
+                    flaeche.setPruefung(null);
+                    flaechenProcessed.put(bezeichnung, flaeche);
+                } else {
+                    LOG.info("ignoring flaeche " + bezeichnung + " because it does not exist in the bean");
+                }
             }
         } else {
             // alle Originalflaechen erst einmal pauschal übernehmen
             for (final String bezeichnung : flaechenOrig.keySet()) {
-                final FlaecheAenderungJson flaecheOrig = flaechenOrig.get(bezeichnung);
-                final FlaecheAenderungJson flaecheProcessed = getMapper().readValue(flaecheOrig.toJson(),
-                        FlaecheAenderungJson.class);
-                flaechenProcessed.put(bezeichnung, flaecheProcessed);
+                if (existingFlaechen.contains(bezeichnung)) {
+                    final FlaecheAenderungJson flaecheOrig = flaechenOrig.get(bezeichnung);
+                    final FlaecheAenderungJson flaecheProcessed = getMapper().readValue(flaecheOrig.toJson(),
+                            FlaecheAenderungJson.class);
+                    flaechenProcessed.put(bezeichnung, flaecheProcessed);
+                } else {
+                    LOG.info("ignoring flaeche " + bezeichnung + " because it does not exist in the bean");
+                }
             }
 
             // anfragen untersuchen und selektiv bearbeiten
             for (final String bezeichnung : flaechenNew.keySet()) {
-                final FlaecheAenderungJson flaecheOrig = flaechenOrig.containsKey(bezeichnung)
-                    ? flaechenOrig.get(bezeichnung) : null;
-                final FlaecheAenderungJson flaecheNew = flaechenNew.get(bezeichnung);
+                if (existingFlaechen.contains(bezeichnung)) {
+                    final FlaecheAenderungJson flaecheOrig = flaechenOrig.containsKey(bezeichnung)
+                        ? flaechenOrig.get(bezeichnung) : null;
+                    final FlaecheAenderungJson flaecheNew = flaechenNew.get(bezeichnung);
 
-                final FlaecheAenderungJson flaecheProcessed;
-                if (flaecheOrig == null) {
-                    // neue Änderung ünernehmen, aber ohne pruefung (kann es nicht gegeben haben)
-                    flaecheProcessed = getMapper().readValue(flaecheNew.toJson(), FlaecheAenderungJson.class);
-                    flaecheProcessed.setPruefung(null);
+                    final FlaecheAenderungJson flaecheProcessed;
+                    if (flaecheOrig == null) {
+                        // neue Änderung ünernehmen, aber ohne pruefung (kann es nicht gegeben haben)
+                        flaecheProcessed = getMapper().readValue(flaecheNew.toJson(), FlaecheAenderungJson.class);
+                        flaecheProcessed.setPruefung(null);
+                    } else {
+                        flaecheProcessed = getMapper().readValue(flaecheOrig.toJson(), FlaecheAenderungJson.class);
+
+                        // nur der eigentümer darf die flächenanfragen verändern
+                        // tut er dies, hat es ein zurücksetzen der Prüfung zur Folge
+                        if (isCitizen) {
+                            flaecheProcessed.setDraft(flaecheNew.getDraft());
+                            // veränderte Flächen übernehmen, und pruefung entfernen falls vorhanden
+                            if (!Objects.equals(flaecheNew.getGroesse(), flaecheOrig.getGroesse())) {
+                                flaecheProcessed.setGroesse(flaecheNew.getGroesse());
+                                if (flaecheProcessed.getPruefung() != null) {
+                                    flaecheProcessed.getPruefung().setGroesse(null);
+                                }
+                            }
+                            if (!Objects.equals(flaecheNew.getFlaechenart(), flaecheOrig.getFlaechenart())) {
+                                flaecheProcessed.setFlaechenart(flaecheNew.getFlaechenart());
+                                if (flaecheProcessed.getPruefung() != null) {
+                                    flaecheProcessed.getPruefung().setFlaechenart(null);
+                                }
+                            }
+                            if (!Objects.equals(flaecheNew.getAnschlussgrad(), flaecheOrig.getAnschlussgrad())) {
+                                flaecheProcessed.setAnschlussgrad(flaecheNew.getAnschlussgrad());
+                                if (flaecheProcessed.getPruefung() != null) {
+                                    flaecheProcessed.getPruefung().setAnschlussgrad(null);
+                                }
+                            }
+                        }
+
+                        // nur der Bearbeiter darf die Prüfung verändern
+                        // tut er dies, wird der Timestamp korrekt gesetzt
+                        if (isClerk) {
+                            final PruefungGroesseJson pruefungGroesseOrig = (flaecheOrig.getPruefung() != null)
+                                ? flaecheOrig.getPruefung().getGroesse() : null;
+                            final PruefungFlaechenartJson pruefungFlaechenartOrig = (flaecheOrig.getPruefung() != null)
+                                ? flaecheOrig.getPruefung().getFlaechenart() : null;
+                            final PruefungAnschlussgradJson pruefungAnschlussgradOrig =
+                                (flaecheOrig.getPruefung() != null) ? flaecheOrig.getPruefung().getAnschlussgrad()
+                                                                    : null;
+
+                            final PruefungGroesseJson pruefungGroesseNew = (flaecheNew.getPruefung() != null)
+                                ? flaecheNew.getPruefung().getGroesse() : null;
+                            final PruefungFlaechenartJson pruefungFlaechenartNew = (flaecheNew.getPruefung() != null)
+                                ? flaecheNew.getPruefung().getFlaechenart() : null;
+                            final PruefungAnschlussgradJson pruefungAnschlussgradNew =
+                                (flaecheNew.getPruefung() != null) ? flaecheNew.getPruefung().getAnschlussgrad() : null;
+
+                            // // gabs vorher keine Prüfung aber jetzt schon, dann neue Prüfung übernehmen
+                            // if ((flaecheOrig.getPruefung() == null)
+                            // && ((pruefungGroesseNew != null) || (pruefungFlaechenartNew != null)
+                            // || (pruefungAnschlussgradNew != null))) {
+                            flaecheProcessed.setPruefung(
+                                new FlaechePruefungJson(
+                                    (pruefungGroesseNew != null)
+                                        ? getMapper().readValue(pruefungGroesseNew.toJson(), PruefungGroesseJson.class)
+                                        : null,
+                                    (pruefungFlaechenartNew != null)
+                                        ? getMapper().readValue(
+                                            pruefungFlaechenartNew.toJson(),
+                                            PruefungFlaechenartJson.class) : null,
+                                    (pruefungAnschlussgradNew != null)
+                                        ? getMapper().readValue(
+                                            pruefungAnschlussgradNew.toJson(),
+                                            PruefungAnschlussgradJson.class) : null));
+                            // }
+
+                            // hat sich prüfung geändert, dann neuen timestamp übernehmen
+                            if (!Objects.equals(pruefungGroesseOrig, pruefungGroesseNew)
+                                        && (pruefungGroesseNew != null)) {
+                                flaecheProcessed.getPruefung().getGroesse().setTimestamp(timestamp);
+                                flaecheProcessed.getPruefung().getGroesse().setVon(username);
+                            }
+                            if (!Objects.equals(pruefungFlaechenartOrig, pruefungFlaechenartNew)
+                                        && (pruefungFlaechenartNew != null)) {
+                                flaecheProcessed.getPruefung().getFlaechenart().setTimestamp(timestamp);
+                                flaecheProcessed.getPruefung().getFlaechenart().setVon(username);
+                            }
+                            if (!Objects.equals(pruefungAnschlussgradOrig, pruefungAnschlussgradNew)
+                                        && (pruefungAnschlussgradNew != null)) {
+                                flaecheProcessed.getPruefung().getAnschlussgrad().setTimestamp(timestamp);
+                                flaecheProcessed.getPruefung().getAnschlussgrad().setVon(username);
+                            }
+                        }
+                    }
+                    flaechenProcessed.put(bezeichnung, flaecheProcessed);
                 } else {
-                    flaecheProcessed = getMapper().readValue(flaecheOrig.toJson(), FlaecheAenderungJson.class);
-
-                    // nur der eigentümer darf die flächenanfragen verändern
-                    // tut er dies, hat es ein zurücksetzen der Prüfung zur Folge
-                    if (isCitizen) {
-                        flaecheProcessed.setDraft(flaecheNew.getDraft());
-                        // veränderte Flächen übernehmen, und pruefung entfernen falls vorhanden
-                        if (!Objects.equals(flaecheNew.getGroesse(), flaecheOrig.getGroesse())) {
-                            flaecheProcessed.setGroesse(flaecheNew.getGroesse());
-                            if (flaecheProcessed.getPruefung() != null) {
-                                flaecheProcessed.getPruefung().setGroesse(null);
-                            }
-                        }
-                        if (!Objects.equals(flaecheNew.getFlaechenart(), flaecheOrig.getFlaechenart())) {
-                            flaecheProcessed.setFlaechenart(flaecheNew.getFlaechenart());
-                            if (flaecheProcessed.getPruefung() != null) {
-                                flaecheProcessed.getPruefung().setFlaechenart(null);
-                            }
-                        }
-                        if (!Objects.equals(flaecheNew.getAnschlussgrad(), flaecheOrig.getAnschlussgrad())) {
-                            flaecheProcessed.setAnschlussgrad(flaecheNew.getAnschlussgrad());
-                            if (flaecheProcessed.getPruefung() != null) {
-                                flaecheProcessed.getPruefung().setAnschlussgrad(null);
-                            }
-                        }
-                    }
-
-                    // nur der Bearbeiter darf die Prüfung verändern
-                    // tut er dies, wird der Timestamp korrekt gesetzt
-                    if (isClerk) {
-                        final PruefungGroesseJson pruefungGroesseOrig = (flaecheOrig.getPruefung() != null)
-                            ? flaecheOrig.getPruefung().getGroesse() : null;
-                        final PruefungFlaechenartJson pruefungFlaechenartOrig = (flaecheOrig.getPruefung() != null)
-                            ? flaecheOrig.getPruefung().getFlaechenart() : null;
-                        final PruefungAnschlussgradJson pruefungAnschlussgradOrig = (flaecheOrig.getPruefung() != null)
-                            ? flaecheOrig.getPruefung().getAnschlussgrad() : null;
-
-                        final PruefungGroesseJson pruefungGroesseNew = (flaecheNew.getPruefung() != null)
-                            ? flaecheNew.getPruefung().getGroesse() : null;
-                        final PruefungFlaechenartJson pruefungFlaechenartNew = (flaecheNew.getPruefung() != null)
-                            ? flaecheNew.getPruefung().getFlaechenart() : null;
-                        final PruefungAnschlussgradJson pruefungAnschlussgradNew = (flaecheNew.getPruefung() != null)
-                            ? flaecheNew.getPruefung().getAnschlussgrad() : null;
-
-//                        // gabs vorher keine Prüfung aber jetzt schon, dann neue Prüfung übernehmen
-//                        if ((flaecheOrig.getPruefung() == null)
-//                                    && ((pruefungGroesseNew != null) || (pruefungFlaechenartNew != null)
-//                                        || (pruefungAnschlussgradNew != null))) {
-                        flaecheProcessed.setPruefung(
-                            new FlaechePruefungJson(
-                                (pruefungGroesseNew != null)
-                                    ? getMapper().readValue(pruefungGroesseNew.toJson(), PruefungGroesseJson.class)
-                                    : null,
-                                (pruefungFlaechenartNew != null)
-                                    ? getMapper().readValue(
-                                        pruefungFlaechenartNew.toJson(),
-                                        PruefungFlaechenartJson.class) : null,
-                                (pruefungAnschlussgradNew != null)
-                                    ? getMapper().readValue(
-                                        pruefungAnschlussgradNew.toJson(),
-                                        PruefungAnschlussgradJson.class) : null));
-//                        }
-
-                        // hat sich prüfung geändert, dann neuen timestamp übernehmen
-                        if (!Objects.equals(pruefungGroesseOrig, pruefungGroesseNew) && (pruefungGroesseNew != null)) {
-                            flaecheProcessed.getPruefung().getGroesse().setTimestamp(timestamp);
-                            flaecheProcessed.getPruefung().getGroesse().setVon(username);
-                        }
-                        if (!Objects.equals(pruefungFlaechenartOrig, pruefungFlaechenartNew)
-                                    && (pruefungFlaechenartNew != null)) {
-                            flaecheProcessed.getPruefung().getFlaechenart().setTimestamp(timestamp);
-                            flaecheProcessed.getPruefung().getFlaechenart().setVon(username);
-                        }
-                        if (!Objects.equals(pruefungAnschlussgradOrig, pruefungAnschlussgradNew)
-                                    && (pruefungAnschlussgradNew != null)) {
-                            flaecheProcessed.getPruefung().getAnschlussgrad().setTimestamp(timestamp);
-                            flaecheProcessed.getPruefung().getAnschlussgrad().setVon(username);
-                        }
-                    }
+                    LOG.info("ignoring flaeche " + bezeichnung + " because it does not exist in the bean");
                 }
-                flaechenProcessed.put(bezeichnung, flaecheProcessed);
             }
         }
         return flaechenProcessed;
@@ -502,6 +519,7 @@ public class AenderungsanfrageUtils {
      * DOCUMENT ME!
      *
      * @param   kassenzeichennumer  DOCUMENT ME!
+     * @param   existingFlaechen    DOCUMENT ME!
      * @param   anfrageOrig         DOCUMENT ME!
      * @param   anfrageNew          DOCUMENT ME!
      * @param   username            DOCUMENT ME!
@@ -512,17 +530,26 @@ public class AenderungsanfrageUtils {
      * @throws  Exception  DOCUMENT ME!
      */
     public AenderungsanfrageJson processAnfrageCitizen(final Integer kassenzeichennumer,
+            final Set<String> existingFlaechen,
             final AenderungsanfrageJson anfrageOrig,
             final AenderungsanfrageJson anfrageNew,
             final String username,
             final Date timestamp) throws Exception {
-        return processAnfrage(kassenzeichennumer, anfrageOrig, anfrageNew, Boolean.TRUE, username, timestamp);
+        return processAnfrage(
+                kassenzeichennumer,
+                existingFlaechen,
+                anfrageOrig,
+                anfrageNew,
+                Boolean.TRUE,
+                username,
+                timestamp);
     }
 
     /**
      * DOCUMENT ME!
      *
      * @param   kassenzeichennumer  DOCUMENT ME!
+     * @param   existingFlaechen    DOCUMENT ME!
      * @param   anfrageOrig         DOCUMENT ME!
      * @param   anfrageNew          DOCUMENT ME!
      * @param   username            DOCUMENT ME!
@@ -533,17 +560,26 @@ public class AenderungsanfrageUtils {
      * @throws  Exception  DOCUMENT ME!
      */
     public AenderungsanfrageJson processAnfrageClerk(final Integer kassenzeichennumer,
+            final Set<String> existingFlaechen,
             final AenderungsanfrageJson anfrageOrig,
             final AenderungsanfrageJson anfrageNew,
             final String username,
             final Date timestamp) throws Exception {
-        return processAnfrage(kassenzeichennumer, anfrageOrig, anfrageNew, Boolean.FALSE, username, timestamp);
+        return processAnfrage(
+                kassenzeichennumer,
+                existingFlaechen,
+                anfrageOrig,
+                anfrageNew,
+                Boolean.FALSE,
+                username,
+                timestamp);
     }
 
     /**
      * DOCUMENT ME!
      *
      * @param   kassenzeichennumer  DOCUMENT ME!
+     * @param   existingFlaechen    DOCUMENT ME!
      * @param   anfrageOrig         DOCUMENT ME!
      * @param   anfrageNew          DOCUMENT ME!
      * @param   citizenOrClerk      DOCUMENT ME!
@@ -555,6 +591,7 @@ public class AenderungsanfrageUtils {
      * @throws  Exception  DOCUMENT ME!
      */
     private AenderungsanfrageJson processAnfrage(final Integer kassenzeichennumer,
+            final Set<String> existingFlaechen,
             final AenderungsanfrageJson anfrageOrig,
             final AenderungsanfrageJson anfrageNew,
             final Boolean citizenOrClerk,
@@ -563,6 +600,7 @@ public class AenderungsanfrageUtils {
         return new AenderungsanfrageJson(
                 kassenzeichennumer,
                 processFlaechen(
+                    existingFlaechen,
                     anfrageOrig.getFlaechen(),
                     anfrageNew.getFlaechen(),
                     citizenOrClerk,
@@ -620,7 +658,10 @@ public class AenderungsanfrageUtils {
             if (aenderungsanfrageAfter.getNachrichten() != null) {
                 for (final NachrichtJson nachricht : aenderungsanfrageAfter.getNachrichten()) {
                     if (nachricht != null) {
-                        if (!nachrichtenPerUUid.containsKey(nachricht.getIdentifier())) {
+                        if (
+                            !nachrichtenPerUUid.containsKey(
+                                        (nachricht.getIdentifier() != null) ? nachricht.getIdentifier().toUpperCase()
+                                                                            : null)) {
                             newMessage = true;
                             break;
                         }
@@ -1046,6 +1087,7 @@ public class AenderungsanfrageUtils {
      * DOCUMENT ME!
      *
      * @param   kassenzeichennummer    DOCUMENT ME!
+     * @param   existingFlaechen       DOCUMENT ME!
      * @param   aenderungsanfrageOrig  DOCUMENT ME!
      * @param   aenderungsanfrageNew   DOCUMENT ME!
      * @param   citizenOrClerk         DOCUMENT ME!
@@ -1057,6 +1099,7 @@ public class AenderungsanfrageUtils {
      * @throws  Exception  DOCUMENT ME!
      */
     public AenderungsanfrageJson doProcessing(final Integer kassenzeichennummer,
+            final Set<String> existingFlaechen,
             final AenderungsanfrageJson aenderungsanfrageOrig,
             final AenderungsanfrageJson aenderungsanfrageNew,
             final boolean citizenOrClerk,
@@ -1066,6 +1109,7 @@ public class AenderungsanfrageUtils {
         if (citizenOrClerk) {
             aenderungsanfrageProcessed = processAnfrageCitizen(
                     kassenzeichennummer,
+                    existingFlaechen,
                     aenderungsanfrageOrig,
                     aenderungsanfrageNew,
                     username,
@@ -1073,6 +1117,7 @@ public class AenderungsanfrageUtils {
         } else {
             aenderungsanfrageProcessed = processAnfrageClerk(
                     kassenzeichennummer,
+                    existingFlaechen,
                     aenderungsanfrageOrig,
                     aenderungsanfrageNew,
                     username,

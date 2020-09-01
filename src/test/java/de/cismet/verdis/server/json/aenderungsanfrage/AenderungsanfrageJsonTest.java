@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.IOUtils;
@@ -207,7 +208,7 @@ public class AenderungsanfrageJsonTest {
         final AenderungsanfrageJson aenderungsanfrageOrig = aenderungsanfrageOrigJson != null ? AenderungsanfrageUtils.getInstance().createAenderungsanfrageJson(aenderungsanfrageOrigJson) : new AenderungsanfrageJson(kassenzeichen);
         final AenderungsanfrageJson aenderungsanfrageChange = aenderungsanfrageChangeJson != null ? AenderungsanfrageUtils.getInstance().createAenderungsanfrageJson(aenderungsanfrageChangeJson) : new AenderungsanfrageJson(kassenzeichen);
 
-        final AenderungsanfrageJson aenderungsanfrageNew = AenderungsanfrageUtils.getInstance().processAnfrageCitizen(kassenzeichen, aenderungsanfrageOrig, aenderungsanfrageChange, "test", new Date(2500000000000L));               
+        final AenderungsanfrageJson aenderungsanfrageNew = AenderungsanfrageUtils.getInstance().processAnfrageCitizen(kassenzeichen, new HashSet<>(Arrays.asList("5")), aenderungsanfrageOrig, aenderungsanfrageChange, "test", new Date(2500000000000L));               
         final String aenderungsanfrageNewJson = aenderungsanfrageNew.toPrettyJson();
         //System.out.println(aenderungsanfrageNewJson);                            
         Assert.assertEquals(aenderungsanfrageProcessedJson, aenderungsanfrageNewJson);        

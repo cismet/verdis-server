@@ -28,8 +28,10 @@ import java.sql.Timestamp;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import de.cismet.cids.dynamics.CidsBean;
 
@@ -303,6 +305,15 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             final CidsBean kassenzeichenBean = createKassenzeichenBean(stacEntry);
             final Integer kassenzeichennummer = createKassenzeichennummer(kassenzeichenBean, aenderungsanfrageJson);
 
+            final Set<String> existingFlaechen = new HashSet<>();
+            for (final CidsBean flaecheBean
+                        : kassenzeichenBean.getBeanCollectionProperty(VerdisConstants.PROP.KASSENZEICHEN.FLAECHEN)) {
+                final String flaechenBezeichnung = (String)flaecheBean.getProperty(
+                        VerdisConstants.PROP.FLAECHE.FLAECHENBEZEICHNUNG);
+                if (flaechenBezeichnung != null) {
+                    existingFlaechen.add(flaechenBezeichnung.toUpperCase());
+                }
+            }
             synchronized (this) {
                 final Date now = new Date();
 
@@ -346,6 +357,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                 final AenderungsanfrageJson aenderungsanfrageProcessed = AenderungsanfrageUtils.getInstance()
                             .doProcessing(
                                 kassenzeichennummer,
+                                existingFlaechen,
                                 aenderungsanfrageOrig,
                                 aenderungsanfrageJson,
                                 "stac".equals(getUser().getName()),
