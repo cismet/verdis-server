@@ -6,16 +6,17 @@
     }
   },
   "nachrichten" : [ {
+    "identifier" : "bb0b28a48f2943c3c96bc865561ff6ee",
     "typ" : "CITIZEN",
-    "timestamp" : 1,
+    "timestamp" : 1000000000000,
     "nachricht" : "Änderung Alte Nachricht."
   }, {
     "typ" : "SYSTEM",
-    "timestamp" : 3,
+    "timestamp" : 3000000000000,
     "nachricht" : "FUNCTION( {} )"
   }, {
     "typ" : "CITIZEN",
-    "timestamp" : 4,
+    "timestamp" : 4000000000000,
     "nachricht" : "Neue Nachricht."
   } ]
 }

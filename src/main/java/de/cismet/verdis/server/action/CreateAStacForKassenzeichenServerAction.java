@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import java.sql.Timestamp;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -41,6 +42,7 @@ import de.cismet.verdis.commons.constants.VerdisConstants;
 
 import de.cismet.verdis.server.json.StacOptionsDurationJson;
 import de.cismet.verdis.server.search.KassenzeichenSearchStatement;
+import de.cismet.verdis.server.search.StacInfoSearchStatement;
 import de.cismet.verdis.server.utils.StacUtils;
 import de.cismet.verdis.server.utils.VerdisServerResources;
 
@@ -72,7 +74,7 @@ public class CreateAStacForKassenzeichenServerAction implements MetaServiceStore
 
         //~ Enum constants -----------------------------------------------------
 
-        USER, EXPIRATION, DURATION_VALUE, DURATION_UNIT, KASSENZEICHEN, KASSENZEICHEN_ID
+        USER, EXPIRATION, DURATION_VALUE, DURATION_UNIT, KASSENZEICHEN, KASSENZEICHEN_ID, EXPIRE_PRE_EXISTING
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -91,6 +93,7 @@ public class CreateAStacForKassenzeichenServerAction implements MetaServiceStore
         StacOptionsDurationJson.Unit durationUnit = null;
         String userName = null;
         Timestamp expiration = null;
+        Boolean expirePreExisting = null;
 
         try {
             if (params != null) {
@@ -110,6 +113,9 @@ public class CreateAStacForKassenzeichenServerAction implements MetaServiceStore
                     } else if (sap.getKey().equals(Parameter.EXPIRATION.toString())) {
                         expiration = (value instanceof Timestamp) ? (Timestamp)value
                                                                   : new Timestamp(Long.parseLong((String)value));
+                    } else if (sap.getKey().equals(Parameter.EXPIRE_PRE_EXISTING.toString())) {
+                        expirePreExisting = (value instanceof Boolean) ? (Boolean)value
+                                                                       : Boolean.parseBoolean((String)value);
                     }
                 }
             }
@@ -149,6 +155,40 @@ public class CreateAStacForKassenzeichenServerAction implements MetaServiceStore
                     getUser(),
                     VerdisConstants.MC.KASSENZEICHEN,
                     getConnectionContext());
+
+            final StacInfoSearchStatement search = new StacInfoSearchStatement(
+                    StacInfoSearchStatement.SearchBy.KASSENZEICHEN_ID);
+            search.setKassenzeichenId(kassenzeichenId);
+
+            final Map activeLocalServers = new HashMap<>();
+            activeLocalServers.put(VerdisConstants.DOMAIN, getMetaService());
+            search.setActiveLocalServers(activeLocalServers);
+            search.setUser(getUser());
+            ((ConnectionContextStore)search).initWithConnectionContext(getConnectionContext());
+            search.setActiveLocalServers(activeLocalServers);
+            final Collection<Map> col = search.performServerSearch();
+            if (col != null) {
+                final Date now = new Date();
+                for (final Map row : col) {
+                    if (row != null) {
+                        final Integer stacId = (Integer)row.get(StacInfoSearchStatement.Fields.ID);
+                        final Timestamp expirationPreExisting = (Timestamp)row.get(
+                                StacInfoSearchStatement.Fields.EXPIRATION);
+                        if (now.before(expirationPreExisting)) {
+                            if (Boolean.TRUE.equals(expirePreExisting)) {
+                                StacUtils.updateStacExpiration(
+                                    stacId,
+                                    new Timestamp(now.getTime()),
+                                    getMetaService(),
+                                    getConnectionContext());
+                            } else {
+                                throw new PreExistingStacException(expirationPreExisting);
+                            }
+                        }
+                    }
+                }
+            }
+
             return StacUtils.createStac(mcKassenzeichen.getId(),
                     kassenzeichenId,
                     properties.getProperty("baseLoginName", userName),

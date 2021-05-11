@@ -7,16 +7,16 @@
   },
   "nachrichten" : [ {
     "typ" : "CITIZEN",
-    "timestamp" : 1,
+    "timestamp" : 1100000000000,
     "nachricht" : "Alte Nachricht."
   }, {
     "typ" : "CLERK",
-    "timestamp" : 3,
+    "timestamp" : 1200000000000,
     "nachricht" : "Alte Antwort.",
     "absender" : "Mustermann"
   }, {
     "typ" : "SYSTEM",
-    "timestamp" : 4,
+    "timestamp" : 1300000000000,
     "nachricht" : "FUNCTION( {} )"
   } ]
 }

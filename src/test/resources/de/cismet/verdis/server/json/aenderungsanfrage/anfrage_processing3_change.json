@@ -7,25 +7,19 @@
   },
   "nachrichten" : [ {
     "typ" : "CITIZEN",
-    "timestamp" : 1,
+    "timestamp" : 1100000000000,
     "nachricht" : "Alte Nachricht."
   }, {
     "typ" : "CITIZEN",
-    "timestamp" : 2,
+    "timestamp" : 1150000000000,
     "nachricht" : "Eingeschmuggelte neue alte Nachricht.",
     "absender" : "Hacker"
   }, {
-    "typ" : "CLERK",
-    "timestamp" : 3,
-    "nachricht" : "Alte Antwort.",
-    "absender" : "Mustermann"
-  }, {
     "typ" : "SYSTEM",
-    "timestamp" : 4,
+    "timestamp" : 1300000000000,
     "nachricht" : "FUNCTION( {} )"
   }, {
     "typ" : "CITIZEN",
-    "timestamp" : 5,
     "nachricht" : "Neue Nachricht."
   } ]
 }

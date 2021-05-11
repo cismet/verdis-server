@@ -62,8 +62,7 @@ public class FlaechePruefungDeserializer extends StdDeserializer<FlaechePruefung
         final PruefungAnschlussgradJson pruefungAnschlussgrad = on.has("anschlussgrad")
             ? objectMapper.treeToValue(on.get("anschlussgrad"), PruefungAnschlussgradJson.class) : null;
         if ((pruefungGroesse == null) && (pruefungFlaechenart == null) && (pruefungAnschlussgrad == null)) {
-            throw new RuntimeException(
-                "invalid FlaechePruefungJson: neither anschlussgrad nor flaechenart nor groesse is set");
+            return null;
         }
         return new FlaechePruefungJson(pruefungGroesse, pruefungFlaechenart, pruefungAnschlussgrad);
     }

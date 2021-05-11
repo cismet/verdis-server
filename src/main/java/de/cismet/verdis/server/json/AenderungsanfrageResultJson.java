@@ -13,11 +13,8 @@
 package de.cismet.verdis.server.json;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-
-import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
 
 /**
  * DOCUMENT ME!
@@ -28,8 +25,7 @@ import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
 @Getter
 @Setter
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = false)
-public class NachrichtParameterJson extends AbstractJson {
+public class AenderungsanfrageResultJson extends AbstractJson {
 
     //~ Enums ------------------------------------------------------------------
 
@@ -38,39 +34,29 @@ public class NachrichtParameterJson extends AbstractJson {
      *
      * @version  $Revision$, $Date$
      */
-    public enum Type {
+    public enum ResultStatus {
 
         //~ Enum constants -----------------------------------------------------
 
-        CHANGED {
+        SUCCESS {
 
             @Override
             public String toString() {
-                return "changed";
+                return "success";
             }
         },
-        REJECTED {
+        ERROR {
 
             @Override
             public String toString() {
-                return "rejected";
-            }
-        },
-        STATUS {
-
-            @Override
-            public String toString() {
-                return "status";
+                return "error";
             }
         }
     }
 
     //~ Instance fields --------------------------------------------------------
 
-    private Type type;
-    private AenderungsanfrageUtils.Status status;
-    private String flaeche;
-    private Integer groesse;
-    private FlaecheFlaechenartJson flaechenart;
-    private FlaecheAnschlussgradJson anschlussgrad;
+    private final ResultStatus resultStatus;
+    private final AenderungsanfrageJson aenderungsanfrage;
+    private final String errorMessage;
 }

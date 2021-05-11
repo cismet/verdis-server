@@ -19,6 +19,8 @@ import lombok.Setter;
 
 import org.geojson.GeoJsonObject;
 
+import java.io.Serializable;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,20 +58,6 @@ public class AenderungsanfrageJson extends AbstractJson {
      * @param  kassenzeichen  DOCUMENT ME!
      */
     public AenderungsanfrageJson(final Integer kassenzeichen) {
-        this(
-            kassenzeichen,
-            new HashMap<String, FlaecheAenderungJson>(),
-            new HashMap<String, GeoJsonObject>(),
-            new ArrayList<NachrichtJson>());
-    }
-
-    /**
-     * Creates a new AnfrageJson object.
-     *
-     * @param  kassenzeichen  DOCUMENT ME!
-     * @param  flaechen       DOCUMENT ME!
-     */
-    public AenderungsanfrageJson(final Integer kassenzeichen, final Map<String, FlaecheAenderungJson> flaechen) {
         this(
             kassenzeichen,
             new HashMap<String, FlaecheAenderungJson>(),

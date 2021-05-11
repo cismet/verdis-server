@@ -47,9 +47,11 @@ public class NachrichtJson extends AbstractJson {
 
     //~ Instance fields --------------------------------------------------------
 
+    private String identifier;
     private Boolean draft;
     private Typ typ;
     private Date timestamp;
+    private Integer order;
     private String nachricht;
     private NachrichtParameterJson nachrichtenParameter;
     private String absender;

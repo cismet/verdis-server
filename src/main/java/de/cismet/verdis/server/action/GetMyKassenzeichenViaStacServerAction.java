@@ -14,17 +14,20 @@ package de.cismet.verdis.server.action;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
+import Sirius.server.newuser.User;
 
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
+import de.cismet.cids.server.actions.UserAwareServerAction;
 
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextStore;
 
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
+import de.cismet.verdis.server.json.AenderungsanfrageJson;
 import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
 import de.cismet.verdis.server.utils.StacEntry;
 import de.cismet.verdis.server.utils.StacUtils;
@@ -36,7 +39,10 @@ import de.cismet.verdis.server.utils.StacUtils;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = ServerAction.class)
-public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore, ServerAction, ConnectionContextStore {
+public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore,
+    UserAwareServerAction,
+    ServerAction,
+    ConnectionContextStore {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -63,6 +69,7 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore, 
 
     private MetaService metaService;
     private ConnectionContext connectionContext;
+    private User user;
 
     //~ Methods ----------------------------------------------------------------
 
@@ -84,6 +91,16 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore, 
     @Override
     public MetaService getMetaService() {
         return metaService;
+    }
+
+    @Override
+    public User getUser() {
+        return user;
+    }
+
+    @Override
+    public void setUser(final User user) {
+        this.user = user;
     }
 
     @Override
@@ -112,10 +129,19 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore, 
                         stacEntry,
                         getMetaService(),
                         getConnectionContext());
-                final CidsBean aenderungsanfrageBean = AenderungsanfrageUtils.getAenderungsanfrageBean(
-                        stacEntry,
-                        getMetaService(),
-                        getConnectionContext());
+                final CidsBean aenderungsanfrageBean = AenderungsanfrageUtils.getInstance()
+                            .getAenderungsanfrageBean(
+                                stacEntry,
+                                getMetaService(),
+                                getConnectionContext());
+
+                final AenderungsanfrageJson aenderungsanfrage = (aenderungsanfrageBean != null)
+                    ? AenderungsanfrageUtils.getInstance()
+                            .createAenderungsanfrageJson((String)aenderungsanfrageBean.getProperty(
+                                        VerdisConstants.PROP.AENDERUNGSANFRAGE.CHANGES_JSON)) : null;
+
+                final AenderungsanfrageJson anderungsanfrageFiltered = AenderungsanfrageUtils.getInstance()
+                            .doFilteringOutWhatIShouldntSee(aenderungsanfrage, "stac".equals(getUser().getName()));
 
                 kassenzeichenBean.setProperty(
                     VerdisConstants.PROP.KASSENZEICHEN.STAC_OPTIONS,
@@ -125,10 +151,7 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore, 
                     stacEntry.getExpiration());
                 kassenzeichenBean.setProperty(
                     VerdisConstants.PROP.KASSENZEICHEN.AENDERUNGSANFRAGE,
-                    (aenderungsanfrageBean != null)
-                        ? StacUtils.asMap(
-                            (String)aenderungsanfrageBean.getProperty(
-                                VerdisConstants.PROP.AENDERUNGSANFRAGE.CHANGES_JSON)) : null);
+                    (anderungsanfrageFiltered != null) ? StacUtils.asMap(anderungsanfrageFiltered.toJson()) : null);
                 return kassenzeichenBean.toJSONString(false);
             }
         } catch (final Exception ex) {

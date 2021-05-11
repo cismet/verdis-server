@@ -25,13 +25,18 @@ public class PruefungGroesseJson extends PruefungJson<Integer> {
 
     /**
      * Creates a new PruefungGroesseJson object.
-     *
-     * @param  value      DOCUMENT ME!
-     * @param  von        DOCUMENT ME!
-     * @param  timestamp  DOCUMENT ME!
      */
-    public PruefungGroesseJson(final Integer value, final String von, final Date timestamp) {
-        super(false, value, von, timestamp);
+    public PruefungGroesseJson() {
+        super(true, null, null, null);
+    }
+
+    /**
+     * Creates a new PruefungGroesseJson object.
+     *
+     * @param  value  DOCUMENT ME!
+     */
+    public PruefungGroesseJson(final Integer value) {
+        super(null, value, null, null);
     }
 
     /**
@@ -42,7 +47,7 @@ public class PruefungGroesseJson extends PruefungJson<Integer> {
      * @param  von        DOCUMENT ME!
      * @param  timestamp  DOCUMENT ME!
      */
-    public PruefungGroesseJson(final boolean pending, final Integer value, final String von, final Date timestamp) {
+    public PruefungGroesseJson(final Boolean pending, final Integer value, final String von, final Date timestamp) {
         super(pending, value, von, timestamp);
     }
 }

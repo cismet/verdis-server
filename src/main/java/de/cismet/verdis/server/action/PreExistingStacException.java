@@ -10,35 +10,27 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.cismet.verdis.server.json;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+package de.cismet.verdis.server.action;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Date;
+import java.io.Serializable;
+
+import java.sql.Timestamp;
 
 /**
  * DOCUMENT ME!
- *
- * @param    <O>
  *
  * @version  $Revision$, $Date$
  */
 @Getter
 @Setter
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = false)
-public abstract class PruefungJson<O> extends AbstractJson {
+public class PreExistingStacException extends Exception implements Serializable {
 
     //~ Instance fields --------------------------------------------------------
 
-    private Boolean pending;
-    private O value;
-    private String von;
-    private Date timestamp;
+    private Timestamp expiration;
 }
