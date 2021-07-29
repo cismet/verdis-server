@@ -669,11 +669,9 @@ public class AenderungsanfrageUtils {
     /**
      * DOCUMENT ME!
      *
-     * @param   kassenzeichenNummer  DOCUMENT ME!
-     * @param   emailAdresse         DOCUMENT ME!
-     * @param   code                 DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
+     * @param  kassenzeichenNummer  DOCUMENT ME!
+     * @param  emailAdresse         DOCUMENT ME!
+     * @param  code                 DOCUMENT ME!
      */
     public static void sendVerificationMail(final Integer kassenzeichenNummer,
             final String emailAdresse,
@@ -698,11 +696,9 @@ public class AenderungsanfrageUtils {
     /**
      * DOCUMENT ME!
      *
-     * @param   kassenzeichenNummer  DOCUMENT ME!
-     * @param   emailAdresse         DOCUMENT ME!
-     * @param   code                 DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
+     * @param  kassenzeichenNummer  DOCUMENT ME!
+     * @param  emailAdresse         DOCUMENT ME!
+     * @param  code                 DOCUMENT ME!
      */
     public static void sendStatusChangedMail(final Integer kassenzeichenNummer,
             final String emailAdresse,
@@ -721,7 +717,7 @@ public class AenderungsanfrageUtils {
             sendMail(emailAdresse, betreff, inhalt);
         } catch (final Exception ex) {
             LOG.error(ex, ex);
-        }        
+        }
     }
     /**
      * DOCUMENT ME!
@@ -1164,7 +1160,9 @@ public class AenderungsanfrageUtils {
             return null;
         } else {
             final AenderungsanfrageJson aenderungsanfrageFiltered = new AenderungsanfrageJson(
-                    aenderungsanfrage.getKassenzeichen(), aenderungsanfrage.getEmailAdresse(), aenderungsanfrage.getEmailVerifiziert());
+                    aenderungsanfrage.getKassenzeichen(),
+                    aenderungsanfrage.getEmailAdresse(),
+                    aenderungsanfrage.getEmailVerifiziert());
 
             // Nachrichten filtern
             if (aenderungsanfrage.getNachrichten() != null) {
