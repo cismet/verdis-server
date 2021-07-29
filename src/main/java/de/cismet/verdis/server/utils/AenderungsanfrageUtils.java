@@ -677,18 +677,22 @@ public class AenderungsanfrageUtils {
      */
     public static void sendVerificationMail(final Integer kassenzeichenNummer,
             final String emailAdresse,
-            final String code) throws Exception {
-        final AenderungsanfrageConf conf = AenderungsanfrageUtils.getConfFromServerResource();
-        final String betreff = conf.getMailbetreffVerifikation();
-        final String template = conf.getMailtemplateVerifikation();
-        final String inhalt = FileUtils.readFileToString(new File(template), "UTF-8")
-                    .replaceAll(Pattern.quote("{KASSENZEICHEN}"),
-                            (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-")
-                    .replaceAll(Pattern.quote("{CODE}"), (code != null) ? code : "-");
+            final String code) {
+        try {
+            final AenderungsanfrageConf conf = AenderungsanfrageUtils.getConfFromServerResource();
+            final String betreff = conf.getMailbetreffVerifikation();
+            final String template = conf.getMailtemplateVerifikation();
+            final String inhalt = FileUtils.readFileToString(new File(template), "UTF-8")
+                        .replaceAll(Pattern.quote("{KASSENZEICHEN}"),
+                                (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-")
+                        .replaceAll(Pattern.quote("{CODE}"), (code != null) ? code : "-");
 
-        LOG.info("BETREFF:\n" + betreff);
-        LOG.info("INHALT:\n" + inhalt);
-        sendMail(emailAdresse, betreff, inhalt);
+            LOG.info("BETREFF:\n" + betreff);
+            LOG.info("INHALT:\n" + inhalt);
+            sendMail(emailAdresse, betreff, inhalt);
+        } catch (final Exception ex) {
+            LOG.error(ex, ex);
+        }
     }
 
     /**
@@ -702,18 +706,22 @@ public class AenderungsanfrageUtils {
      */
     public static void sendStatusChangedMail(final Integer kassenzeichenNummer,
             final String emailAdresse,
-            final String code) throws Exception {
-        final AenderungsanfrageConf conf = AenderungsanfrageUtils.getConfFromServerResource();
-        final String betreff = conf.getMailbetreffStatusupdate();
-        final String template = conf.getMailtemplateStatusupdate();
-        final String inhalt = FileUtils.readFileToString(new File(template), "UTF-8")
-                    .replaceAll(Pattern.quote("{KASSENZEICHEN}"),
-                            (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-")
-                    .replaceAll(Pattern.quote("{CODE}"), (code != null) ? code : "-");
+            final String code) {
+        try {
+            final AenderungsanfrageConf conf = AenderungsanfrageUtils.getConfFromServerResource();
+            final String betreff = conf.getMailbetreffStatusupdate();
+            final String template = conf.getMailtemplateStatusupdate();
+            final String inhalt = FileUtils.readFileToString(new File(template), "UTF-8")
+                        .replaceAll(Pattern.quote("{KASSENZEICHEN}"),
+                                (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-")
+                        .replaceAll(Pattern.quote("{CODE}"), (code != null) ? code : "-");
 
-        LOG.info("BETREFF:\n" + betreff);
-        LOG.info("INHALT:\n" + inhalt);
-        sendMail(emailAdresse, betreff, inhalt);
+            LOG.info("BETREFF:\n" + betreff);
+            LOG.info("INHALT:\n" + inhalt);
+            sendMail(emailAdresse, betreff, inhalt);
+        } catch (final Exception ex) {
+            LOG.error(ex, ex);
+        }        
     }
     /**
      * DOCUMENT ME!
