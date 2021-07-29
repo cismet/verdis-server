@@ -63,8 +63,15 @@ public class AenderungsanfrageDeserializer extends StdDeserializer<Aenderungsanf
     public AenderungsanfrageJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
         JsonProcessingException {
         final ObjectNode on = jp.readValueAsTree();
-        final Integer kassenzeichen = on.has("kassenzeichen") ? on.get("kassenzeichen").asInt() : null;
+        final Integer kassenzeichen = (on.has("kassenzeichen") && on.get("kassenzeichen").isInt())
+            ? on.get("kassenzeichen").asInt() : null;
         final List<NachrichtJson> nachrichten = new ArrayList<>();
+        final String emailAdresse = (on.has("emailAdresse") && on.get("emailAdresse").isTextual())
+            ? on.get("emailAdresse").asText() : null;
+        final String emailVerifikation = (on.has("emailVerifikation") && on.get("emailVerifikation").isTextual())
+            ? on.get("emailVerifikation").asText() : null;
+        final Boolean emailVerifiziert = (on.has("emailVerifiziert") && on.get("emailVerifiziert").isBoolean())
+            ? on.get("emailVerifiziert").asBoolean() : null;
         if (on.has("nachrichten") && on.get("nachrichten").isArray()) {
             final Iterator<JsonNode> iterator = on.get("nachrichten").iterator();
             while (iterator.hasNext()) {
@@ -101,6 +108,13 @@ public class AenderungsanfrageDeserializer extends StdDeserializer<Aenderungsanf
         if (kassenzeichen == null) {
             throw new RuntimeException("invalid AnfrageJson: kassenzeichen is missing");
         }
-        return new AenderungsanfrageJson(kassenzeichen, flaechen, geometrien, nachrichten);
+        return new AenderungsanfrageJson(
+                kassenzeichen,
+                emailAdresse,
+                emailVerifikation,
+                emailVerifiziert,
+                flaechen,
+                geometrien,
+                nachrichten);
     }
 }
