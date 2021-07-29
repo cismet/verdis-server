@@ -1156,9 +1156,7 @@ public class AenderungsanfrageUtils {
             return null;
         } else {
             final AenderungsanfrageJson aenderungsanfrageFiltered = new AenderungsanfrageJson(
-                    aenderungsanfrage.getKassenzeichen());
-            aenderungsanfrageFiltered.setEmailAdresse(aenderungsanfrage.getEmailAdresse());
-            aenderungsanfrageFiltered.setEmailVerifiziert(aenderungsanfrage.getEmailVerifiziert());
+                    aenderungsanfrage.getKassenzeichen(), aenderungsanfrage.getEmailAdresse(), aenderungsanfrage.getEmailVerifiziert());
 
             // Nachrichten filtern
             if (aenderungsanfrage.getNachrichten() != null) {

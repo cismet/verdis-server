@@ -93,9 +93,6 @@ public class AenderungsanfrageJsonTest {
             final Map<String, GeoJsonObject> geometrien = new HashMap<>();
             final AenderungsanfrageJson anederungsanfrage = new AenderungsanfrageJson(
                     60004629,
-                    null,
-                    null,
-                    null,
                     flaechen,
                     geometrien,
                     new ArrayList<>(
@@ -197,9 +194,6 @@ public class AenderungsanfrageJsonTest {
 
         final AenderungsanfrageJson aenderungsanfrage = new AenderungsanfrageJson(
                 60004629,
-                null,
-                null,
-                null,
                 flaechen,
                 geometrien,
                 nachrichten

@@ -53,6 +53,14 @@ public class AenderungsanfrageJson extends AbstractJson {
 
     //~ Constructors -----------------------------------------------------------
 
+    public AenderungsanfrageJson(final Integer kassenzeichen, final String emailAdresse, final Boolean emailVerifiziert) {
+        this(kassenzeichen, emailAdresse, null, emailVerifiziert, new HashMap<String, FlaecheAenderungJson>(), new HashMap<String, GeoJsonObject>(), new ArrayList<NachrichtJson>());
+    }
+
+    public AenderungsanfrageJson(final Integer kassenzeichen, final Map<String, FlaecheAenderungJson> flaechen, final Map<String, GeoJsonObject> geometrien, final List<NachrichtJson> nachrichten) {        
+        this(kassenzeichen, null, null, null, flaechen, geometrien, nachrichten);
+    }
+    
     /**
      * Creates a new AnfrageJson object.
      *
