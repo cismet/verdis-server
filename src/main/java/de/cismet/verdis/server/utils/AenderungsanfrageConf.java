@@ -31,6 +31,12 @@ public class AenderungsanfrageConf {
     private final String webdavUser;
     private final String webdavPassword;
 
+    private final String mailCmd;
+    private final String mailbetreffVerifikation;
+    private final String mailtemplateVerifikation;
+    private final String mailbetreffStatusupdate;
+    private final String mailtemplateStatusupdate;
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -44,5 +50,11 @@ public class AenderungsanfrageConf {
         webdavUrl = properties.getProperty("WEBDAV_URL");
         webdavUser = properties.getProperty("WEBDAV_USER");
         webdavPassword = properties.getProperty("WEBDAV_PASSWORD");
+
+        mailCmd = properties.getProperty("MAIL_CMD");
+        mailbetreffVerifikation = properties.getProperty("MAILBETREFF_VERIFIKATION");
+        mailtemplateVerifikation = properties.getProperty("MAILTEMPLATE_VERIFIKATION");
+        mailbetreffStatusupdate = properties.getProperty("MAILBETREFF_STATUSUPDATE");
+        mailtemplateStatusupdate = properties.getProperty("MAILTEMPLATE_STATUSUPDATE");
     }
 }
