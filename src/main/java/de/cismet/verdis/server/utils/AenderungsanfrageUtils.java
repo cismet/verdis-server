@@ -19,14 +19,23 @@ import Sirius.server.newuser.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.Setter;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.log4j.Logger;
 
 import org.geojson.Feature;
 import org.geojson.GeoJsonObject;
+
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,6 +48,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import de.cismet.cids.dynamics.CidsBean;
 
@@ -133,12 +143,14 @@ public class AenderungsanfrageUtils {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
+    private final Map<Integer, EmailVerification> emailVerificationMap = new HashMap();
+
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new KassenzeichenChangeRequestServerAction object.
      */
-    public AenderungsanfrageUtils() {
+    private AenderungsanfrageUtils() {
         try {
             final SimpleModule module = new SimpleModule();
             module.addDeserializer(PruefungGroesseJson.class, new PruefungGroesseDeserializer(mapper));
@@ -164,6 +176,51 @@ public class AenderungsanfrageUtils {
     }
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  kassenzeichen  DOCUMENT ME!
+     * @param  email          DOCUMENT ME!
+     */
+    private void removeEmail(final Integer kassenzeichen, final String email) {
+        synchronized (emailVerificationMap) {
+            emailVerificationMap.remove(kassenzeichen);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   kassenzeichen  DOCUMENT ME!
+     * @param   email          DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String addEmailVerification(final Integer kassenzeichen, final String email) {
+        if (email != null) {
+            final String code = RandomStringUtils.randomAlphanumeric(6);
+            synchronized (emailVerificationMap) {
+                emailVerificationMap.put(kassenzeichen, new EmailVerification(email, code));
+            }
+            return code;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   kassenzeichen  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private EmailVerification getEmailVerification(final Integer kassenzeichen) {
+        synchronized (emailVerificationMap) {
+            return emailVerificationMap.get(kassenzeichen);
+        }
+    }
 
     /**
      * DOCUMENT ME!
@@ -578,6 +635,93 @@ public class AenderungsanfrageUtils {
     /**
      * DOCUMENT ME!
      *
+     * @param   cmd  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    private static String executeCmd(final String cmd) throws Exception {
+        final ProcessBuilder builder = new ProcessBuilder("/bin/sh", "-c", cmd);
+        final Process process = builder.start();
+        final InputStream is = process.getInputStream();
+        return IOUtils.toString(new InputStreamReader(is));
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   emailAdresse  DOCUMENT ME!
+     * @param   betreff       DOCUMENT ME!
+     * @param   inhalt        DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    private static void sendMail(final String emailAdresse, final String betreff, final String inhalt)
+            throws Exception {
+        final AenderungsanfrageConf conf = AenderungsanfrageUtils.getConfFromServerResource();
+        final String cmdTemplate = conf.getMailCmd();
+        if (cmdTemplate != null) {
+            executeCmd(String.format(cmdTemplate, emailAdresse, betreff, inhalt));
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  kassenzeichenNummer  DOCUMENT ME!
+     * @param  emailAdresse         DOCUMENT ME!
+     * @param  code                 DOCUMENT ME!
+     */
+    public static void sendVerificationMail(final Integer kassenzeichenNummer,
+            final String emailAdresse,
+            final String code) {
+        try {
+            final AenderungsanfrageConf conf = AenderungsanfrageUtils.getConfFromServerResource();
+            final String betreff = conf.getMailbetreffVerifikation();
+            final String template = conf.getMailtemplateVerifikation();
+            final String inhalt = FileUtils.readFileToString(new File(template), "UTF-8")
+                        .replaceAll(Pattern.quote("{KASSENZEICHEN}"),
+                                (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-")
+                        .replaceAll(Pattern.quote("{CODE}"), (code != null) ? code : "-");
+
+            LOG.info("BETREFF:\n" + betreff);
+            LOG.info("INHALT:\n" + inhalt);
+            sendMail(emailAdresse, betreff, inhalt);
+        } catch (final Exception ex) {
+            LOG.error(ex, ex);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  kassenzeichenNummer  DOCUMENT ME!
+     * @param  emailAdresse         DOCUMENT ME!
+     * @param  code                 DOCUMENT ME!
+     */
+    public static void sendStatusChangedMail(final Integer kassenzeichenNummer,
+            final String emailAdresse,
+            final String code) {
+        try {
+            final AenderungsanfrageConf conf = AenderungsanfrageUtils.getConfFromServerResource();
+            final String betreff = conf.getMailbetreffStatusupdate();
+            final String template = conf.getMailtemplateStatusupdate();
+            final String inhalt = FileUtils.readFileToString(new File(template), "UTF-8")
+                        .replaceAll(Pattern.quote("{KASSENZEICHEN}"),
+                                (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-")
+                        .replaceAll(Pattern.quote("{CODE}"), (code != null) ? code : "-");
+
+            LOG.info("BETREFF:\n" + betreff);
+            LOG.info("INHALT:\n" + inhalt);
+            sendMail(emailAdresse, betreff, inhalt);
+        } catch (final Exception ex) {
+            LOG.error(ex, ex);
+        }
+    }
+    /**
+     * DOCUMENT ME!
+     *
      * @param   kassenzeichennumer  DOCUMENT ME!
      * @param   existingFlaechen    DOCUMENT ME!
      * @param   anfrageOrig         DOCUMENT ME!
@@ -597,8 +741,49 @@ public class AenderungsanfrageUtils {
             final Boolean citizenOrClerk,
             final String username,
             final Date timestamp) throws Exception {
+        Boolean emailVerifiziert = anfrageOrig.getEmailVerifiziert();
+        String emailAdresse = anfrageOrig.getEmailAdresse();
+
+        // process email change
+        if (anfrageNew.getEmailVerifiziert() == null) {
+            emailAdresse = anfrageNew.getEmailAdresse();
+            if (emailAdresse != null) {
+                emailVerifiziert = false;
+                final String code = addEmailVerification(kassenzeichennumer, emailAdresse);
+                if (code != null) {
+                    sendVerificationMail(kassenzeichennumer, emailAdresse, code);
+                }
+            } else {
+                emailVerifiziert = null;
+                removeEmail(kassenzeichennumer, anfrageOrig.getEmailAdresse());
+            }
+        }
+
+        // process email verification
+        final String emailVerifikation = anfrageNew.getEmailVerifikation();
+        if ((emailAdresse != null) && (emailVerifikation != null) && !Boolean.TRUE.equals(emailVerifiziert)) {
+            final EmailVerification emailVerification = getEmailVerification(kassenzeichennumer);
+            if (emailVerification != null) {
+                emailVerifiziert = emailVerifikation.equals(emailVerification.getCode());
+                if (emailVerifiziert) {
+                    LOG.info(String.format(
+                            "validation of %s with code %s SUCCESFULL",
+                            emailAdresse,
+                            emailVerifikation));
+                } else {
+                    LOG.info(String.format("validation of %s with code %s FAILED", emailAdresse, emailVerifikation));
+                }
+            } else {
+                // emailAdresse = null; // wirklich mail "vergessen" wenn Server neugestartet wurde
+                emailVerifiziert = null;
+            }
+        }
+
         return new AenderungsanfrageJson(
                 kassenzeichennumer,
+                emailAdresse,
+                null,
+                emailVerifiziert,
                 processFlaechen(
                     existingFlaechen,
                     anfrageOrig.getFlaechen(),
@@ -975,7 +1160,9 @@ public class AenderungsanfrageUtils {
             return null;
         } else {
             final AenderungsanfrageJson aenderungsanfrageFiltered = new AenderungsanfrageJson(
-                    aenderungsanfrage.getKassenzeichen());
+                    aenderungsanfrage.getKassenzeichen(),
+                    aenderungsanfrage.getEmailAdresse(),
+                    aenderungsanfrage.getEmailVerifiziert());
 
             // Nachrichten filtern
             if (aenderungsanfrage.getNachrichten() != null) {
@@ -1285,6 +1472,21 @@ public class AenderungsanfrageUtils {
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    @Getter
+    @AllArgsConstructor
+    public static class EmailVerification {
+
+        //~ Instance fields ----------------------------------------------------
+
+        private final String email;
+        private final String code;
+    }
 
     /**
      * DOCUMENT ME!

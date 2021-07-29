@@ -100,13 +100,6 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             public String toString() {
                 return "changerequestJson";
             }
-        },
-        EMAIL {
-
-            @Override
-            public String toString() {
-                return "email";
-            }
         }
     }
 
@@ -139,8 +132,6 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                     extractedParams.put(Parameter.STAC_ID, (Integer)value);
                 } else if (Parameter.CHANGEREQUEST_JSON.toString().equals(key)) {
                     extractedParams.put(Parameter.CHANGEREQUEST_JSON, value);
-                } else if (Parameter.EMAIL.toString().equals(key)) {
-                    extractedParams.put(Parameter.EMAIL, (String)value);
                 }
             }
         }
@@ -158,7 +149,6 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
         final String stac = (String)extractedParams.get(Parameter.STAC);
         final Integer stacId = (Integer)extractedParams.get(Parameter.STAC_ID);
         final Object aenderungsanfrage = extractedParams.get(Parameter.CHANGEREQUEST_JSON);
-        final String email = (String)extractedParams.get(Parameter.EMAIL);
 
         if ((stac == null) && (stacId == null)) {
             LOG.info("stac is null");
@@ -296,7 +286,6 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             final String stac = (String)extractedParams.get(Parameter.STAC);
             final Integer stacId = (Integer)extractedParams.get(Parameter.STAC_ID);
             final Object aenderungsanfrage = extractedParams.get(Parameter.CHANGEREQUEST_JSON);
-            final String email = (String)extractedParams.get(Parameter.EMAIL);
 
             preValidateInput(extractedParams);
 
@@ -386,14 +375,17 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                     stacEntry,
                     aenderungsanfrageProcessed,
                     kassenzeichennummer,
-                    email,
                     newStatus,
                     existingAenderungsanfrageBean
                             != null);
 
                 // UPDATING EXPIRATION
-                if (!Objects.equals(oldStatus, status)) {
+                if (!Objects.equals(oldStatus, newStatus)) {
                     updateExpiration(stacEntry);
+                    AenderungsanfrageUtils.sendStatusChangedMail(
+                        kassenzeichennummer,
+                        aenderungsanfrageProcessed.getEmailAdresse(),
+                        newStatus.toString());
                 }
 
                 final AenderungsanfrageJson anderungsanfrageFilteredForClerk = AenderungsanfrageUtils.getInstance()
@@ -443,7 +435,6 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
      * @param   stacEntry                       DOCUMENT ME!
      * @param   aenderungsanfrageProcessed      DOCUMENT ME!
      * @param   kassenzeichennumer              DOCUMENT ME!
-     * @param   email                           DOCUMENT ME!
      * @param   status                          DOCUMENT ME!
      * @param   aenderungsanfrageAlreadyExists  DOCUMENT ME!
      *
@@ -454,7 +445,6 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             final StacEntry stacEntry,
             final AenderungsanfrageJson aenderungsanfrageProcessed,
             final Integer kassenzeichennumer,
-            final String email,
             final AenderungsanfrageUtils.Status status,
             final boolean aenderungsanfrageAlreadyExists) throws Exception {
         aenderungsanfrageBean.setProperty(
@@ -464,9 +454,6 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
         aenderungsanfrageBean.setProperty(
             VerdisConstants.PROP.AENDERUNGSANFRAGE.KASSENZEICHEN_NUMMER,
             kassenzeichennumer);
-        if (email != null) {
-            aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.EMAIL, email);
-        }
         aenderungsanfrageBean.setProperty(
             VerdisConstants.PROP.AENDERUNGSANFRAGE.TIMESTAMP,
             new Timestamp(new Date().getTime()));

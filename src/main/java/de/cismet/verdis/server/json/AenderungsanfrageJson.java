@@ -19,8 +19,6 @@ import lombok.Setter;
 
 import org.geojson.GeoJsonObject;
 
-import java.io.Serializable;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +44,9 @@ public class AenderungsanfrageJson extends AbstractJson {
     //~ Instance fields --------------------------------------------------------
 
     private Integer kassenzeichen;
+    private String emailAdresse;
+    private String emailVerifikation;
+    private Boolean emailVerifiziert;
     private Map<String, FlaecheAenderungJson> flaechen;
     private Map<String, GeoJsonObject> geometrien;
     private List<NachrichtJson> nachrichten;
@@ -60,8 +61,46 @@ public class AenderungsanfrageJson extends AbstractJson {
     public AenderungsanfrageJson(final Integer kassenzeichen) {
         this(
             kassenzeichen,
+            null,
+            null,
+            null,
             new HashMap<String, FlaecheAenderungJson>(),
             new HashMap<String, GeoJsonObject>(),
             new ArrayList<NachrichtJson>());
+    }
+
+    /**
+     * Creates a new AenderungsanfrageJson object.
+     *
+     * @param  kassenzeichen     DOCUMENT ME!
+     * @param  emailAdresse      DOCUMENT ME!
+     * @param  emailVerifiziert  DOCUMENT ME!
+     */
+    public AenderungsanfrageJson(final Integer kassenzeichen,
+            final String emailAdresse,
+            final Boolean emailVerifiziert) {
+        this(
+            kassenzeichen,
+            emailAdresse,
+            null,
+            emailVerifiziert,
+            new HashMap<String, FlaecheAenderungJson>(),
+            new HashMap<String, GeoJsonObject>(),
+            new ArrayList<NachrichtJson>());
+    }
+
+    /**
+     * Creates a new AenderungsanfrageJson object.
+     *
+     * @param  kassenzeichen  DOCUMENT ME!
+     * @param  flaechen       DOCUMENT ME!
+     * @param  geometrien     DOCUMENT ME!
+     * @param  nachrichten    DOCUMENT ME!
+     */
+    public AenderungsanfrageJson(final Integer kassenzeichen,
+            final Map<String, FlaecheAenderungJson> flaechen,
+            final Map<String, GeoJsonObject> geometrien,
+            final List<NachrichtJson> nachrichten) {
+        this(kassenzeichen, null, null, null, flaechen, geometrien, nachrichten);
     }
 }
