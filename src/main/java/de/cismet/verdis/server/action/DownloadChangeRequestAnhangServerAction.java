@@ -24,6 +24,7 @@ import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextStore;
 
 import de.cismet.netutil.Proxy;
+import de.cismet.netutil.ProxyHandler;
 
 import de.cismet.verdis.server.json.NachrichtAnhangJson;
 import de.cismet.verdis.server.utils.AenderungsanfrageConf;
@@ -139,7 +140,7 @@ public class DownloadChangeRequestAnhangServerAction implements ServerAction,
                     URLEncoder.encode(fileName, "utf-8").replaceAll("\\+", "%20"));
 
             final WebDavClient webdavClient = new WebDavClient(
-                    Proxy.fromPreferences(),
+                    ProxyHandler.getInstance().getProxy(),
                     conf.getWebdavUser(),
                     conf.getWebdavPassword());
 
