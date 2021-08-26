@@ -39,6 +39,7 @@ import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextStore;
 
 import de.cismet.netutil.Proxy;
+import de.cismet.netutil.ProxyHandler;
 
 import de.cismet.verdis.server.json.NachrichtAnhangUploadJson;
 import de.cismet.verdis.server.utils.AenderungsanfrageConf;
@@ -101,7 +102,7 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
         final InputStream data = new ByteArrayInputStream(bytes);
 
         final WebDavClient webdavClient = new WebDavClient(
-                Proxy.fromPreferences(),
+                ProxyHandler.getInstance().getProxy(),
                 conf.getWebdavUser(),
                 conf.getWebdavPassword());
         return webdavClient.put(uploadFilePath, data);
