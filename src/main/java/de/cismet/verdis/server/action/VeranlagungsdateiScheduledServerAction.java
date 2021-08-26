@@ -43,6 +43,7 @@ import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 import de.cismet.commons.security.WebDavClient;
 
 import de.cismet.netutil.Proxy;
+import de.cismet.netutil.ProxyHandler;
 
 import de.cismet.verdis.server.utils.VerdisServerResources;
 
@@ -165,7 +166,7 @@ public class VeranlagungsdateiScheduledServerAction extends DefaultScheduledServ
                             .loadProperties(VerdisServerResources.WEBDAV.getValue());
                 final String webdavPath = webdavProperties.getProperty("url_veranlagung");
                 if (webdavClient == null) {
-                    webdavClient = new WebDavClient(Proxy.fromPreferences(),
+                    webdavClient = new WebDavClient(ProxyHandler.getInstance().getProxy(),
                             webdavProperties.getProperty("user"),
                             webdavProperties.getProperty("password"));
                 }
