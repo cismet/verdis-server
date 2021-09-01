@@ -346,6 +346,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                 final AenderungsanfrageJson aenderungsanfrageProcessed = AenderungsanfrageUtils.getInstance()
                             .doProcessing(
                                 kassenzeichennummer,
+                                stacEntry.getLoginName(),
                                 existingFlaechen,
                                 aenderungsanfrageOrig,
                                 aenderungsanfrageJson,
@@ -384,8 +385,9 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                     updateExpiration(stacEntry);
                     AenderungsanfrageUtils.sendStatusChangedMail(
                         kassenzeichennummer,
+                        stacEntry.getLoginName(),
                         aenderungsanfrageProcessed.getEmailAdresse(),
-                        newStatus.toString());
+                        newStatus);
                 }
 
                 final AenderungsanfrageJson anderungsanfrageFilteredForClerk = AenderungsanfrageUtils.getInstance()

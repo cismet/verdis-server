@@ -28,6 +28,7 @@ import de.cismet.connectioncontext.ConnectionContextStore;
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
 import de.cismet.verdis.server.json.AenderungsanfrageJson;
+import de.cismet.verdis.server.json.ContactInfoJson;
 import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
 import de.cismet.verdis.server.utils.StacEntry;
 import de.cismet.verdis.server.utils.StacUtils;
@@ -143,6 +144,9 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore,
                 final AenderungsanfrageJson anderungsanfrageFiltered = AenderungsanfrageUtils.getInstance()
                             .doFilteringOutWhatIShouldntSee(aenderungsanfrage, "stac".equals(getUser().getName()));
 
+                final ContactInfoJson contactInfo = AenderungsanfrageUtils.getInstance()
+                            .getContactInfo(getUser().getName(),
+                                AenderungsanfrageUtils.getConfFromServerResource().getSachbearbeiterDefaultname());
                 kassenzeichenBean.setProperty(
                     VerdisConstants.PROP.KASSENZEICHEN.STAC_OPTIONS,
                     stacEntry.getStacOptions());
@@ -152,6 +156,10 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore,
                 kassenzeichenBean.setProperty(
                     VerdisConstants.PROP.KASSENZEICHEN.AENDERUNGSANFRAGE,
                     (anderungsanfrageFiltered != null) ? StacUtils.asMap(anderungsanfrageFiltered.toJson()) : null);
+                kassenzeichenBean.setProperty(
+                    VerdisConstants.PROP.KASSENZEICHEN.CONTACTINFO,
+                    (contactInfo != null) ? contactInfo : null);
+
                 return kassenzeichenBean.toJSONString(false);
             }
         } catch (final Exception ex) {

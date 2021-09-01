@@ -30,12 +30,15 @@ public class AenderungsanfrageConf {
     private final String webdavUrl;
     private final String webdavUser;
     private final String webdavPassword;
+    private final String sachbearbeiterKontaktdaten;
+    private final String sachbearbeiterDefaultname;
 
     private final String mailCmd;
     private final String mailbetreffVerifikation;
     private final String mailtemplateVerifikation;
-    private final String mailbetreffStatusupdate;
-    private final String mailtemplateStatusupdate;
+    private final String mailbetreffBestaetigung;
+    private final String mailtemplateBestaetigung;
+    private final String mailtemplatesDirStatusupdate;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -54,7 +57,11 @@ public class AenderungsanfrageConf {
         mailCmd = properties.getProperty("MAIL_CMD");
         mailbetreffVerifikation = properties.getProperty("MAILBETREFF_VERIFIKATION");
         mailtemplateVerifikation = properties.getProperty("MAILTEMPLATE_VERIFIKATION");
-        mailbetreffStatusupdate = properties.getProperty("MAILBETREFF_STATUSUPDATE");
-        mailtemplateStatusupdate = properties.getProperty("MAILTEMPLATE_STATUSUPDATE");
+        mailbetreffBestaetigung = properties.getProperty("MAILBETREFF_BESTAETIGUNG");
+        mailtemplateBestaetigung = properties.getProperty("MAILTEMPLATE_BESTAETIGUNG");
+        mailtemplatesDirStatusupdate = properties.getProperty("MAILTEMPLATEDIR_STATUSUPDATE");
+
+        sachbearbeiterKontaktdaten = properties.getProperty("SACHBEARBEITER_KONTAKTDATEN");
+        sachbearbeiterDefaultname = properties.getProperty("SACHBEARBEITER_DEFAULTNAME");
     }
 }
