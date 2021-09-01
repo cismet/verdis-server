@@ -47,7 +47,7 @@ public class AlkisLandparcelSearch extends GeomServerSearch {
                         + "   geom "
                         + "WHERE "
                         + "   geom.id = alkis_landparcel.geometrie AND "
-                        + "   GeomFromText('" + geometry.toText() + "', " + geometry.getSRID()
+                        + "   st_GeomFromText('" + geometry.toText() + "', " + geometry.getSRID()
                         + ") && geom.geo_field AND"
                         + "   ST_intersects(GeomFromText('" + geometry.toText() + "', " + geometry.getSRID()
                         + "), geom.geo_field)";
