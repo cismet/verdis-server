@@ -34,6 +34,7 @@ import org.geojson.Feature;
 import org.geojson.GeoJsonObject;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
@@ -60,6 +61,8 @@ import de.cismet.verdis.commons.constants.VerdisConstants;
 
 import de.cismet.verdis.server.json.AenderungsanfrageJson;
 import de.cismet.verdis.server.json.AenderungsanfrageResultJson;
+import de.cismet.verdis.server.json.ContactInfoJson;
+import de.cismet.verdis.server.json.ContactInfosJson;
 import de.cismet.verdis.server.json.FlaecheAenderungJson;
 import de.cismet.verdis.server.json.FlaecheAnschlussgradJson;
 import de.cismet.verdis.server.json.FlaecheFlaechenartJson;
@@ -576,6 +579,7 @@ public class AenderungsanfrageUtils {
      * DOCUMENT ME!
      *
      * @param   kassenzeichennumer  DOCUMENT ME!
+     * @param   absenderAdresse     DOCUMENT ME!
      * @param   existingFlaechen    DOCUMENT ME!
      * @param   anfrageOrig         DOCUMENT ME!
      * @param   anfrageNew          DOCUMENT ME!
@@ -587,6 +591,7 @@ public class AenderungsanfrageUtils {
      * @throws  Exception  DOCUMENT ME!
      */
     public AenderungsanfrageJson processAnfrageCitizen(final Integer kassenzeichennumer,
+            final String absenderAdresse,
             final Set<String> existingFlaechen,
             final AenderungsanfrageJson anfrageOrig,
             final AenderungsanfrageJson anfrageNew,
@@ -594,6 +599,7 @@ public class AenderungsanfrageUtils {
             final Date timestamp) throws Exception {
         return processAnfrage(
                 kassenzeichennumer,
+                absenderAdresse,
                 existingFlaechen,
                 anfrageOrig,
                 anfrageNew,
@@ -606,6 +612,7 @@ public class AenderungsanfrageUtils {
      * DOCUMENT ME!
      *
      * @param   kassenzeichennumer  DOCUMENT ME!
+     * @param   absenderAdresse     DOCUMENT ME!
      * @param   existingFlaechen    DOCUMENT ME!
      * @param   anfrageOrig         DOCUMENT ME!
      * @param   anfrageNew          DOCUMENT ME!
@@ -617,6 +624,7 @@ public class AenderungsanfrageUtils {
      * @throws  Exception  DOCUMENT ME!
      */
     public AenderungsanfrageJson processAnfrageClerk(final Integer kassenzeichennumer,
+            final String absenderAdresse,
             final Set<String> existingFlaechen,
             final AenderungsanfrageJson anfrageOrig,
             final AenderungsanfrageJson anfrageNew,
@@ -624,6 +632,7 @@ public class AenderungsanfrageUtils {
             final Date timestamp) throws Exception {
         return processAnfrage(
                 kassenzeichennumer,
+                absenderAdresse,
                 existingFlaechen,
                 anfrageOrig,
                 anfrageNew,
@@ -651,18 +660,21 @@ public class AenderungsanfrageUtils {
     /**
      * DOCUMENT ME!
      *
-     * @param   emailAdresse  DOCUMENT ME!
-     * @param   betreff       DOCUMENT ME!
-     * @param   inhalt        DOCUMENT ME!
+     * @param   emailAbsender  DOCUMENT ME!
+     * @param   emailAdresse   DOCUMENT ME!
+     * @param   betreff        DOCUMENT ME!
+     * @param   inhalt         DOCUMENT ME!
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    private static void sendMail(final String emailAdresse, final String betreff, final String inhalt)
-            throws Exception {
-        final AenderungsanfrageConf conf = AenderungsanfrageUtils.getConfFromServerResource();
+    private static void sendMail(final String emailAbsender,
+            final String emailAdresse,
+            final String betreff,
+            final String inhalt) throws Exception {
+        final AenderungsanfrageConf conf = getConfFromServerResource();
         final String cmdTemplate = conf.getMailCmd();
         if (cmdTemplate != null) {
-            executeCmd(String.format(cmdTemplate, emailAdresse, betreff, inhalt));
+            executeCmd(String.format(cmdTemplate, emailAbsender, emailAdresse, betreff, inhalt));
         }
     }
 
@@ -670,14 +682,16 @@ public class AenderungsanfrageUtils {
      * DOCUMENT ME!
      *
      * @param  kassenzeichenNummer  DOCUMENT ME!
-     * @param  emailAdresse         DOCUMENT ME!
+     * @param  absenderAdresse      DOCUMENT ME!
+     * @param  empfaengerAdresse    DOCUMENT ME!
      * @param  code                 DOCUMENT ME!
      */
     public static void sendVerificationMail(final Integer kassenzeichenNummer,
-            final String emailAdresse,
+            final String absenderAdresse,
+            final String empfaengerAdresse,
             final String code) {
         try {
-            final AenderungsanfrageConf conf = AenderungsanfrageUtils.getConfFromServerResource();
+            final AenderungsanfrageConf conf = getConfFromServerResource();
             final String betreff = conf.getMailbetreffVerifikation();
             final String template = conf.getMailtemplateVerifikation();
             final String inhalt = FileUtils.readFileToString(new File(template), "UTF-8")
@@ -687,7 +701,7 @@ public class AenderungsanfrageUtils {
 
             LOG.info("BETREFF:\n" + betreff);
             LOG.info("INHALT:\n" + inhalt);
-            sendMail(emailAdresse, betreff, inhalt);
+            sendMail(absenderAdresse, empfaengerAdresse, betreff, inhalt);
         } catch (final Exception ex) {
             LOG.error(ex, ex);
         }
@@ -697,24 +711,105 @@ public class AenderungsanfrageUtils {
      * DOCUMENT ME!
      *
      * @param  kassenzeichenNummer  DOCUMENT ME!
-     * @param  emailAdresse         DOCUMENT ME!
-     * @param  code                 DOCUMENT ME!
+     * @param  absenderAdresse      DOCUMENT ME!
+     * @param  empfaengerAdresse    DOCUMENT ME!
      */
-    public static void sendStatusChangedMail(final Integer kassenzeichenNummer,
-            final String emailAdresse,
-            final String code) {
+    public static void sendConfirmationMail(final Integer kassenzeichenNummer,
+            final String absenderAdresse,
+            final String empfaengerAdresse) {
         try {
-            final AenderungsanfrageConf conf = AenderungsanfrageUtils.getConfFromServerResource();
-            final String betreff = conf.getMailbetreffStatusupdate();
-            final String template = conf.getMailtemplateStatusupdate();
+            final AenderungsanfrageConf conf = getConfFromServerResource();
+            final String betreff = conf.getMailbetreffBestaetigung();
+            final String template = conf.getMailtemplateBestaetigung();
             final String inhalt = FileUtils.readFileToString(new File(template), "UTF-8")
                         .replaceAll(Pattern.quote("{KASSENZEICHEN}"),
-                                (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-")
-                        .replaceAll(Pattern.quote("{CODE}"), (code != null) ? code : "-");
+                            (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-");
 
             LOG.info("BETREFF:\n" + betreff);
             LOG.info("INHALT:\n" + inhalt);
-            sendMail(emailAdresse, betreff, inhalt);
+            sendMail(absenderAdresse, empfaengerAdresse, betreff, inhalt);
+        } catch (final Exception ex) {
+            LOG.error(ex, ex);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  kassenzeichenNummer  DOCUMENT ME!
+     * @param  absenderAdresse      DOCUMENT ME!
+     * @param  empfaengerAdresse    DOCUMENT ME!
+     * @param  status               DOCUMENT ME!
+     */
+    public static void sendStatusChangedMail(final Integer kassenzeichenNummer,
+            final String absenderAdresse,
+            final String empfaengerAdresse,
+            final Status status) {
+        try {
+            final AenderungsanfrageConf conf = getConfFromServerResource();
+            final File templatesDir = (conf.getMailtemplatesDirStatusupdate() != null)
+                ? new File(conf.getMailtemplatesDirStatusupdate()) : null;
+            final File betreffAllgemeinFile = ((templatesDir != null) && templatesDir.isDirectory())
+                ? new File(templatesDir, "ALL.betreff.txt") : null;
+            final File inhaltAllgemeinTxtFile = ((templatesDir != null) && templatesDir.isDirectory())
+                ? new File(templatesDir, "ALL.inhalt.txt") : null;
+            final File inhaltAllgemeinHtmlFile = ((templatesDir != null) && templatesDir.isDirectory())
+                ? new File(templatesDir, "ALL.inhalt.html") : null;
+
+            final File betreffSpezifischFile =
+                ((status != null) && (templatesDir != null) && templatesDir.isDirectory())
+                ? new File(templatesDir, String.format("%s.inhalt.txt", status)) : null;
+            final File inhaltSpezifischTxtFile =
+                ((status != null) && (templatesDir != null) && templatesDir.isDirectory())
+                ? new File(templatesDir, String.format("%s.inhalt.txt", status)) : null;
+            final File inhaltSpezifischHtmlFile =
+                ((status != null) && (templatesDir != null) && templatesDir.isDirectory())
+                ? new File(templatesDir, String.format("%s.inhalt.html", status)) : null;
+
+            final String betreffAllgemein =
+                ((betreffAllgemeinFile != null) && betreffAllgemeinFile.isFile() && betreffAllgemeinFile.canRead())
+                ? FileUtils.readFileToString(betreffAllgemeinFile, "UTF-8") : null;
+            final String inhaltAllgemeinTxt =
+                ((inhaltAllgemeinTxtFile != null) && inhaltAllgemeinTxtFile.isFile()
+                            && inhaltAllgemeinTxtFile.canRead())
+                ? FileUtils.readFileToString(inhaltAllgemeinTxtFile, "UTF-8") : null;
+            final String inhaltAllgemeinHtml =
+                ((inhaltAllgemeinHtmlFile != null) && inhaltAllgemeinHtmlFile.isFile()
+                            && inhaltAllgemeinHtmlFile.canRead())
+                ? FileUtils.readFileToString(inhaltAllgemeinHtmlFile, "UTF-8") : null;
+
+            final String betreffSpezifisch =
+                ((betreffSpezifischFile != null) && betreffSpezifischFile.isFile() && betreffSpezifischFile.canRead())
+                ? FileUtils.readFileToString(betreffSpezifischFile, "UTF-8") : null;
+            final String inhaltSpezifischTxt =
+                ((inhaltSpezifischTxtFile != null) && inhaltSpezifischTxtFile.isFile()
+                            && inhaltSpezifischTxtFile.canRead())
+                ? FileUtils.readFileToString(inhaltSpezifischTxtFile, "UTF-8") : null;
+            final String inhaltSpezifischHtml =
+                ((inhaltSpezifischHtmlFile != null) && inhaltSpezifischHtmlFile.isFile()
+                            && inhaltSpezifischHtmlFile.canRead())
+                ? FileUtils.readFileToString(inhaltSpezifischHtmlFile, "UTF-8") : null;
+
+            final String betreff = (betreffSpezifisch != null) ? betreffSpezifisch : betreffAllgemein;
+            final String inhalt = (inhaltSpezifischHtml != null)
+                ? inhaltSpezifischHtml
+                : ((inhaltSpezifischTxt != null)
+                    ? inhaltSpezifischTxt : ((inhaltAllgemeinHtml != null) ? inhaltAllgemeinHtml : inhaltAllgemeinTxt));
+
+            if (inhalt != null) {
+                LOG.info("BETREFF:\n"
+                            + ((betreff != null)
+                                ? betreff.replaceAll(
+                                    Pattern.quote("{KASSENZEICHEN}"),
+                                    (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-") : null));
+                LOG.info("INHALT:\n"
+                            + inhalt.replaceAll(
+                                Pattern.quote("{KASSENZEICHEN}"),
+                                (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-").replaceAll(
+                                Pattern.quote("{STATUS}"),
+                                (status != null) ? status.toString() : "-"));
+                sendMail(absenderAdresse, empfaengerAdresse, betreff, inhaltAllgemeinTxt);
+            }
         } catch (final Exception ex) {
             LOG.error(ex, ex);
         }
@@ -723,6 +818,7 @@ public class AenderungsanfrageUtils {
      * DOCUMENT ME!
      *
      * @param   kassenzeichennumer  DOCUMENT ME!
+     * @param   absenderAdresse     DOCUMENT ME!
      * @param   existingFlaechen    DOCUMENT ME!
      * @param   anfrageOrig         DOCUMENT ME!
      * @param   anfrageNew          DOCUMENT ME!
@@ -735,6 +831,7 @@ public class AenderungsanfrageUtils {
      * @throws  Exception  DOCUMENT ME!
      */
     private AenderungsanfrageJson processAnfrage(final Integer kassenzeichennumer,
+            final String absenderAdresse,
             final Set<String> existingFlaechen,
             final AenderungsanfrageJson anfrageOrig,
             final AenderungsanfrageJson anfrageNew,
@@ -751,7 +848,7 @@ public class AenderungsanfrageUtils {
                 emailVerifiziert = false;
                 final String code = addEmailVerification(kassenzeichennumer, emailAdresse);
                 if (code != null) {
-                    sendVerificationMail(kassenzeichennumer, emailAdresse, code);
+                    sendVerificationMail(kassenzeichennumer, absenderAdresse, emailAdresse, code);
                 }
             } else {
                 emailVerifiziert = null;
@@ -770,6 +867,7 @@ public class AenderungsanfrageUtils {
                             "validation of %s with code %s SUCCESFULL",
                             emailAdresse,
                             emailVerifikation));
+                    sendConfirmationMail(kassenzeichennumer, absenderAdresse, emailAdresse);
                 } else {
                     LOG.info(String.format("validation of %s with code %s FAILED", emailAdresse, emailVerifikation));
                 }
@@ -819,7 +917,7 @@ public class AenderungsanfrageUtils {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public AenderungsanfrageUtils.Status identifyNewStatus(final Status oldStatus,
+    public Status identifyNewStatus(final Status oldStatus,
             final Set<String> existingFlaechen,
             final AenderungsanfrageJson aenderungsanfrageBefore,
             final AenderungsanfrageJson aenderungsanfrageAfter,
@@ -937,9 +1035,9 @@ public class AenderungsanfrageUtils {
             }
 
             if (anyChanges) {
-                changeStatusTo = AenderungsanfrageUtils.Status.PENDING;
+                changeStatusTo = Status.PENDING;
             } else if (newMessage) {
-                changeStatusTo = AenderungsanfrageUtils.Status.NEW_CITIZEN_MESSAGE;
+                changeStatusTo = Status.NEW_CITIZEN_MESSAGE;
             } else {
                 changeStatusTo = null;
             }
@@ -1118,9 +1216,9 @@ public class AenderungsanfrageUtils {
             }
 
             if (acceptedOrRejectedCount == aenderungCount) {
-                changeStatusTo = AenderungsanfrageUtils.Status.NONE;
+                changeStatusTo = Status.NONE;
             } else if (doneAndPendingPruefungCount == aenderungCount) {
-                changeStatusTo = AenderungsanfrageUtils.Status.PROCESSING;
+                changeStatusTo = Status.PROCESSING;
             } else {
                 changeStatusTo = null;
             }
@@ -1278,6 +1376,7 @@ public class AenderungsanfrageUtils {
      * DOCUMENT ME!
      *
      * @param   kassenzeichennummer    DOCUMENT ME!
+     * @param   absenderAdresse        DOCUMENT ME!
      * @param   existingFlaechen       DOCUMENT ME!
      * @param   aenderungsanfrageOrig  DOCUMENT ME!
      * @param   aenderungsanfrageNew   DOCUMENT ME!
@@ -1290,6 +1389,7 @@ public class AenderungsanfrageUtils {
      * @throws  Exception  DOCUMENT ME!
      */
     public AenderungsanfrageJson doProcessing(final Integer kassenzeichennummer,
+            final String absenderAdresse,
             final Set<String> existingFlaechen,
             final AenderungsanfrageJson aenderungsanfrageOrig,
             final AenderungsanfrageJson aenderungsanfrageNew,
@@ -1300,6 +1400,7 @@ public class AenderungsanfrageUtils {
         if (citizenOrClerk) {
             aenderungsanfrageProcessed = processAnfrageCitizen(
                     kassenzeichennummer,
+                    absenderAdresse,
                     existingFlaechen,
                     aenderungsanfrageOrig,
                     aenderungsanfrageNew,
@@ -1308,6 +1409,7 @@ public class AenderungsanfrageUtils {
         } else {
             aenderungsanfrageProcessed = processAnfrageClerk(
                     kassenzeichennummer,
+                    absenderAdresse,
                     existingFlaechen,
                     aenderungsanfrageOrig,
                     aenderungsanfrageNew,
@@ -1416,6 +1518,57 @@ public class AenderungsanfrageUtils {
      */
     public NachrichtParameterJson createNachrichtParameterJson(final String json) throws Exception {
         return getMapper().readValue(json, NachrichtParameterJson.class);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public ContactInfoJson getContactInfo(final String user) {
+        return getContactInfo(user, null);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user         DOCUMENT ME!
+     * @param   defaultUser  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public ContactInfoJson getContactInfo(final String user, final String defaultUser) {
+        final ContactInfosJson contactInfos = getContactInfos();
+        if ((contactInfos != null) && (contactInfos.getMap() != null)) {
+            if (contactInfos.getMap().containsKey(user)) {
+                return contactInfos.getMap().get(user);
+            } else {
+                return (defaultUser != null) ? contactInfos.getMap().get(defaultUser) : null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public ContactInfosJson getContactInfos() {
+        try {
+            final AenderungsanfrageConf conf = getConfFromServerResource();
+            final File contactInfoFile = (conf.getSachbearbeiterKontaktdaten() != null)
+                ? new File(conf.getSachbearbeiterKontaktdaten()) : null;
+            final String json = ((contactInfoFile != null) && contactInfoFile.isFile() && contactInfoFile.canRead())
+                ? IOUtils.toString(new FileReader(contactInfoFile)) : null;
+            return (json != null) ? getMapper().readValue(json, ContactInfosJson.class) : null;
+        } catch (final Exception ex) {
+            LOG.error("error while loading contact infos", ex);
+            return null;
+        }
     }
 
     /**
