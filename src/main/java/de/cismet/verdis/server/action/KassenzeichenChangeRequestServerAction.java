@@ -383,11 +383,12 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                 // UPDATING EXPIRATION
                 if (!Objects.equals(oldStatus, newStatus)) {
                     updateExpiration(stacEntry);
-                    AenderungsanfrageUtils.sendStatusChangedMail(
-                        kassenzeichennummer,
-                        stacEntry.getLoginName(),
-                        aenderungsanfrageProcessed.getEmailAdresse(),
-                        newStatus);
+                    AenderungsanfrageUtils.getInstance()
+                            .sendStatusChangedMail(
+                                kassenzeichennummer,
+                                stacEntry.getLoginName(),
+                                aenderungsanfrageProcessed.getEmailAdresse(),
+                                newStatus);
                 }
 
                 final AenderungsanfrageJson anderungsanfrageFilteredForClerk = AenderungsanfrageUtils.getInstance()
