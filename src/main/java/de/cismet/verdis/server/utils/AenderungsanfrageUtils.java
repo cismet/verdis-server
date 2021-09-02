@@ -24,7 +24,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.RandomStringUtils;
@@ -67,6 +66,7 @@ import de.cismet.verdis.server.json.FlaecheAenderungJson;
 import de.cismet.verdis.server.json.FlaecheAnschlussgradJson;
 import de.cismet.verdis.server.json.FlaecheFlaechenartJson;
 import de.cismet.verdis.server.json.FlaechePruefungJson;
+import de.cismet.verdis.server.json.MessageConfigJson;
 import de.cismet.verdis.server.json.NachrichtAnhangJson;
 import de.cismet.verdis.server.json.NachrichtJson;
 import de.cismet.verdis.server.json.NachrichtParameterAnschlussgradJson;
@@ -125,6 +125,26 @@ public class AenderungsanfrageUtils {
                 }
             }
         };
+
+    public static final String CMDREPLACER_CLERK_EMAIL = "{CLERK_MAIL}";
+    public static final String CMDREPLACER_CITIZEN_EMAIL = "{CITIZEN_MAIL}";
+    public static final String CMDREPLACER_TOPIC = "{TOPIC}";
+    public static final String CMDREPLACER_MESSAGE = "{MESSAGE}";
+
+    public static final String DEFAULT_CMDTEMPLATE = "sendEmail"
+                + " -s   smtp.wuppertal-intra.de"
+                + " -f   regengeld@stadt.wuppertal.de"
+                + " -u   \"" + CMDREPLACER_CITIZEN_EMAIL + "\""
+                + " -bcc \"" + CMDREPLACER_CLERK_EMAIL + "\""
+                + " -t   \"" + CMDREPLACER_TOPIC + "\""
+                + " -m   \"" + CMDREPLACER_MESSAGE + "\"";
+
+    public static final String MESSAGETYPE_MAILVERIFICATION = "MAILVERIFICATION";
+    public static final String MESSAGETYPE_MAILCONFIRMATION = "MAILCONFIRMATION";
+
+    private static final String CONFIG_JSON_FORMAT = "config.%s.json";
+    private static final String TEMPLATEREPLACER_KASSENZEICHEN = "{KASSENZEICHEN}";
+    private static final String TEMPLATEREPLACER_CODE = "{CODE}";
 
     //~ Enums ------------------------------------------------------------------
 
@@ -660,6 +680,7 @@ public class AenderungsanfrageUtils {
     /**
      * DOCUMENT ME!
      *
+     * @param   cmdTemplate    DOCUMENT ME!
      * @param   emailAbsender  DOCUMENT ME!
      * @param   emailAdresse   DOCUMENT ME!
      * @param   betreff        DOCUMENT ME!
@@ -667,14 +688,18 @@ public class AenderungsanfrageUtils {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    private static void sendMail(final String emailAbsender,
+    private static void sendMail(final String cmdTemplate,
+            final String emailAbsender,
             final String emailAdresse,
             final String betreff,
             final String inhalt) throws Exception {
-        final AenderungsanfrageConf conf = getConfFromServerResource();
-        final String cmdTemplate = conf.getMailCmd();
         if (cmdTemplate != null) {
-            executeCmd(String.format(cmdTemplate, emailAbsender, emailAdresse, betreff, inhalt));
+            executeCmd(
+                cmdTemplate.replaceAll(Pattern.quote(CMDREPLACER_CLERK_EMAIL), emailAbsender) //
+                .replaceAll(Pattern.quote(CMDREPLACER_CITIZEN_EMAIL), emailAdresse)           //
+                .replaceAll(Pattern.quote(CMDREPLACER_TOPIC), betreff)                        //
+                .replaceAll(Pattern.quote(CMDREPLACER_MESSAGE), inhalt)                       //
+                );
         }
     }
 
@@ -686,24 +711,32 @@ public class AenderungsanfrageUtils {
      * @param  empfaengerAdresse    DOCUMENT ME!
      * @param  code                 DOCUMENT ME!
      */
-    public static void sendVerificationMail(final Integer kassenzeichenNummer,
+    public void sendVerificationMail(final Integer kassenzeichenNummer,
             final String absenderAdresse,
             final String empfaengerAdresse,
             final String code) {
         try {
             final AenderungsanfrageConf conf = getConfFromServerResource();
-            final String betreff = conf.getMailbetreffVerifikation();
-            final String template = conf.getMailtemplateVerifikation();
-            final String inhalt = FileUtils.readFileToString(new File(template), "UTF-8")
-                        .replaceAll(Pattern.quote("{KASSENZEICHEN}"),
+            final File configDir = (conf.getMessageconfigDir() != null) ? new File(conf.getMessageconfigDir()) : null;
+            final MessageConfigJson messageConfig = getMessageConfig(MESSAGETYPE_MAILVERIFICATION, configDir);
+            if (messageConfig != null) {
+                final String cmdTemplate = messageConfig.getCmdTemplate();
+                final String betreff = messageConfig.getTopic();
+                final String messageTemplate = (messageConfig.getMessageTemplateFile() != null)
+                    ? readMessageTemplate(new File(configDir, messageConfig.getMessageTemplateFile())) : null;
+                if (messageTemplate != null) {
+                    final String inhalt = messageTemplate.replaceAll(Pattern.quote(TEMPLATEREPLACER_KASSENZEICHEN),
                                 (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-")
-                        .replaceAll(Pattern.quote("{CODE}"), (code != null) ? code : "-");
-
-            LOG.info("BETREFF:\n" + betreff);
-            LOG.info("INHALT:\n" + inhalt);
-            sendMail(absenderAdresse, empfaengerAdresse, betreff, inhalt);
+                                .replaceAll(Pattern.quote(TEMPLATEREPLACER_CODE), (code != null) ? code : "-");
+                    sendMail((cmdTemplate != null) ? cmdTemplate : DEFAULT_CMDTEMPLATE,
+                        absenderAdresse,
+                        empfaengerAdresse,
+                        betreff,
+                        inhalt);
+                }
+            }
         } catch (final Exception ex) {
-            LOG.error(ex, ex);
+            LOG.error("error while sendVerificationMail", ex);
         }
     }
 
@@ -714,22 +747,71 @@ public class AenderungsanfrageUtils {
      * @param  absenderAdresse      DOCUMENT ME!
      * @param  empfaengerAdresse    DOCUMENT ME!
      */
-    public static void sendConfirmationMail(final Integer kassenzeichenNummer,
+    public void sendConfirmationMail(final Integer kassenzeichenNummer,
             final String absenderAdresse,
             final String empfaengerAdresse) {
         try {
             final AenderungsanfrageConf conf = getConfFromServerResource();
-            final String betreff = conf.getMailbetreffBestaetigung();
-            final String template = conf.getMailtemplateBestaetigung();
-            final String inhalt = FileUtils.readFileToString(new File(template), "UTF-8")
-                        .replaceAll(Pattern.quote("{KASSENZEICHEN}"),
+            final File configDir = (conf.getMessageconfigDir() != null) ? new File(conf.getMessageconfigDir()) : null;
+            final MessageConfigJson messageConfig = getMessageConfig(MESSAGETYPE_MAILCONFIRMATION, configDir);
+            if (messageConfig != null) {
+                final String cmdTemplate = messageConfig.getCmdTemplate();
+                final String betreff = messageConfig.getTopic();
+                final String messageTemplate = (messageConfig.getMessageTemplateFile() != null)
+                    ? readMessageTemplate(new File(configDir, messageConfig.getMessageTemplateFile())) : null;
+                if (messageTemplate != null) {
+                    final String inhalt = messageTemplate.replaceAll(
+                            Pattern.quote(TEMPLATEREPLACER_KASSENZEICHEN),
                             (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-");
-
-            LOG.info("BETREFF:\n" + betreff);
-            LOG.info("INHALT:\n" + inhalt);
-            sendMail(absenderAdresse, empfaengerAdresse, betreff, inhalt);
+                    sendMail((cmdTemplate != null) ? cmdTemplate : DEFAULT_CMDTEMPLATE,
+                        absenderAdresse,
+                        empfaengerAdresse,
+                        betreff,
+                        inhalt);
+                }
+            }
         } catch (final Exception ex) {
-            LOG.error(ex, ex);
+            LOG.error("error while sendConfirmationMail", ex);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   messageTemplateFile  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    private String readMessageTemplate(final File messageTemplateFile) throws Exception {
+        final String messageTemplate =
+            ((messageTemplateFile != null) && messageTemplateFile.exists() && messageTemplateFile.isFile()
+                        && messageTemplateFile.canRead()) ? IOUtils.toString(new FileReader(messageTemplateFile))
+                                                          : null;
+        return messageTemplate;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   messageType  DOCUMENT ME!
+     * @param   configDir    DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private MessageConfigJson getMessageConfig(final String messageType, final File configDir) {
+        try {
+            final File configFile = (configDir != null)
+                ? new File(configDir, String.format(CONFIG_JSON_FORMAT, messageType)) : null;
+            final String configJson =
+                ((configFile != null) && configFile.exists() && configFile.isFile() && configFile.canRead())
+                ? IOUtils.toString(new FileReader(configFile)) : null;
+            final MessageConfigJson config = getMapper().readValue(configJson, MessageConfigJson.class);
+            return config;
+        } catch (final Exception ex) {
+            LOG.error(String.format("error while loading config file for %s, ", messageType), ex);
+            return null;
         }
     }
 
@@ -741,77 +823,31 @@ public class AenderungsanfrageUtils {
      * @param  empfaengerAdresse    DOCUMENT ME!
      * @param  status               DOCUMENT ME!
      */
-    public static void sendStatusChangedMail(final Integer kassenzeichenNummer,
+    public void sendStatusChangedMail(final Integer kassenzeichenNummer,
             final String absenderAdresse,
             final String empfaengerAdresse,
             final Status status) {
         try {
             final AenderungsanfrageConf conf = getConfFromServerResource();
-            final File templatesDir = (conf.getMailtemplatesDirStatusupdate() != null)
-                ? new File(conf.getMailtemplatesDirStatusupdate()) : null;
-            final File betreffAllgemeinFile = ((templatesDir != null) && templatesDir.isDirectory())
-                ? new File(templatesDir, "ALL.betreff.txt") : null;
-            final File inhaltAllgemeinTxtFile = ((templatesDir != null) && templatesDir.isDirectory())
-                ? new File(templatesDir, "ALL.inhalt.txt") : null;
-            final File inhaltAllgemeinHtmlFile = ((templatesDir != null) && templatesDir.isDirectory())
-                ? new File(templatesDir, "ALL.inhalt.html") : null;
-
-            final File betreffSpezifischFile =
-                ((status != null) && (templatesDir != null) && templatesDir.isDirectory())
-                ? new File(templatesDir, String.format("%s.inhalt.txt", status)) : null;
-            final File inhaltSpezifischTxtFile =
-                ((status != null) && (templatesDir != null) && templatesDir.isDirectory())
-                ? new File(templatesDir, String.format("%s.inhalt.txt", status)) : null;
-            final File inhaltSpezifischHtmlFile =
-                ((status != null) && (templatesDir != null) && templatesDir.isDirectory())
-                ? new File(templatesDir, String.format("%s.inhalt.html", status)) : null;
-
-            final String betreffAllgemein =
-                ((betreffAllgemeinFile != null) && betreffAllgemeinFile.isFile() && betreffAllgemeinFile.canRead())
-                ? FileUtils.readFileToString(betreffAllgemeinFile, "UTF-8") : null;
-            final String inhaltAllgemeinTxt =
-                ((inhaltAllgemeinTxtFile != null) && inhaltAllgemeinTxtFile.isFile()
-                            && inhaltAllgemeinTxtFile.canRead())
-                ? FileUtils.readFileToString(inhaltAllgemeinTxtFile, "UTF-8") : null;
-            final String inhaltAllgemeinHtml =
-                ((inhaltAllgemeinHtmlFile != null) && inhaltAllgemeinHtmlFile.isFile()
-                            && inhaltAllgemeinHtmlFile.canRead())
-                ? FileUtils.readFileToString(inhaltAllgemeinHtmlFile, "UTF-8") : null;
-
-            final String betreffSpezifisch =
-                ((betreffSpezifischFile != null) && betreffSpezifischFile.isFile() && betreffSpezifischFile.canRead())
-                ? FileUtils.readFileToString(betreffSpezifischFile, "UTF-8") : null;
-            final String inhaltSpezifischTxt =
-                ((inhaltSpezifischTxtFile != null) && inhaltSpezifischTxtFile.isFile()
-                            && inhaltSpezifischTxtFile.canRead())
-                ? FileUtils.readFileToString(inhaltSpezifischTxtFile, "UTF-8") : null;
-            final String inhaltSpezifischHtml =
-                ((inhaltSpezifischHtmlFile != null) && inhaltSpezifischHtmlFile.isFile()
-                            && inhaltSpezifischHtmlFile.canRead())
-                ? FileUtils.readFileToString(inhaltSpezifischHtmlFile, "UTF-8") : null;
-
-            final String betreff = (betreffSpezifisch != null) ? betreffSpezifisch : betreffAllgemein;
-            final String inhalt = (inhaltSpezifischHtml != null)
-                ? inhaltSpezifischHtml
-                : ((inhaltSpezifischTxt != null)
-                    ? inhaltSpezifischTxt : ((inhaltAllgemeinHtml != null) ? inhaltAllgemeinHtml : inhaltAllgemeinTxt));
-
-            if (inhalt != null) {
-                LOG.info("BETREFF:\n"
-                            + ((betreff != null)
-                                ? betreff.replaceAll(
-                                    Pattern.quote("{KASSENZEICHEN}"),
-                                    (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-") : null));
-                LOG.info("INHALT:\n"
-                            + inhalt.replaceAll(
-                                Pattern.quote("{KASSENZEICHEN}"),
-                                (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-").replaceAll(
-                                Pattern.quote("{STATUS}"),
-                                (status != null) ? status.toString() : "-"));
-                sendMail(absenderAdresse, empfaengerAdresse, betreff, inhaltAllgemeinTxt);
+            final File configDir = (conf.getMessageconfigDir() != null) ? new File(conf.getMessageconfigDir()) : null;
+            final MessageConfigJson messageConfig = getMessageConfig(status.toString(), configDir);
+            if (messageConfig != null) {
+                final String cmdTemplate = messageConfig.getCmdTemplate();
+                final String betreff = messageConfig.getTopic();
+                final String messageTemplate = (messageConfig.getMessageTemplateFile() != null)
+                    ? readMessageTemplate(new File(configDir, messageConfig.getMessageTemplateFile())) : null;
+                if (messageTemplate != null) {
+                    final String inhalt = messageTemplate.replaceAll(Pattern.quote(TEMPLATEREPLACER_KASSENZEICHEN),
+                            (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-");
+                    sendMail((cmdTemplate != null) ? cmdTemplate : DEFAULT_CMDTEMPLATE,
+                        absenderAdresse,
+                        empfaengerAdresse,
+                        betreff,
+                        inhalt);
+                }
             }
         } catch (final Exception ex) {
-            LOG.error(ex, ex);
+            LOG.error("error while sendStatusChangedMail", ex);
         }
     }
     /**
