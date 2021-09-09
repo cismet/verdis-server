@@ -16,7 +16,6 @@ import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
 import Sirius.server.newuser.User;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.apache.log4j.Logger;
 
@@ -38,7 +37,6 @@ import de.cismet.commons.security.WebDavClient;
 import de.cismet.connectioncontext.ConnectionContext;
 import de.cismet.connectioncontext.ConnectionContextStore;
 
-import de.cismet.netutil.Proxy;
 import de.cismet.netutil.ProxyHandler;
 
 import de.cismet.verdis.server.json.NachrichtAnhangUploadJson;
@@ -167,7 +165,7 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
                         uuid,
                         URLEncoder.encode(fileName, "utf-8").replaceAll("\\+", "%20"));
                 final int status;
-                if (waitForSuccess) {
+                if (waitForSuccess) {                    
                     status = upload(uploadFilePath, bytes, conf);
                     if (status != 201) {
                         LOG.error(String.format("upload to %s failed with status code %d", uploadFilePath, status));
@@ -195,18 +193,10 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
                 }
                 returnJson = new NachrichtAnhangUploadJson(status, null, fileName, uuid);
             }
-        } catch (final StatusException ex) {
-            returnJson = new NachrichtAnhangUploadJson(ex.getStatus(), ex.getMessage());
-        } catch (final Exception ex) {
-            LOG.error(ex, ex);
-            returnJson = new NachrichtAnhangUploadJson(500, ex.getMessage());
-        }
-
-        try {
             return returnJson.toJson();
-        } catch (final JsonProcessingException ex) {
-            LOG.error(ex, ex);
-            return null;
+        } catch (final Exception ex) {
+            LOG.error(ex.getMessage(), ex);
+            return new NachrichtAnhangUploadJson(ex instanceof StatusException ? ((StatusException)ex).getStatus() : 500, ex.getMessage());
         }
     }
 
