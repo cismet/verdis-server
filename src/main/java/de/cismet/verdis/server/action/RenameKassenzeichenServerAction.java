@@ -22,6 +22,7 @@ import Sirius.server.newuser.User;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 
 import de.cismet.cids.dynamics.CidsBean;
 
@@ -237,6 +238,12 @@ public class RenameKassenzeichenServerAction implements MetaServiceStore, UserAw
             throws Exception {
         if (kassenzeichen != null) {
             kassenzeichen.setProperty(VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER, kassenzeichennumer);
+            kassenzeichen.setProperty(
+                VerdisConstants.PROP.KASSENZEICHEN.LETZTE_AENDERUNG_TIMESTAMP,
+                new Timestamp(new java.util.Date().getTime()));
+            kassenzeichen.setProperty(
+                VerdisConstants.PROP.KASSENZEICHEN.LETZTE_AENDERUNG_USER,
+                String.format("%s@%s", getUser().getName(), getUser().getUserGroup().getName()));
 
             DomainServerImpl.getServerInstance().updateMetaObject(getUser(), kassenzeichen.getMetaObject());
         }
