@@ -16,7 +16,6 @@ import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.interfaces.domainserver.MetaServiceStore;
 import Sirius.server.newuser.User;
 
-
 import org.apache.log4j.Logger;
 
 import java.io.ByteArrayInputStream;
@@ -108,7 +107,7 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
 
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
-        NachrichtAnhangUploadJson returnJson;
+        final NachrichtAnhangUploadJson returnJson;
         final byte[] bytes;
         String fileName = null;
         String stac = null;
@@ -165,7 +164,7 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
                         uuid,
                         URLEncoder.encode(fileName, "utf-8").replaceAll("\\+", "%20"));
                 final int status;
-                if (waitForSuccess) {                    
+                if (waitForSuccess) {
                     status = upload(uploadFilePath, bytes, conf);
                     if (status != 201) {
                         LOG.error(String.format("upload to %s failed with status code %d", uploadFilePath, status));
@@ -196,7 +195,9 @@ public class UploadChangeRequestAnhangServerAction implements MetaServiceStore,
             return returnJson.toJson();
         } catch (final Exception ex) {
             LOG.error(ex.getMessage(), ex);
-            return new NachrichtAnhangUploadJson(ex instanceof StatusException ? ((StatusException)ex).getStatus() : 500, ex.getMessage());
+            return new NachrichtAnhangUploadJson((ex instanceof StatusException) ? ((StatusException)ex).getStatus()
+                                                                                 : 500,
+                    ex.getMessage());
         }
     }
 
