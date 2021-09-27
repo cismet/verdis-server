@@ -194,7 +194,7 @@ public class KassenzeichenNodeByWKTSearch extends KassenzeichenGeomSearch implem
                                 + " = geom." + VerdisConstants.PROP.GEOM.ID);
                 }
 
-                final String geomFromText = "GeomFromText('" + searchGeometry.toText() + "', "
+                final String geomFromText = "st_GeomFromText('" + searchGeometry.toText() + "', "
                             + searchGeometry.getSRID()
                             + ")";
                 final String sqlDerived = "SELECT DISTINCT " + KASSENZEICHEN_CLASS_ID + " as cid, "

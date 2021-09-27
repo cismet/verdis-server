@@ -47,7 +47,7 @@ public class AssignLandparcelGeomSearch extends GeomServerSearch {
             final Geometry geometry = (Geometry)getGeometry();
 
             final String sql = "SELECT "
-                        + "   ASTEXT(geom.geo_field), "
+                        + "   st_ASTEXT(geom.geo_field), "
                         + "   alkis_landparcel.alkis_id "
                         + "FROM "
                         + "   alkis_landparcel, "

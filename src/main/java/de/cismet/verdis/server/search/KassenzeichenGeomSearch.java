@@ -71,7 +71,7 @@ public class KassenzeichenGeomSearch extends GeomServerSearch {
                             + " = geom." + VerdisConstants.PROP.GEOM.ID);
             }
 
-            final String geomFromText = "GeomFromText('" + searchGeometry.toText() + "', " + searchGeometry.getSRID()
+            final String geomFromText = "st_GeomFromText('" + searchGeometry.toText() + "', " + searchGeometry.getSRID()
                         + ")";
             final String sqlDerived = "SELECT "
                         + "    DISTINCT " + VerdisConstants.MC.KASSENZEICHEN + "."
