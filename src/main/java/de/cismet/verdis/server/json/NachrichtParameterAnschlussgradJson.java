@@ -31,6 +31,6 @@ public class NachrichtParameterAnschlussgradJson extends NachrichtParameterJson 
     public NachrichtParameterAnschlussgradJson(final NachrichtParameterJson.Type type,
             final String flaeche,
             final FlaecheAnschlussgradJson anschlussgrad) {
-        super(type, null, flaeche, null, null, anschlussgrad);
+        super(type, null, flaeche, null, null, anschlussgrad, null);
     }
 }

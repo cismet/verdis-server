@@ -67,11 +67,13 @@ public class NachrichtParameterDeserializer extends StdDeserializer<NachrichtPar
             ? objectMapper.treeToValue(on.get("flaechenart"), FlaecheFlaechenartJson.class) : null;
         final FlaecheAnschlussgradJson anschlussgrad = on.has("anschlussgrad")
             ? objectMapper.treeToValue(on.get("anschlussgrad"), FlaecheAnschlussgradJson.class) : null;
+        final Boolean benachrichtigt = on.has("benachrichtigt") ? on.get("benachrichtigt").booleanValue() : null;
 
-        if ((status == null) && (groesse == null) && (flaechenart == null) && (anschlussgrad == null)) {
+        if ((status == null) && (groesse == null) && (flaechenart == null) && (anschlussgrad == null)
+                    && (benachrichtigt == null)) {
             throw new RuntimeException(
                 "invalid NachrichtSystemParametersJson: neither groesse nor flaechenart nor anschlussgrad is set");
         }
-        return new NachrichtParameterJson(type, status, flaeche, groesse, flaechenart, anschlussgrad);
+        return new NachrichtParameterJson(type, status, flaeche, groesse, flaechenart, anschlussgrad, benachrichtigt);
     }
 }

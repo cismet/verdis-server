@@ -29,6 +29,6 @@ public class NachrichtParameterStatusJson extends NachrichtParameterJson {
      * @param  status  DOCUMENT ME!
      */
     public NachrichtParameterStatusJson(final AenderungsanfrageUtils.Status status) {
-        super(Type.STATUS, status, null, null, null, null);
+        super(Type.STATUS, status, null, null, null, null, null);
     }
 }
