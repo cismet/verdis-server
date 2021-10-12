@@ -62,7 +62,14 @@ public class NachrichtParameterJson extends AbstractJson {
             public String toString() {
                 return "status";
             }
-        }
+        },
+        NOTIFY {
+
+            @Override
+            public String toString() {
+                return "notify";
+            }
+        },
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -73,4 +80,5 @@ public class NachrichtParameterJson extends AbstractJson {
     private Integer groesse;
     private FlaecheFlaechenartJson flaechenart;
     private FlaecheAnschlussgradJson anschlussgrad;
+    private Boolean benachrichtigt;
 }

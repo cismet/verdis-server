@@ -31,6 +31,6 @@ public class NachrichtParameterGroesseJson extends NachrichtParameterJson {
     public NachrichtParameterGroesseJson(final NachrichtParameterJson.Type type,
             final String flaeche,
             final Integer groesse) {
-        super(type, null, flaeche, groesse, null, null);
+        super(type, null, flaeche, groesse, null, null, null);
     }
 }
