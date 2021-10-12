@@ -141,6 +141,7 @@ public class AenderungsanfrageUtils {
 
     public static final String MESSAGETYPE_MAILVERIFICATION = "MAILVERIFICATION";
     public static final String MESSAGETYPE_MAILCONFIRMATION = "MAILCONFIRMATION";
+    public static final String MESSAGETYPE_NOTIFY = "NOTIFY";
 
     private static final String CONFIG_JSON_FORMAT = "config.%s.json";
     private static final String TEMPLATEREPLACER_KASSENZEICHEN = "{KASSENZEICHEN}";
@@ -290,6 +291,7 @@ public class AenderungsanfrageUtils {
      * @param   nachrichtenOrig  DOCUMENT ME!
      * @param   nachrichtenNew   DOCUMENT ME!
      * @param   citizenOrClerk   DOCUMENT ME!
+     * @param   username         DOCUMENT ME!
      * @param   timestamp        DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -299,6 +301,7 @@ public class AenderungsanfrageUtils {
     private List<NachrichtJson> processNachrichten(final List<NachrichtJson> nachrichtenOrig,
             final List<NachrichtJson> nachrichtenNew,
             final Boolean citizenOrClerk,
+            final String username,
             final Date timestamp) throws Exception {
         final boolean isCitizen = Boolean.TRUE.equals(citizenOrClerk);
         final boolean isClerk = Boolean.FALSE.equals(citizenOrClerk);
@@ -331,14 +334,20 @@ public class AenderungsanfrageUtils {
         for (final NachrichtJson newNachricht : nachrichtenNew) {
             final boolean isCitizenMessage = NachrichtJson.Typ.CITIZEN.equals(newNachricht.getTyp());
             final boolean isClerkMessage = NachrichtJson.Typ.CLERK.equals(newNachricht.getTyp());
+            final boolean isSystemMessage = NachrichtJson.Typ.SYSTEM.equals(newNachricht.getTyp());
             final boolean isOwnMessage = isCitizen ? isCitizenMessage : (isClerk ? isClerkMessage : false);
             final boolean isNew = (newNachricht.getIdentifier() == null)
                         || !origNachrichtenMap.containsKey(newNachricht.getIdentifier());
             final boolean wasPrefiouslyDraft = (origNachrichtenMap.get(newNachricht.getIdentifier()) != null)
                         && Boolean.TRUE.equals(origNachrichtenMap.get(newNachricht.getIdentifier()).getDraft());
+            final NachrichtParameterJson nachrichtenParameter = newNachricht.getNachrichtenParameter();
+            final boolean isClerksNotifyMessage = isSystemMessage && (nachrichtenParameter != null)
+                        && NachrichtParameterJson.Type.NOTIFY.equals(nachrichtenParameter.getType())
+                        && Boolean.FALSE.equals(nachrichtenParameter.getBenachrichtigt())
+                        && username.equals(newNachricht.getAbsender());
 
             // nur eigene neue Nachrichten betrachten
-            if (isOwnMessage && (isNew || wasPrefiouslyDraft)) {
+            if ((isOwnMessage && (isNew || wasPrefiouslyDraft)) || isClerksNotifyMessage) {
                 final NachrichtJson origNachricht =
                     ((newNachricht.getIdentifier() != null)
                                 && origNachrichtenMap.containsKey(newNachricht.getIdentifier()))
@@ -706,12 +715,14 @@ public class AenderungsanfrageUtils {
     /**
      * DOCUMENT ME!
      *
-     * @param  kassenzeichenNummer  DOCUMENT ME!
-     * @param  absenderAdresse      DOCUMENT ME!
-     * @param  empfaengerAdresse    DOCUMENT ME!
-     * @param  code                 DOCUMENT ME!
+     * @param   kassenzeichenNummer  DOCUMENT ME!
+     * @param   absenderAdresse      DOCUMENT ME!
+     * @param   empfaengerAdresse    DOCUMENT ME!
+     * @param   code                 DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
      */
-    public void sendVerificationMail(final Integer kassenzeichenNummer,
+    public boolean sendVerificationMail(final Integer kassenzeichenNummer,
             final String absenderAdresse,
             final String empfaengerAdresse,
             final String code) {
@@ -733,11 +744,13 @@ public class AenderungsanfrageUtils {
                         empfaengerAdresse,
                         betreff,
                         inhalt);
+                    return true;
                 }
             }
         } catch (final Exception ex) {
             LOG.error("error while sendVerificationMail", ex);
         }
+        return false;
     }
 
     /**
@@ -818,12 +831,52 @@ public class AenderungsanfrageUtils {
     /**
      * DOCUMENT ME!
      *
-     * @param  kassenzeichenNummer  DOCUMENT ME!
-     * @param  absenderAdresse      DOCUMENT ME!
-     * @param  empfaengerAdresse    DOCUMENT ME!
-     * @param  status               DOCUMENT ME!
+     * @param   kassenzeichenNummer  DOCUMENT ME!
+     * @param   absenderAdresse      DOCUMENT ME!
+     * @param   empfaengerAdresse    DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
      */
-    public void sendStatusChangedMail(final Integer kassenzeichenNummer,
+    public boolean sendNotifyMail(final Integer kassenzeichenNummer,
+            final String absenderAdresse,
+            final String empfaengerAdresse) {
+        try {
+            final AenderungsanfrageConf conf = getConfFromServerResource();
+            final File configDir = (conf.getMessageconfigDir() != null) ? new File(conf.getMessageconfigDir()) : null;
+            final MessageConfigJson messageConfig = getMessageConfig(MESSAGETYPE_NOTIFY, configDir);
+            if (messageConfig != null) {
+                final String cmdTemplate = messageConfig.getCmdTemplate();
+                final String betreff = messageConfig.getTopic();
+                final String messageTemplate = (messageConfig.getMessageTemplateFile() != null)
+                    ? readMessageTemplate(new File(configDir, messageConfig.getMessageTemplateFile())) : null;
+                if (messageTemplate != null) {
+                    final String inhalt = messageTemplate.replaceAll(Pattern.quote(TEMPLATEREPLACER_KASSENZEICHEN),
+                            (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-");
+                    sendMail((cmdTemplate != null) ? cmdTemplate : DEFAULT_CMDTEMPLATE,
+                        absenderAdresse,
+                        empfaengerAdresse,
+                        betreff,
+                        inhalt);
+                    return true;
+                }
+            }
+        } catch (final Exception ex) {
+            LOG.error("error while sendNotifyMail", ex);
+        }
+        return false;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   kassenzeichenNummer  DOCUMENT ME!
+     * @param   absenderAdresse      DOCUMENT ME!
+     * @param   empfaengerAdresse    DOCUMENT ME!
+     * @param   status               DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean sendStatusChangedMail(final Integer kassenzeichenNummer,
             final String absenderAdresse,
             final String empfaengerAdresse,
             final Status status) {
@@ -844,12 +897,15 @@ public class AenderungsanfrageUtils {
                         empfaengerAdresse,
                         betreff,
                         inhalt);
+                    return true;
                 }
             }
         } catch (final Exception ex) {
             LOG.error("error while sendStatusChangedMail", ex);
         }
+        return false;
     }
+
     /**
      * DOCUMENT ME!
      *
@@ -913,7 +969,7 @@ public class AenderungsanfrageUtils {
             }
         }
 
-        return new AenderungsanfrageJson(
+        final AenderungsanfrageJson anfrageProcessed = new AenderungsanfrageJson(
                 kassenzeichennumer,
                 emailAdresse,
                 null,
@@ -935,7 +991,27 @@ public class AenderungsanfrageUtils {
                     anfrageOrig.getNachrichten(),
                     anfrageNew.getNachrichten(),
                     citizenOrClerk,
+                    username,
                     timestamp));
+
+        if (anfrageProcessed.getNachrichten() != null) {
+            boolean notified = false;
+            for (final NachrichtJson nachrichtJson : anfrageProcessed.getNachrichten()) {
+                if (nachrichtJson != null) {
+                    final NachrichtParameterJson nachrichtenParameter = nachrichtJson.getNachrichtenParameter();
+                    if ((nachrichtenParameter != null)
+                                && Boolean.FALSE.equals(nachrichtenParameter.getBenachrichtigt())) {
+                        if (!notified) {
+                            notified = sendNotifyMail(kassenzeichennumer, absenderAdresse, absenderAdresse);
+                        }
+                        if (notified) {
+                            nachrichtenParameter.setBenachrichtigt(Boolean.TRUE);
+                        }
+                    }
+                }
+            }
+        }
+        return anfrageProcessed;
     }
 
     /**

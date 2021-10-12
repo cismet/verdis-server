@@ -12,25 +12,23 @@
  */
 package de.cismet.verdis.server.json;
 
+import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
+
 /**
  * DOCUMENT ME!
  *
  * @version  $Revision$, $Date$
  */
-public class NachrichtParameterFlaechenartJson extends NachrichtParameterJson {
+public class NachrichtParameterNotifyJson extends NachrichtParameterJson {
 
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Creates a new Flaechenart object.
+     * Creates a new NachrichtParameterNotifyJson object.
      *
-     * @param  type         DOCUMENT ME!
-     * @param  flaeche      DOCUMENT ME!
-     * @param  flaechenart  DOCUMENT ME!
+     * @param  benachrichtigt  DOCUMENT ME!
      */
-    public NachrichtParameterFlaechenartJson(final NachrichtParameterJson.Type type,
-            final String flaeche,
-            final FlaecheFlaechenartJson flaechenart) {
-        super(type, null, flaeche, null, flaechenart, null, null);
+    public NachrichtParameterNotifyJson(final Boolean benachrichtigt) {
+        super(Type.NOTIFY, null, null, null, null, null, benachrichtigt);
     }
 }
