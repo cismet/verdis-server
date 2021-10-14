@@ -703,12 +703,13 @@ public class AenderungsanfrageUtils {
             final String betreff,
             final String inhalt) throws Exception {
         if (cmdTemplate != null) {
-            executeCmd(
-                cmdTemplate.replaceAll(Pattern.quote(CMDREPLACER_CLERK_EMAIL), emailAbsender) //
+            final String cmd = cmdTemplate.replaceAll(Pattern.quote(CMDREPLACER_CLERK_EMAIL), emailAbsender) //
                 .replaceAll(Pattern.quote(CMDREPLACER_CITIZEN_EMAIL), emailAdresse)           //
                 .replaceAll(Pattern.quote(CMDREPLACER_TOPIC), betreff)                        //
                 .replaceAll(Pattern.quote(CMDREPLACER_MESSAGE), inhalt)                       //
-                );
+            ;
+            LOG.info(String.format("executing sendMail CMD: %s", cmd));
+            executeCmd(cmd);
         }
     }
 
@@ -815,13 +816,10 @@ public class AenderungsanfrageUtils {
      */
     private MessageConfigJson getMessageConfig(final String messageType, final File configDir) {
         try {
-            final File configFile = (configDir != null)
-                ? new File(configDir, String.format(CONFIG_JSON_FORMAT, messageType)) : null;
-            final String configJson =
-                ((configFile != null) && configFile.exists() && configFile.isFile() && configFile.canRead())
-                ? IOUtils.toString(new FileReader(configFile)) : null;
-            final MessageConfigJson config = getMapper().readValue(configJson, MessageConfigJson.class);
-            return config;
+            final File configFile = configDir != null ? new File(configDir, String.format(CONFIG_JSON_FORMAT, messageType)) : null;
+            final boolean configFileOk = configFile != null && configFile.exists() && configFile.isFile() && configFile.canRead();
+            final String configJson = configFileOk ? IOUtils.toString(new FileReader(configFile)) : null;
+            return configJson != null ? getMapper().readValue(configJson, MessageConfigJson.class) : null;
         } catch (final Exception ex) {
             LOG.error(String.format("error while loading config file for %s, ", messageType), ex);
             return null;
