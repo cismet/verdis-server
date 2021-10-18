@@ -208,7 +208,7 @@ public class AenderungsanfrageJsonTest {
         final AenderungsanfrageJson aenderungsanfrageOrig = aenderungsanfrageOrigJson != null ? AenderungsanfrageUtils.getInstance().createAenderungsanfrageJson(aenderungsanfrageOrigJson) : new AenderungsanfrageJson(kassenzeichen);
         final AenderungsanfrageJson aenderungsanfrageChange = aenderungsanfrageChangeJson != null ? AenderungsanfrageUtils.getInstance().createAenderungsanfrageJson(aenderungsanfrageChangeJson) : new AenderungsanfrageJson(kassenzeichen);
 
-        final AenderungsanfrageJson aenderungsanfrageNew = AenderungsanfrageUtils.getInstance().processAnfrageCitizen(kassenzeichen, null, new HashSet<>(Arrays.asList("5")), aenderungsanfrageOrig, aenderungsanfrageChange, "test", new Date(2500000000000L));               
+        final AenderungsanfrageJson aenderungsanfrageNew = AenderungsanfrageUtils.getInstance().processAnfrageCitizen(kassenzeichen, new HashSet<>(Arrays.asList("5")), aenderungsanfrageOrig, aenderungsanfrageChange, "test", new Date(2500000000000L));               
         final String aenderungsanfrageNewJson = aenderungsanfrageNew.toPrettyJson();
         //System.out.println(aenderungsanfrageNewJson);                            
         Assert.assertEquals(aenderungsanfrageProcessedJson, aenderungsanfrageNewJson);        
