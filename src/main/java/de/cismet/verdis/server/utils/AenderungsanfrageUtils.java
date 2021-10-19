@@ -931,7 +931,7 @@ public class AenderungsanfrageUtils {
         String emailAdresse = anfrageOrig.getEmailAdresse();
 
         // process email change
-        if (anfrageNew.getEmailVerifiziert() == null) {
+        if (Boolean.TRUE.equals(citizenOrClerk) && (anfrageNew.getEmailVerifiziert() == null)) {
             emailAdresse = anfrageNew.getEmailAdresse();
             if (emailAdresse != null) {
                 emailVerifiziert = false;
@@ -941,13 +941,14 @@ public class AenderungsanfrageUtils {
                 }
             } else {
                 emailVerifiziert = null;
-                removeEmail(kassenzeichennumer, anfrageOrig.getEmailAdresse());
+                removeEmail(kassenzeichennumer, emailAdresse);
             }
         }
 
         // process email verification
         final String emailVerifikation = anfrageNew.getEmailVerifikation();
-        if ((emailAdresse != null) && (emailVerifikation != null) && !Boolean.TRUE.equals(emailVerifiziert)) {
+        if (Boolean.TRUE.equals(citizenOrClerk) && (emailAdresse != null) && (emailVerifikation != null)
+                    && !Boolean.TRUE.equals(emailVerifiziert)) {
             final EmailVerification emailVerification = getEmailVerification(kassenzeichennumer);
             if (emailVerification != null) {
                 emailVerifiziert = emailVerifikation.equals(emailVerification.getCode());
