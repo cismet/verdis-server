@@ -92,12 +92,16 @@ public class AenderungsanfrageJson extends AbstractJson {
     /**
      * Creates a new AenderungsanfrageJson object.
      *
-     * @param  kassenzeichen  DOCUMENT ME!
-     * @param  flaechen       DOCUMENT ME!
-     * @param  geometrien     DOCUMENT ME!
-     * @param  nachrichten    DOCUMENT ME!
+     * @param  kassenzeichen     DOCUMENT ME!
+     * @param  emailAdresse      DOCUMENT ME!
+     * @param  emailVerifiziert  DOCUMENT ME!
+     * @param  flaechen          DOCUMENT ME!
+     * @param  geometrien        DOCUMENT ME!
+     * @param  nachrichten       DOCUMENT ME!
      */
     public AenderungsanfrageJson(final Integer kassenzeichen,
+            final String emailAdresse,
+            final Boolean emailVerifiziert,
             final Map<String, FlaecheAenderungJson> flaechen,
             final Map<String, GeoJsonObject> geometrien,
             final List<NachrichtJson> nachrichten) {
