@@ -383,7 +383,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                 if (!Objects.equals(oldStatus, newStatus)) {
                     updateExpiration(stacEntry);
                     if ((aenderungsanfrageProcessed.getEmailAdresse() != null)
-                                && Boolean.TRUE.equals(aenderungsanfrageProcessed.getEmailVerifikation())) {
+                                && Boolean.TRUE.equals(aenderungsanfrageProcessed.getEmailVerifiziert())) {
                         AenderungsanfrageUtils.getInstance()
                                 .sendStatusChangedMail(
                                     kassenzeichennummer,
