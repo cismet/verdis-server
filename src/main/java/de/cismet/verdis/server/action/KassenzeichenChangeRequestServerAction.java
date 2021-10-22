@@ -100,6 +100,13 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             public String toString() {
                 return "changerequestJson";
             }
+        },
+        CLERK_IS_SAVING {
+
+            @Override
+            public String toString() {
+                return "Sachbearbeiter speichert Kassenzeichen";
+            }
         }
     }
 
@@ -132,6 +139,8 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                     extractedParams.put(Parameter.STAC_ID, (Integer)value);
                 } else if (Parameter.CHANGEREQUEST_JSON.toString().equals(key)) {
                     extractedParams.put(Parameter.CHANGEREQUEST_JSON, value);
+                } else if (Parameter.CLERK_IS_SAVING.toString().equals(key)) {
+                    extractedParams.put(Parameter.CLERK_IS_SAVING, value);
                 }
             }
         }
@@ -145,7 +154,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    private void preValidateInput(final Map<Parameter, Object> extractedParams) throws Exception {
+    private static void preValidateInput(final Map<Parameter, Object> extractedParams) throws Exception {
         final String stac = (String)extractedParams.get(Parameter.STAC);
         final Integer stacId = (Integer)extractedParams.get(Parameter.STAC_ID);
         final Object aenderungsanfrage = extractedParams.get(Parameter.CHANGEREQUEST_JSON);
@@ -282,17 +291,24 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
     public Object execute(final Object boxy, final ServerActionParameter... params) {
         try {
             final Map<Parameter, Object> extractedParams = extractParams(params);
+            preValidateInput(extractedParams);
+
+            final boolean citizenOrClerk = "stac".equals(getUser().getName());
 
             final String stac = (String)extractedParams.get(Parameter.STAC);
             final Integer stacId = (Integer)extractedParams.get(Parameter.STAC_ID);
             final Object aenderungsanfrage = extractedParams.get(Parameter.CHANGEREQUEST_JSON);
-
-            preValidateInput(extractedParams);
+            final Boolean veranlagt = (!citizenOrClerk) ? (Boolean)extractedParams.get(Parameter.CLERK_IS_SAVING)
+                                                        : null;
 
             final StacEntry stacEntry = createStacEntry(stac, stacId);
             final AenderungsanfrageJson aenderungsanfrageJson = createAenderungsanfrageNew(aenderungsanfrage);
             final CidsBean kassenzeichenBean = createKassenzeichenBean(stacEntry);
             final Integer kassenzeichennummer = createKassenzeichennummer(kassenzeichenBean, aenderungsanfrageJson);
+
+            if (veranlagt != null) { // Sachbearbeiter hat gespeichert
+                AenderungsanfrageUtils.clerkSavedKassenzeichen(kassenzeichenBean, aenderungsanfrageJson, veranlagt);
+            }
 
             final Set<String> existingFlaechen = new HashSet<>();
             for (final CidsBean flaecheBean
@@ -362,7 +378,8 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                                 existingFlaechen,
                                 aenderungsanfrageOrig,
                                 aenderungsanfrageProcessed,
-                                "stac".equals(getUser().getName()),
+                                citizenOrClerk,
+                                veranlagt,
                                 getUser().getName(),
                                 now);
 
@@ -410,7 +427,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                 final AenderungsanfrageJson anderungsanfrageFiltered = AenderungsanfrageUtils.getInstance()
                             .doFilteringOutWhatIShouldntSee(
                                 aenderungsanfrageProcessed,
-                                "stac".equals(getUser().getName()));
+                                citizenOrClerk);
 
                 // RESULT
                 return new AenderungsanfrageResultJson(
@@ -463,7 +480,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             new Timestamp(new Date().getTime()));
         aenderungsanfrageBean.setProperty(
             VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS,
-            AenderungsanfrageUtils.getInstance().getStatusBean(
+            AenderungsanfrageUtils.getStatusBean(
                 status,
                 stacEntry,
                 getMetaService(),
