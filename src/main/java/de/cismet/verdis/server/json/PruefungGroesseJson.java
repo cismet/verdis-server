@@ -36,7 +36,7 @@ public class PruefungGroesseJson extends PruefungJson<Integer> {
      * @param  value  DOCUMENT ME!
      */
     public PruefungGroesseJson(final Integer value) {
-        super(null, value, null, null);
+        super(true, value, null, null);
     }
 
     /**
