@@ -36,7 +36,7 @@ public class PruefungFlaechenartJson extends PruefungJson<FlaecheFlaechenartJson
      * @param  value  DOCUMENT ME!
      */
     public PruefungFlaechenartJson(final FlaecheFlaechenartJson value) {
-        this(null, value, null, null);
+        this(true, value, null, null);
     }
 
     /**
