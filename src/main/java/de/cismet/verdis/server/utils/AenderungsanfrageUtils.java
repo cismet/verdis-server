@@ -42,12 +42,10 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -380,6 +378,7 @@ public class AenderungsanfrageUtils {
      * @param   flaechenOrig      DOCUMENT ME!
      * @param   flaechenNew       DOCUMENT ME!
      * @param   citizenOrClerk    DOCUMENT ME!
+     * @param   veranlagt         DOCUMENT ME!
      * @param   username          DOCUMENT ME!
      * @param   timestamp         DOCUMENT ME!
      *
@@ -387,11 +386,12 @@ public class AenderungsanfrageUtils {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    private Map<String, FlaecheAenderungJson> processFlaechen(
-            final Set<String> existingFlaechen,
+    private Map<String, FlaecheAenderungJson> processFlaechenUndPruefung(
+            final Map<String, CidsBean> existingFlaechen,
             final Map<String, FlaecheAenderungJson> flaechenOrig,
             final Map<String, FlaecheAenderungJson> flaechenNew,
             final Boolean citizenOrClerk,
+            final Boolean veranlagt,
             final String username,
             final Date timestamp) throws Exception {
         final boolean isCitizen = Boolean.TRUE.equals(citizenOrClerk);
@@ -401,7 +401,7 @@ public class AenderungsanfrageUtils {
         if (flaechenOrig == null) { // ???
             // keine pruefung übernehmen (ist neu, kann noch nicht geprueft worden sein)
             for (final String bezeichnung : flaechenNew.keySet()) {
-                if (existingFlaechen.contains(bezeichnung)) {
+                if (existingFlaechen.containsKey(bezeichnung)) {
                     final FlaecheAenderungJson flaeche = flaechenNew.get(bezeichnung);
                     flaeche.setPruefung(null);
                     flaechenProcessed.put(bezeichnung, flaeche);
@@ -412,7 +412,7 @@ public class AenderungsanfrageUtils {
         } else {
             // alle Originalflaechen erst einmal pauschal übernehmen
             for (final String bezeichnung : flaechenOrig.keySet()) {
-                if (existingFlaechen.contains(bezeichnung)) {
+                if (existingFlaechen.containsKey(bezeichnung)) {
                     final FlaecheAenderungJson flaecheOrig = flaechenOrig.get(bezeichnung);
                     final FlaecheAenderungJson flaecheProcessed = getMapper().readValue(flaecheOrig.toJson(),
                             FlaecheAenderungJson.class);
@@ -424,7 +424,7 @@ public class AenderungsanfrageUtils {
 
             // anfragen untersuchen und selektiv bearbeiten
             for (final String bezeichnung : flaechenNew.keySet()) {
-                if (existingFlaechen.contains(bezeichnung)) {
+                if (existingFlaechen.containsKey(bezeichnung)) {
                     final FlaecheAenderungJson flaecheOrig = flaechenOrig.containsKey(bezeichnung)
                         ? flaechenOrig.get(bezeichnung) : null;
                     final FlaecheAenderungJson flaecheNew = flaechenNew.get(bezeichnung);
@@ -437,84 +437,162 @@ public class AenderungsanfrageUtils {
                     } else {
                         flaecheProcessed = getMapper().readValue(flaecheOrig.toJson(), FlaecheAenderungJson.class);
 
+                        final Integer groesseNew = (flaecheNew != null) ? flaecheNew.getGroesse() : null;
+                        final FlaecheFlaechenartJson flaechenartNew = (flaecheNew != null) ? flaecheNew
+                                        .getFlaechenart() : null;
+                        final FlaecheAnschlussgradJson anschlussgradNew = (flaecheNew != null)
+                            ? flaecheNew.getAnschlussgrad() : null;
+
+                        final Integer groesseOrig = flaecheOrig.getGroesse();
+                        final FlaecheFlaechenartJson flaechenartOrig = flaecheOrig.getFlaechenart();
+                        final FlaecheAnschlussgradJson anschlussgradOrig = flaecheOrig.getAnschlussgrad();
+
                         // nur der eigentümer darf die flächenanfragen verändern
                         // tut er dies, hat es ein zurücksetzen der Prüfung zur Folge
                         if (isCitizen) {
                             flaecheProcessed.setDraft(flaecheNew.getDraft());
                             // veränderte Flächen übernehmen, und pruefung entfernen falls vorhanden
-                            if (!Objects.equals(flaecheNew.getGroesse(), flaecheOrig.getGroesse())) {
-                                flaecheProcessed.setGroesse(flaecheNew.getGroesse());
+                            if (!Objects.equals(groesseNew, groesseOrig)) {
+                                flaecheProcessed.setGroesse(groesseNew);
                                 if (flaecheProcessed.getPruefung() != null) {
                                     flaecheProcessed.getPruefung().setGroesse(null);
                                 }
                             }
-                            if (!Objects.equals(flaecheNew.getFlaechenart(), flaecheOrig.getFlaechenart())) {
-                                flaecheProcessed.setFlaechenart(flaecheNew.getFlaechenart());
+                            if (!Objects.equals(flaechenartNew, flaechenartOrig)) {
+                                flaecheProcessed.setFlaechenart(flaechenartNew);
                                 if (flaecheProcessed.getPruefung() != null) {
                                     flaecheProcessed.getPruefung().setFlaechenart(null);
                                 }
                             }
-                            if (!Objects.equals(flaecheNew.getAnschlussgrad(), flaecheOrig.getAnschlussgrad())) {
-                                flaecheProcessed.setAnschlussgrad(flaecheNew.getAnschlussgrad());
+                            if (!Objects.equals(anschlussgradNew, anschlussgradOrig)) {
+                                flaecheProcessed.setAnschlussgrad(anschlussgradNew);
                                 if (flaecheProcessed.getPruefung() != null) {
                                     flaecheProcessed.getPruefung().setAnschlussgrad(null);
                                 }
                             }
-                        }
-
+                        } else
                         // nur der Bearbeiter darf die Prüfung verändern
                         // tut er dies, wird der Timestamp korrekt gesetzt
                         if (isClerk) {
-                            final PruefungGroesseJson pruefungGroesseOrig = (flaecheOrig.getPruefung() != null)
-                                ? flaecheOrig.getPruefung().getGroesse() : null;
-                            final PruefungFlaechenartJson pruefungFlaechenartOrig = (flaecheOrig.getPruefung() != null)
-                                ? flaecheOrig.getPruefung().getFlaechenart() : null;
-                            final PruefungAnschlussgradJson pruefungAnschlussgradOrig =
-                                (flaecheOrig.getPruefung() != null) ? flaecheOrig.getPruefung().getAnschlussgrad()
-                                                                    : null;
+                            final CidsBean flaecheBean = existingFlaechen.get(bezeichnung);
 
-                            final PruefungGroesseJson pruefungGroesseNew = (flaecheNew.getPruefung() != null)
-                                ? flaecheNew.getPruefung().getGroesse() : null;
-                            final PruefungFlaechenartJson pruefungFlaechenartNew = (flaecheNew.getPruefung() != null)
-                                ? flaecheNew.getPruefung().getFlaechenart() : null;
-                            final PruefungAnschlussgradJson pruefungAnschlussgradNew =
-                                (flaecheNew.getPruefung() != null) ? flaecheNew.getPruefung().getAnschlussgrad() : null;
+                            final Integer groesseCids = (flaecheBean != null)
+                                ? (Integer)flaecheBean.getProperty(
+                                    VerdisConstants.PROP.FLAECHE.FLAECHENINFO
+                                            + "."
+                                            + VerdisConstants.PROP.FLAECHENINFO.GROESSE_KORREKTUR) : null;
+                            final FlaecheFlaechenartJson flaechenartCids =
+                                ((flaecheBean != null)
+                                            && (flaecheBean.getProperty(
+                                                    VerdisConstants.PROP.FLAECHE.FLAECHENINFO
+                                                    + "."
+                                                    + VerdisConstants.PROP.FLAECHENINFO.FLAECHENART) != null))
+                                ? new FlaecheFlaechenartJson((String)flaecheBean.getProperty(
+                                        VerdisConstants.PROP.FLAECHE.FLAECHENINFO
+                                                + "."
+                                                + VerdisConstants.PROP.FLAECHENINFO.FLAECHENART
+                                                + "."
+                                                + VerdisConstants.PROP.FLAECHENART.ART),
+                                    (String)flaecheBean.getProperty(
+                                        VerdisConstants.PROP.FLAECHE.FLAECHENINFO
+                                                + "."
+                                                + VerdisConstants.PROP.FLAECHENINFO.FLAECHENART
+                                                + "."
+                                                + VerdisConstants.PROP.FLAECHENART.ART_ABKUERZUNG)) : null;
+                            final FlaecheAnschlussgradJson anschlussgradCids =
+                                ((flaecheBean != null)
+                                            && (flaecheBean.getProperty(
+                                                    VerdisConstants.PROP.FLAECHE.FLAECHENINFO
+                                                    + "."
+                                                    + VerdisConstants.PROP.FLAECHENINFO.ANSCHLUSSGRAD) != null))
+                                ? new FlaecheAnschlussgradJson((String)flaecheBean.getProperty(
+                                        VerdisConstants.PROP.FLAECHE.FLAECHENINFO
+                                                + "."
+                                                + VerdisConstants.PROP.FLAECHENINFO.ANSCHLUSSGRAD
+                                                + "."
+                                                + VerdisConstants.PROP.ANSCHLUSSGRAD.GRAD),
+                                    (String)flaecheBean.getProperty(
+                                        VerdisConstants.PROP.FLAECHE.FLAECHENINFO
+                                                + "."
+                                                + VerdisConstants.PROP.FLAECHENINFO.ANSCHLUSSGRAD
+                                                + "."
+                                                + VerdisConstants.PROP.ANSCHLUSSGRAD.GRAD_ABKUERZUNG)) : null;
 
-                            // // gabs vorher keine Prüfung aber jetzt schon, dann neue Prüfung übernehmen
-                            // if ((flaecheOrig.getPruefung() == null)
-                            // && ((pruefungGroesseNew != null) || (pruefungFlaechenartNew != null)
-                            // || (pruefungAnschlussgradNew != null))) {
-                            flaecheProcessed.setPruefung(
-                                new FlaechePruefungJson(
-                                    (pruefungGroesseNew != null)
-                                        ? getMapper().readValue(pruefungGroesseNew.toJson(), PruefungGroesseJson.class)
-                                        : null,
-                                    (pruefungFlaechenartNew != null)
-                                        ? getMapper().readValue(
-                                            pruefungFlaechenartNew.toJson(),
-                                            PruefungFlaechenartJson.class) : null,
-                                    (pruefungAnschlussgradNew != null)
-                                        ? getMapper().readValue(
-                                            pruefungAnschlussgradNew.toJson(),
-                                            PruefungAnschlussgradJson.class) : null));
-                            // }
+                            final FlaechePruefungJson pruefungOrig = flaecheOrig.getPruefung();
+                            final PruefungGroesseJson pruefungGroesseOrig = (pruefungOrig != null)
+                                ? pruefungOrig.getGroesse() : null;
+                            final PruefungFlaechenartJson pruefungFlaechenartOrig = (pruefungOrig != null)
+                                ? pruefungOrig.getFlaechenart() : null;
+                            final PruefungAnschlussgradJson pruefungAnschlussgradOrig = (pruefungOrig != null)
+                                ? pruefungOrig.getAnschlussgrad() : null;
 
-                            // hat sich prüfung geändert, dann neuen timestamp übernehmen
-                            if (!Objects.equals(pruefungGroesseOrig, pruefungGroesseNew)
-                                        && (pruefungGroesseNew != null)) {
-                                flaecheProcessed.getPruefung().getGroesse().setTimestamp(timestamp);
-                                flaecheProcessed.getPruefung().getGroesse().setVon(username);
+                            final FlaechePruefungJson pruefungNew = (flaecheNew != null) ? flaecheNew.getPruefung()
+                                                                                         : null;
+                            final PruefungGroesseJson pruefungGroesseNew = (pruefungNew != null)
+                                ? pruefungNew.getGroesse() : null;
+                            final PruefungFlaechenartJson pruefungFlaechenartNew = (pruefungNew != null)
+                                ? pruefungNew.getFlaechenart() : null;
+                            final PruefungAnschlussgradJson pruefungAnschlussgradNew = (pruefungNew != null)
+                                ? pruefungNew.getAnschlussgrad() : null;
+
+                            final PruefungGroesseJson pruefungGroesseAutoaccept =
+                                (Objects.equals(groesseCids, groesseOrig)) ? new PruefungGroesseJson(groesseCids)
+                                                                           : null;
+                            final PruefungFlaechenartJson pruefungFlaechenartAutoaccept =
+                                (Objects.equals(flaechenartCids, flaechenartOrig))
+                                ? new PruefungFlaechenartJson(flaechenartCids) : null;
+                            final PruefungAnschlussgradJson pruefungAnschlussgradAutoaccept =
+                                (Objects.equals(anschlussgradCids, anschlussgradOrig))
+                                ? new PruefungAnschlussgradJson(anschlussgradCids) : null;
+
+                            final PruefungGroesseJson pruefungGroesseProcessed = (veranlagt == null)
+                                ? pruefungGroesseOrig
+                                : ((pruefungGroesseAutoaccept != null)
+                                    ? pruefungGroesseOrig
+                                    : (((pruefungGroesseNew != null)
+                                                    && Boolean.TRUE.equals(pruefungGroesseNew.getPending()))
+                                        ? pruefungGroesseNew : pruefungGroesseOrig));
+                            final PruefungFlaechenartJson pruefungFlaechenartProcessed = (veranlagt == null)
+                                ? pruefungFlaechenartOrig
+                                : ((pruefungFlaechenartAutoaccept != null)
+                                    ? pruefungFlaechenartAutoaccept
+                                    : (((pruefungFlaechenartNew != null)
+                                                    && Boolean.TRUE.equals(pruefungFlaechenartNew.getPending()))
+                                        ? pruefungFlaechenartNew : pruefungFlaechenartOrig));
+                            final PruefungAnschlussgradJson pruefungAnschlussgradProcessed = (veranlagt == null)
+                                ? pruefungAnschlussgradOrig
+                                : ((pruefungAnschlussgradAutoaccept != null)
+                                    ? pruefungAnschlussgradAutoaccept
+                                    : (((pruefungAnschlussgradNew != null)
+                                                    && Boolean.TRUE.equals(pruefungAnschlussgradNew.getPending()))
+                                        ? pruefungAnschlussgradNew : pruefungAnschlussgradOrig));
+
+                            if (pruefungGroesseProcessed != null) {
+                                pruefungGroesseProcessed.setPending(null);
+                                if (!Objects.equals(pruefungGroesseOrig, pruefungGroesseProcessed)) {
+                                    pruefungGroesseProcessed.setTimestamp(timestamp);
+                                    pruefungGroesseProcessed.setVon(username);
+                                }
                             }
-                            if (!Objects.equals(pruefungFlaechenartOrig, pruefungFlaechenartNew)
-                                        && (pruefungFlaechenartNew != null)) {
-                                flaecheProcessed.getPruefung().getFlaechenart().setTimestamp(timestamp);
-                                flaecheProcessed.getPruefung().getFlaechenart().setVon(username);
+                            if (pruefungFlaechenartProcessed != null) {
+                                pruefungFlaechenartProcessed.setPending(null);
+                                if (!Objects.equals(pruefungFlaechenartOrig, pruefungFlaechenartProcessed)) {
+                                    pruefungFlaechenartProcessed.setTimestamp(timestamp);
+                                    pruefungFlaechenartProcessed.setVon(username);
+                                }
                             }
-                            if (!Objects.equals(pruefungAnschlussgradOrig, pruefungAnschlussgradNew)
-                                        && (pruefungAnschlussgradNew != null)) {
-                                flaecheProcessed.getPruefung().getAnschlussgrad().setTimestamp(timestamp);
-                                flaecheProcessed.getPruefung().getAnschlussgrad().setVon(username);
+                            if (pruefungAnschlussgradProcessed != null) {
+                                pruefungAnschlussgradProcessed.setPending(null);
+                                if (!Objects.equals(pruefungAnschlussgradOrig, pruefungAnschlussgradProcessed)) {
+                                    pruefungAnschlussgradProcessed.setTimestamp(timestamp);
+                                    pruefungAnschlussgradProcessed.setVon(username);
+                                }
                             }
+
+                            flaecheProcessed.setPruefung(new FlaechePruefungJson(
+                                    pruefungGroesseProcessed,
+                                    pruefungFlaechenartProcessed,
+                                    pruefungAnschlussgradProcessed));
                         }
                     }
                     flaechenProcessed.put(bezeichnung, flaecheProcessed);
@@ -604,66 +682,6 @@ public class AenderungsanfrageUtils {
             }
         }
         return geometrienProcessed;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   kassenzeichennumer  DOCUMENT ME!
-     * @param   existingFlaechen    DOCUMENT ME!
-     * @param   anfrageOrig         DOCUMENT ME!
-     * @param   anfrageNew          DOCUMENT ME!
-     * @param   username            DOCUMENT ME!
-     * @param   timestamp           DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    public AenderungsanfrageJson processAnfrageCitizen(final Integer kassenzeichennumer,
-            final Set<String> existingFlaechen,
-            final AenderungsanfrageJson anfrageOrig,
-            final AenderungsanfrageJson anfrageNew,
-            final String username,
-            final Date timestamp) throws Exception {
-        return processAnfrage(
-                kassenzeichennumer,
-                existingFlaechen,
-                anfrageOrig,
-                anfrageNew,
-                Boolean.TRUE,
-                username,
-                timestamp);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   kassenzeichennumer  DOCUMENT ME!
-     * @param   existingFlaechen    DOCUMENT ME!
-     * @param   anfrageOrig         DOCUMENT ME!
-     * @param   anfrageNew          DOCUMENT ME!
-     * @param   username            DOCUMENT ME!
-     * @param   timestamp           DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    public AenderungsanfrageJson processAnfrageClerk(final Integer kassenzeichennumer,
-            final Set<String> existingFlaechen,
-            final AenderungsanfrageJson anfrageOrig,
-            final AenderungsanfrageJson anfrageNew,
-            final String username,
-            final Date timestamp) throws Exception {
-        return processAnfrage(
-                kassenzeichennumer,
-                existingFlaechen,
-                anfrageOrig,
-                anfrageNew,
-                Boolean.FALSE,
-                username,
-                timestamp);
     }
 
     /**
@@ -914,6 +932,7 @@ public class AenderungsanfrageUtils {
      * @param   anfrageOrig         DOCUMENT ME!
      * @param   anfrageNew          DOCUMENT ME!
      * @param   citizenOrClerk      DOCUMENT ME!
+     * @param   veranlagt           DOCUMENT ME!
      * @param   username            DOCUMENT ME!
      * @param   timestamp           DOCUMENT ME!
      *
@@ -921,11 +940,12 @@ public class AenderungsanfrageUtils {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    private AenderungsanfrageJson processAnfrage(final Integer kassenzeichennumer,
-            final Set<String> existingFlaechen,
+    public AenderungsanfrageJson doProcessing(final Integer kassenzeichennumer,
+            final Map<String, CidsBean> existingFlaechen,
             final AenderungsanfrageJson anfrageOrig,
             final AenderungsanfrageJson anfrageNew,
             final Boolean citizenOrClerk,
+            final Boolean veranlagt,
             final String username,
             final Date timestamp) throws Exception {
         Boolean emailVerifiziert = anfrageOrig.getEmailVerifiziert();
@@ -973,11 +993,12 @@ public class AenderungsanfrageUtils {
                 emailAdresse,
                 null,
                 emailVerifiziert,
-                processFlaechen(
+                processFlaechenUndPruefung(
                     existingFlaechen,
                     anfrageOrig.getFlaechen(),
                     anfrageNew.getFlaechen(),
                     citizenOrClerk,
+                    veranlagt,
                     username,
                     timestamp),
                 processAnmerkungen(
@@ -1030,7 +1051,7 @@ public class AenderungsanfrageUtils {
      * @throws  Exception  DOCUMENT ME!
      */
     public Status identifyNewStatus(final Status oldStatus,
-            final Set<String> existingFlaechen,
+            final Map<String, CidsBean> existingFlaechen,
             final AenderungsanfrageJson aenderungsanfrageBefore,
             final AenderungsanfrageJson aenderungsanfrageAfter,
             final Boolean citizenOrClerk,
@@ -1168,7 +1189,7 @@ public class AenderungsanfrageUtils {
                             .get(bezeichnung);
                 final FlaecheAenderungJson flaecheAenderungAfter = aenderungsanfrageAfter.getFlaechen()
                             .get(bezeichnung);
-                if (existingFlaechen.contains(bezeichnung) && (flaecheAenderungAfter == null)) {
+                if (existingFlaechen.containsKey(bezeichnung) && (flaecheAenderungAfter == null)) {
                     throw new Exception("flaeche disappeared. clerk is not allowed to delete flaeche");
                 }
 
@@ -1348,183 +1369,6 @@ public class AenderungsanfrageUtils {
     /**
      * DOCUMENT ME!
      *
-     * @param  aenderungsanfrage  DOCUMENT ME!
-     * @param  kassenzeichenBean  DOCUMENT ME!
-     * @param  timestamp          DOCUMENT ME!
-     */
-    public static void doPruefung(final AenderungsanfrageJson aenderungsanfrage,
-            final CidsBean kassenzeichenBean,
-            final Date timestamp) {
-        if (aenderungsanfrage == null) {
-            return;
-        }
-        if (kassenzeichenBean != null) {
-            // preparing flaecheBeanMap
-            final Map<String, CidsBean> flaechenBeans = new HashMap<>();
-            for (final CidsBean flaecheBean
-                        : kassenzeichenBean.getBeanCollectionProperty(VerdisConstants.PROP.KASSENZEICHEN.FLAECHEN)) {
-                final String bezeichnung = (String)flaecheBean.getProperty(
-                        VerdisConstants.PROP.FLAECHE.FLAECHENBEZEICHNUNG);
-                flaechenBeans.put(bezeichnung, flaecheBean);
-            }
-
-            final Set<String> bezeichnungen = new HashSet<>(aenderungsanfrage.getFlaechen().keySet());
-            for (final String bezeichnung : bezeichnungen) {
-                final FlaecheAenderungJson flaecheJson = aenderungsanfrage.getFlaechen().get(bezeichnung);
-                final CidsBean flaecheBean = flaechenBeans.get(bezeichnung);
-                // TODO message => flaechenänderung entfernt
-                if (flaecheBean == null) {
-                    aenderungsanfrage.getFlaechen().remove(bezeichnung);
-                    continue;
-                }
-
-                final Integer groesse = (Integer)flaecheBean.getProperty(
-                        VerdisConstants.PROP.FLAECHE.FLAECHENINFO
-                                + "."
-                                + VerdisConstants.PROP.FLAECHENINFO.GROESSE_KORREKTUR);
-                final FlaecheFlaechenartJson flaechenart =
-                    (flaecheBean.getProperty(
-                            VerdisConstants.PROP.FLAECHE.FLAECHENINFO
-                                    + "."
-                                    + VerdisConstants.PROP.FLAECHENINFO.FLAECHENART) != null)
-                    ? new FlaecheFlaechenartJson((String)flaecheBean.getProperty(
-                            VerdisConstants.PROP.FLAECHE.FLAECHENINFO
-                                    + "."
-                                    + VerdisConstants.PROP.FLAECHENINFO.FLAECHENART
-                                    + "."
-                                    + VerdisConstants.PROP.FLAECHENART.ART),
-                        (String)flaecheBean.getProperty(
-                            VerdisConstants.PROP.FLAECHE.FLAECHENINFO
-                                    + "."
-                                    + VerdisConstants.PROP.FLAECHENINFO.FLAECHENART
-                                    + "."
-                                    + VerdisConstants.PROP.FLAECHENART.ART_ABKUERZUNG)) : null;
-                final FlaecheAnschlussgradJson anschlussgrad =
-                    (flaecheBean.getProperty(
-                            VerdisConstants.PROP.FLAECHE.FLAECHENINFO
-                                    + "."
-                                    + VerdisConstants.PROP.FLAECHENINFO.ANSCHLUSSGRAD) != null)
-                    ? new FlaecheAnschlussgradJson((String)flaecheBean.getProperty(
-                            VerdisConstants.PROP.FLAECHE.FLAECHENINFO
-                                    + "."
-                                    + VerdisConstants.PROP.FLAECHENINFO.ANSCHLUSSGRAD
-                                    + "."
-                                    + VerdisConstants.PROP.ANSCHLUSSGRAD.GRAD),
-                        (String)flaecheBean.getProperty(
-                            VerdisConstants.PROP.FLAECHE.FLAECHENINFO
-                                    + "."
-                                    + VerdisConstants.PROP.FLAECHENINFO.ANSCHLUSSGRAD
-                                    + "."
-                                    + VerdisConstants.PROP.ANSCHLUSSGRAD.GRAD_ABKUERZUNG)) : null;
-
-                if (flaecheJson.getPruefung() != null) {
-                    final PruefungGroesseJson pruefungGroesse =
-                        ((flaecheJson.getPruefung().getGroesse() != null)
-                                    && !Boolean.TRUE.equals(flaecheJson.getPruefung().getGroesse().getPending()))
-                        ? flaecheJson.getPruefung().getGroesse() : null;
-                    final PruefungFlaechenartJson pruefungFlaechenart =
-                        ((flaecheJson.getPruefung().getFlaechenart() != null)
-                                    && !Boolean.TRUE.equals(flaecheJson.getPruefung().getFlaechenart().getPending()))
-                        ? flaecheJson.getPruefung().getFlaechenart() : null;
-                    final PruefungAnschlussgradJson pruefungAnschlussgrad =
-                        ((flaecheJson.getPruefung().getAnschlussgrad() != null)
-                                    && !Boolean.TRUE.equals(flaecheJson.getPruefung().getAnschlussgrad().getPending()))
-                        ? flaecheJson.getPruefung().getAnschlussgrad() : null;
-                    PruefungGroesseJson newPruefungGroesse = null;
-                    PruefungFlaechenartJson newPruefungFlaechenart = null;
-                    PruefungAnschlussgradJson newPruefungAnschlussgrad = null;
-
-                    // identifying groesse pruefung
-                    if (pruefungGroesse == null) {
-                        // wird zufällig "angenommen" weil gleich mit anfrage
-                        if (Objects.equals(groesse, flaecheJson.getGroesse())) {
-                            newPruefungGroesse = new PruefungGroesseJson(groesse);
-                        }
-                    } else if (!Boolean.TRUE.equals(pruefungGroesse.getPending())) {
-                        if (!Objects.equals(groesse, pruefungGroesse.getValue())) {
-                            newPruefungGroesse = new PruefungGroesseJson(groesse);
-                        }
-                    }
-
-                    // identifying flaechenart pruefung
-                    if (pruefungFlaechenart == null) {
-                        // wird zufällig "angenommen" weil gleich mit anfrage
-                        if (Objects.equals(flaechenart, flaecheJson.getFlaechenart())) {
-                            newPruefungFlaechenart = new PruefungFlaechenartJson(flaechenart);
-                        }
-                    } else if (!Boolean.TRUE.equals(pruefungFlaechenart.getPending())) {
-                        // vorhandene Prüfung wurde geändert
-                        if (!Objects.equals(flaechenart, pruefungFlaechenart.getValue())) {
-                            newPruefungFlaechenart = new PruefungFlaechenartJson(flaechenart);
-                        }
-                    }
-
-                    // identifying anschlussgrad pruefung
-                    if (pruefungAnschlussgrad == null) {
-                        // wird zufällig "angenommen" weil gleich mit anfrage
-                        if (Objects.equals(anschlussgrad, flaecheJson.getAnschlussgrad())) {
-                            newPruefungAnschlussgrad = new PruefungAnschlussgradJson(anschlussgrad);
-                        }
-                    } else if (!Boolean.TRUE.equals(pruefungAnschlussgrad.getPending())) {
-                        // vorhandene Prüfung wurde geändert
-                        if (!Objects.equals(anschlussgrad, pruefungAnschlussgrad.getValue())) {
-                            newPruefungAnschlussgrad = new PruefungAnschlussgradJson(anschlussgrad);
-                        }
-                    }
-
-                    if ((newPruefungGroesse != null) || (newPruefungFlaechenart != null)
-                                || (newPruefungAnschlussgrad != null)) {
-                        // setting pruefung
-                        final FlaechePruefungJson flaechePruefungJson = (flaecheJson.getPruefung() != null)
-                            ? flaecheJson.getPruefung() : new FlaechePruefungJson(null, null, null);
-                        flaechePruefungJson.setGroesse(newPruefungGroesse);
-                        flaechePruefungJson.setFlaechenart(newPruefungFlaechenart);
-                        flaechePruefungJson.setAnschlussgrad(newPruefungAnschlussgrad);
-                        flaecheJson.setPruefung(flaechePruefungJson);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  kassenzeichenBean  DOCUMENT ME!
-     * @param  aenderungsanfrage  DOCUMENT ME!
-     * @param  veranlagt          DOCUMENT ME!
-     */
-    public static void clerkSavedKassenzeichen(final CidsBean kassenzeichenBean,
-            final AenderungsanfrageJson aenderungsanfrage,
-            final boolean veranlagt) {
-        doUndraft(aenderungsanfrage, NachrichtJson.Typ.CLERK);
-        doPruefung(aenderungsanfrage, kassenzeichenBean, new Date());
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   aenderungsanfrage  DOCUMENT ME!
-     * @param   typ                DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    public static boolean doUndraft(final AenderungsanfrageJson aenderungsanfrage, final NachrichtJson.Typ typ) {
-        boolean anyChanges = false;
-        if ((aenderungsanfrage != null) && (typ != null)) {
-            for (final NachrichtJson nachricht : aenderungsanfrage.getNachrichten()) {
-                if (typ.equals(nachricht.getTyp())) {
-                    nachricht.setDraft(null);
-                    anyChanges = true;
-                }
-            }
-        }
-        return anyChanges;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
      * @param   aenderungsanfrage  DOCUMENT ME!
      * @param   citizenOrClerk     DOCUMENT ME!
      *
@@ -1653,49 +1497,6 @@ public class AenderungsanfrageUtils {
 
             return aenderungsanfrageFiltered;
         }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   kassenzeichennummer    DOCUMENT ME!
-     * @param   existingFlaechen       DOCUMENT ME!
-     * @param   aenderungsanfrageOrig  DOCUMENT ME!
-     * @param   aenderungsanfrageNew   DOCUMENT ME!
-     * @param   citizenOrClerk         DOCUMENT ME!
-     * @param   username               DOCUMENT ME!
-     * @param   timestamp              DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    public AenderungsanfrageJson doProcessing(final Integer kassenzeichennummer,
-            final Set<String> existingFlaechen,
-            final AenderungsanfrageJson aenderungsanfrageOrig,
-            final AenderungsanfrageJson aenderungsanfrageNew,
-            final boolean citizenOrClerk,
-            final String username,
-            final Date timestamp) throws Exception {
-        final AenderungsanfrageJson aenderungsanfrageProcessed;
-        if (citizenOrClerk) {
-            aenderungsanfrageProcessed = processAnfrageCitizen(
-                    kassenzeichennummer,
-                    existingFlaechen,
-                    aenderungsanfrageOrig,
-                    aenderungsanfrageNew,
-                    username,
-                    timestamp);
-        } else {
-            aenderungsanfrageProcessed = processAnfrageClerk(
-                    kassenzeichennummer,
-                    existingFlaechen,
-                    aenderungsanfrageOrig,
-                    aenderungsanfrageNew,
-                    username,
-                    timestamp);
-        }
-        return aenderungsanfrageProcessed;
     }
 
     /**

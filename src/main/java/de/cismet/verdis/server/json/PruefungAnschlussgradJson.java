@@ -31,7 +31,7 @@ public class PruefungAnschlussgradJson extends PruefungJson<FlaecheAnschlussgrad
      * @param  value  DOCUMENT ME!
      */
     public PruefungAnschlussgradJson(final FlaecheAnschlussgradJson value) {
-        this(null, value, null, null);
+        this(true, value, null, null);
     }
 
     /**

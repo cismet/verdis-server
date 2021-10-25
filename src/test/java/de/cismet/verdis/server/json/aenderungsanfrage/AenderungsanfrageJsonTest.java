@@ -25,12 +25,12 @@ import de.cismet.verdis.server.json.NachrichtEigentuemerJson;
 import de.cismet.verdis.server.json.NachrichtParameterAnschlussgradJson;
 import de.cismet.verdis.server.json.PruefungFlaechenartJson;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.IOUtils;
@@ -118,11 +118,11 @@ public class AenderungsanfrageJsonTest {
         final Map<String, FlaecheAenderungJson> flaechen = new HashMap<>();
         flaechen.put("1", new FlaecheAenderungGroesseJson(1430));            
         flaechen.put("2", new FlaecheAenderungGroesseJson(921, 
-                new FlaechePruefungGroesseJson(new PruefungGroesseJson(921))));
+                new FlaechePruefungGroesseJson(new PruefungGroesseJson(null, 921, null, null))));
         flaechen.put("8", new FlaecheAenderungFlaechenartJson(
                 new FlaecheFlaechenartJson("Gründachfläche", "GDF"), 
                 new FlaechePruefungFlaechenartJson(
-                        new PruefungFlaechenartJson(new FlaecheFlaechenartJson("Gründachfläche", "GDF"))
+                        new PruefungFlaechenartJson(null, new FlaecheFlaechenartJson("Gründachfläche", "GDF"), null, null)
                 )
         ));
         
@@ -213,7 +213,10 @@ public class AenderungsanfrageJsonTest {
         final AenderungsanfrageJson aenderungsanfrageOrig = aenderungsanfrageOrigJson != null ? AenderungsanfrageUtils.getInstance().createAenderungsanfrageJson(aenderungsanfrageOrigJson) : new AenderungsanfrageJson(kassenzeichen);
         final AenderungsanfrageJson aenderungsanfrageChange = aenderungsanfrageChangeJson != null ? AenderungsanfrageUtils.getInstance().createAenderungsanfrageJson(aenderungsanfrageChangeJson) : new AenderungsanfrageJson(kassenzeichen);
 
-        final AenderungsanfrageJson aenderungsanfrageNew = AenderungsanfrageUtils.getInstance().processAnfrageCitizen(kassenzeichen, new HashSet<>(Arrays.asList("5")), aenderungsanfrageOrig, aenderungsanfrageChange, "test", new Date(2500000000000L));               
+        final Map<String, CidsBean> map = new HashMap<>();
+        map.put("5", null);
+                
+        final AenderungsanfrageJson aenderungsanfrageNew = AenderungsanfrageUtils.getInstance().doProcessing(kassenzeichen, map, aenderungsanfrageOrig, aenderungsanfrageChange, Boolean.TRUE, null, "test", new Date(2500000000000L));               
         final String aenderungsanfrageNewJson = aenderungsanfrageNew.toPrettyJson();
         //System.out.println(aenderungsanfrageNewJson);                            
         Assert.assertEquals(aenderungsanfrageProcessedJson, aenderungsanfrageNewJson);        

@@ -28,10 +28,8 @@ import java.sql.Timestamp;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import de.cismet.cids.dynamics.CidsBean;
 
@@ -293,7 +291,8 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             final Map<Parameter, Object> extractedParams = extractParams(params);
             preValidateInput(extractedParams);
 
-            final boolean citizenOrClerk = "stac".equals(getUser().getName());
+            final String userName = getUser().getName();
+            final boolean citizenOrClerk = "stac".equals(userName);
 
             final String stac = (String)extractedParams.get(Parameter.STAC);
             final Integer stacId = (Integer)extractedParams.get(Parameter.STAC_ID);
@@ -306,17 +305,13 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             final CidsBean kassenzeichenBean = createKassenzeichenBean(stacEntry);
             final Integer kassenzeichennummer = createKassenzeichennummer(kassenzeichenBean, aenderungsanfrageJson);
 
-            if (veranlagt != null) { // Sachbearbeiter hat gespeichert
-                AenderungsanfrageUtils.clerkSavedKassenzeichen(kassenzeichenBean, aenderungsanfrageJson, veranlagt);
-            }
-
-            final Set<String> existingFlaechen = new HashSet<>();
+            final Map<String, CidsBean> existingFlaechen = new HashMap<>();
             for (final CidsBean flaecheBean
                         : kassenzeichenBean.getBeanCollectionProperty(VerdisConstants.PROP.KASSENZEICHEN.FLAECHEN)) {
                 final String flaechenBezeichnung = (String)flaecheBean.getProperty(
                         VerdisConstants.PROP.FLAECHE.FLAECHENBEZEICHNUNG);
                 if (flaechenBezeichnung != null) {
-                    existingFlaechen.add(flaechenBezeichnung.toUpperCase());
+                    existingFlaechen.put(flaechenBezeichnung.toUpperCase(), flaecheBean);
                 }
             }
             synchronized (this) {
@@ -359,14 +354,16 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                 final AenderungsanfrageJson aenderungsanfrageOrig = createAenderungsanfrageOrig(
                         aenderungsanfrageBean,
                         kassenzeichennummer);
+
                 final AenderungsanfrageJson aenderungsanfrageProcessed = AenderungsanfrageUtils.getInstance()
                             .doProcessing(
                                 kassenzeichennummer,
                                 existingFlaechen,
                                 aenderungsanfrageOrig,
                                 aenderungsanfrageJson,
-                                "stac".equals(getUser().getName()),
-                                getUser().getName(),
+                                citizenOrClerk,
+                                veranlagt,
+                                userName,
                                 now);
 
                 // STATUS
@@ -380,7 +377,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                                 aenderungsanfrageProcessed,
                                 citizenOrClerk,
                                 veranlagt,
-                                getUser().getName(),
+                                userName,
                                 now);
 
                 final AenderungsanfrageUtils.Status newStatus = (status != null)
