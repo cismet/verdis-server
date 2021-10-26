@@ -1344,8 +1344,12 @@ public class AenderungsanfrageUtils {
                 }
             }
 
-            if ((pruefungDoneCount == aenderungCount) && Boolean.TRUE.equals(veranlagt)) {
-                changeStatusTo = Status.NONE;
+            if (pruefungDoneCount == aenderungCount) {
+                if (Boolean.TRUE.equals(veranlagt)) {
+                    changeStatusTo = Status.NONE;
+                } else {
+                    changeStatusTo = null;                    
+                }
             } else {
                 changeStatusTo = Status.PROCESSING;
             }
