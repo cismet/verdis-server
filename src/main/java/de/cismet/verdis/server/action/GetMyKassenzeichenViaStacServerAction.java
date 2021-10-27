@@ -144,10 +144,13 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore,
                 final AenderungsanfrageJson anderungsanfrageFiltered = AenderungsanfrageUtils.getInstance()
                             .doFilteringOutWhatIShouldntSee(aenderungsanfrage, "stac".equals(getUser().getName()));
 
+                final String clerkUsername = (String)aenderungsanfrageBean.getProperty(
+                        VerdisConstants.PROP.AENDERUNGSANFRAGE.CLERK_USERNAME);
                 final ContactInfoJson contactInfo = AenderungsanfrageUtils.getInstance()
-                            .getContactInfo(((stacEntry != null) && (stacEntry.getStacOptions() != null))
-                                    ? stacEntry.getStacOptions().getCreatorUserName() : null,
+                            .getContactInfo(
+                                clerkUsername,
                                 AenderungsanfrageUtils.getConfFromServerResource().getSachbearbeiterDefaultname());
+
                 kassenzeichenBean.setProperty(
                     VerdisConstants.PROP.KASSENZEICHEN.STAC_OPTIONS,
                     stacEntry.getStacOptions());
