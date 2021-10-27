@@ -728,41 +728,43 @@ public class AenderungsanfrageUtils {
     /**
      * DOCUMENT ME!
      *
-     * @param   kassenzeichenNummer  DOCUMENT ME!
-     * @param   emailAdresse         DOCUMENT ME!
-     * @param   code                 DOCUMENT ME!
+     * @param   aenderungsanfrage  kassenzeichenNummer DOCUMENT ME!
+     * @param   code               DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public boolean sendVerificationMail(final Integer kassenzeichenNummer,
-            final String emailAdresse,
-            final String code) {
-        if (emailAdresse != null) {
-            try {
-                final AenderungsanfrageConf conf = getConfFromServerResource();
-                final File configDir = (conf.getMessageconfigDir() != null) ? new File(conf.getMessageconfigDir())
-                                                                            : null;
-                final MessageConfigJson messageConfig = getMessageConfig(MESSAGETYPE_MAILVERIFICATION, configDir);
-                if (messageConfig != null) {
-                    final String cmdTemplate = messageConfig.getCmdTemplate();
-                    final String betreff = messageConfig.getTopic();
-                    final String messageTemplate = (messageConfig.getMessageTemplateFile() != null)
-                        ? readMessageTemplate(new File(configDir, messageConfig.getMessageTemplateFile())) : null;
-                    if (messageTemplate != null) {
-                        final String inhalt = messageTemplate.replaceAll(Pattern.quote(TEMPLATEREPLACER_KASSENZEICHEN),
-                                    Matcher.quoteReplacement(
-                                        (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-"))
-                                    .replaceAll(Pattern.quote(TEMPLATEREPLACER_CODE),
-                                        Matcher.quoteReplacement((code != null) ? code : "-"));
-                        sendMail((cmdTemplate != null) ? cmdTemplate : DEFAULT_CMDTEMPLATE,
-                            emailAdresse,
-                            betreff,
-                            inhalt);
-                        return true;
+    public boolean sendVerificationMail(final AenderungsanfrageJson aenderungsanfrage, final String code) {
+        if ((aenderungsanfrage != null) && (code != null)) {
+            final Integer kassenzeichenNummer = aenderungsanfrage.getKassenzeichen();
+            final String emailAdresse = aenderungsanfrage.getEmailAdresse();
+            if (emailAdresse != null) {
+                try {
+                    final AenderungsanfrageConf conf = getConfFromServerResource();
+                    final File configDir = (conf.getMessageconfigDir() != null) ? new File(conf.getMessageconfigDir())
+                                                                                : null;
+                    final MessageConfigJson messageConfig = getMessageConfig(MESSAGETYPE_MAILVERIFICATION, configDir);
+                    if (messageConfig != null) {
+                        final String cmdTemplate = messageConfig.getCmdTemplate();
+                        final String betreff = messageConfig.getTopic();
+                        final String messageTemplate = (messageConfig.getMessageTemplateFile() != null)
+                            ? readMessageTemplate(new File(configDir, messageConfig.getMessageTemplateFile())) : null;
+                        if (messageTemplate != null) {
+                            final String inhalt = messageTemplate.replaceAll(Pattern.quote(
+                                            TEMPLATEREPLACER_KASSENZEICHEN),
+                                        Matcher.quoteReplacement(
+                                            (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-"))
+                                        .replaceAll(Pattern.quote(TEMPLATEREPLACER_CODE),
+                                            Matcher.quoteReplacement((code != null) ? code : "-"));
+                            sendMail((cmdTemplate != null) ? cmdTemplate : DEFAULT_CMDTEMPLATE,
+                                emailAdresse,
+                                betreff,
+                                inhalt);
+                            return true;
+                        }
                     }
+                } catch (final Exception ex) {
+                    LOG.error("error while sendVerificationMail", ex);
                 }
-            } catch (final Exception ex) {
-                LOG.error("error while sendVerificationMail", ex);
             }
         }
         return false;
@@ -771,36 +773,41 @@ public class AenderungsanfrageUtils {
     /**
      * DOCUMENT ME!
      *
-     * @param   kassenzeichenNummer  DOCUMENT ME!
-     * @param   emailAdresse         DOCUMENT ME!
+     * @param   aenderungsanfrage  kassenzeichenNummer DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public boolean sendConfirmationMail(final Integer kassenzeichenNummer, final String emailAdresse) {
-        if (emailAdresse != null) {
-            try {
-                final AenderungsanfrageConf conf = getConfFromServerResource();
-                final File configDir = (conf.getMessageconfigDir() != null) ? new File(conf.getMessageconfigDir())
-                                                                            : null;
-                final MessageConfigJson messageConfig = getMessageConfig(MESSAGETYPE_MAILCONFIRMATION, configDir);
-                if (messageConfig != null) {
-                    final String cmdTemplate = messageConfig.getCmdTemplate();
-                    final String betreff = messageConfig.getTopic();
-                    final String messageTemplate = (messageConfig.getMessageTemplateFile() != null)
-                        ? readMessageTemplate(new File(configDir, messageConfig.getMessageTemplateFile())) : null;
-                    if (messageTemplate != null) {
-                        final String inhalt = messageTemplate.replaceAll(Pattern.quote(TEMPLATEREPLACER_KASSENZEICHEN),
-                                Matcher.quoteReplacement(
-                                    (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-"));
-                        sendMail((cmdTemplate != null) ? cmdTemplate : DEFAULT_CMDTEMPLATE,
-                            emailAdresse,
-                            betreff,
-                            inhalt);
-                        return true;
+    public boolean sendConfirmationMail(final AenderungsanfrageJson aenderungsanfrage) {
+        if (aenderungsanfrage != null) {
+            final Integer kassenzeichenNummer = aenderungsanfrage.getKassenzeichen();
+            final String emailAdresse = aenderungsanfrage.getEmailAdresse();
+            final Boolean verifiziert = aenderungsanfrage.getEmailVerifiziert();
+            if ((emailAdresse != null) && Boolean.TRUE.equals(verifiziert)) {
+                try {
+                    final AenderungsanfrageConf conf = getConfFromServerResource();
+                    final File configDir = (conf.getMessageconfigDir() != null) ? new File(conf.getMessageconfigDir())
+                                                                                : null;
+                    final MessageConfigJson messageConfig = getMessageConfig(MESSAGETYPE_MAILCONFIRMATION, configDir);
+                    if (messageConfig != null) {
+                        final String cmdTemplate = messageConfig.getCmdTemplate();
+                        final String betreff = messageConfig.getTopic();
+                        final String messageTemplate = (messageConfig.getMessageTemplateFile() != null)
+                            ? readMessageTemplate(new File(configDir, messageConfig.getMessageTemplateFile())) : null;
+                        if (messageTemplate != null) {
+                            final String inhalt = messageTemplate.replaceAll(Pattern.quote(
+                                        TEMPLATEREPLACER_KASSENZEICHEN),
+                                    Matcher.quoteReplacement(
+                                        (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-"));
+                            sendMail((cmdTemplate != null) ? cmdTemplate : DEFAULT_CMDTEMPLATE,
+                                emailAdresse,
+                                betreff,
+                                inhalt);
+                            return true;
+                        }
                     }
+                } catch (final Exception ex) {
+                    LOG.error("error while sendConfirmationMail", ex);
                 }
-            } catch (final Exception ex) {
-                LOG.error("error while sendConfirmationMail", ex);
             }
         }
         return false;
@@ -848,36 +855,41 @@ public class AenderungsanfrageUtils {
     /**
      * DOCUMENT ME!
      *
-     * @param   kassenzeichenNummer  DOCUMENT ME!
-     * @param   emailAdresse         DOCUMENT ME!
+     * @param   aenderungsanfrage  kassenzeichenNummer DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public boolean sendNotifyMail(final Integer kassenzeichenNummer, final String emailAdresse) {
-        if (emailAdresse != null) {
-            try {
-                final AenderungsanfrageConf conf = getConfFromServerResource();
-                final File configDir = (conf.getMessageconfigDir() != null) ? new File(conf.getMessageconfigDir())
-                                                                            : null;
-                final MessageConfigJson messageConfig = getMessageConfig(MESSAGETYPE_NOTIFY, configDir);
-                if (messageConfig != null) {
-                    final String cmdTemplate = messageConfig.getCmdTemplate();
-                    final String betreff = messageConfig.getTopic();
-                    final String messageTemplate = (messageConfig.getMessageTemplateFile() != null)
-                        ? readMessageTemplate(new File(configDir, messageConfig.getMessageTemplateFile())) : null;
-                    if (messageTemplate != null) {
-                        final String inhalt = messageTemplate.replaceAll(Pattern.quote(TEMPLATEREPLACER_KASSENZEICHEN),
-                                Matcher.quoteReplacement(
-                                    (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-"));
-                        sendMail((cmdTemplate != null) ? cmdTemplate : DEFAULT_CMDTEMPLATE,
-                            emailAdresse,
-                            betreff,
-                            inhalt);
-                        return true;
+    public boolean sendNotifyMail(final AenderungsanfrageJson aenderungsanfrage) {
+        if (aenderungsanfrage != null) {
+            final Integer kassenzeichenNummer = aenderungsanfrage.getKassenzeichen();
+            final String emailAdresse = aenderungsanfrage.getEmailAdresse();
+            final Boolean verifiziert = aenderungsanfrage.getEmailVerifiziert();
+            if ((emailAdresse != null) && Boolean.TRUE.equals(verifiziert)) {
+                try {
+                    final AenderungsanfrageConf conf = getConfFromServerResource();
+                    final File configDir = (conf.getMessageconfigDir() != null) ? new File(conf.getMessageconfigDir())
+                                                                                : null;
+                    final MessageConfigJson messageConfig = getMessageConfig(MESSAGETYPE_NOTIFY, configDir);
+                    if (messageConfig != null) {
+                        final String cmdTemplate = messageConfig.getCmdTemplate();
+                        final String betreff = messageConfig.getTopic();
+                        final String messageTemplate = (messageConfig.getMessageTemplateFile() != null)
+                            ? readMessageTemplate(new File(configDir, messageConfig.getMessageTemplateFile())) : null;
+                        if (messageTemplate != null) {
+                            final String inhalt = messageTemplate.replaceAll(Pattern.quote(
+                                        TEMPLATEREPLACER_KASSENZEICHEN),
+                                    Matcher.quoteReplacement(
+                                        (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-"));
+                            sendMail((cmdTemplate != null) ? cmdTemplate : DEFAULT_CMDTEMPLATE,
+                                emailAdresse,
+                                betreff,
+                                inhalt);
+                            return true;
+                        }
                     }
+                } catch (final Exception ex) {
+                    LOG.error("error while sendNotifyMail", ex);
                 }
-            } catch (final Exception ex) {
-                LOG.error("error while sendNotifyMail", ex);
             }
         }
         return false;
@@ -886,39 +898,42 @@ public class AenderungsanfrageUtils {
     /**
      * DOCUMENT ME!
      *
-     * @param   kassenzeichenNummer  DOCUMENT ME!
-     * @param   emailAdresse         DOCUMENT ME!
-     * @param   status               DOCUMENT ME!
+     * @param   aenderungsanfrage  DOCUMENT ME!
+     * @param   status             DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public boolean sendStatusChangedMail(final Integer kassenzeichenNummer,
-            final String emailAdresse,
-            final Status status) {
-        if (emailAdresse != null) {
-            try {
-                final AenderungsanfrageConf conf = getConfFromServerResource();
-                final File configDir = (conf.getMessageconfigDir() != null) ? new File(conf.getMessageconfigDir())
-                                                                            : null;
-                final MessageConfigJson messageConfig = getMessageConfig(status.toString(), configDir);
-                if (messageConfig != null) {
-                    final String cmdTemplate = messageConfig.getCmdTemplate();
-                    final String betreff = messageConfig.getTopic();
-                    final String messageTemplate = (messageConfig.getMessageTemplateFile() != null)
-                        ? readMessageTemplate(new File(configDir, messageConfig.getMessageTemplateFile())) : null;
-                    if (messageTemplate != null) {
-                        final String inhalt = messageTemplate.replaceAll(Pattern.quote(TEMPLATEREPLACER_KASSENZEICHEN),
-                                Matcher.quoteReplacement(
-                                    (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-"));
-                        sendMail((cmdTemplate != null) ? cmdTemplate : DEFAULT_CMDTEMPLATE,
-                            emailAdresse,
-                            betreff,
-                            inhalt);
-                        return true;
+    public boolean sendStatusChangedMail(final AenderungsanfrageJson aenderungsanfrage, final Status status) {
+        if (aenderungsanfrage != null) {
+            final Integer kassenzeichenNummer = aenderungsanfrage.getKassenzeichen();
+            final String emailAdresse = aenderungsanfrage.getEmailAdresse();
+            final Boolean verifiziert = aenderungsanfrage.getEmailVerifiziert();
+            if ((emailAdresse != null) && Boolean.TRUE.equals(verifiziert)) {
+                try {
+                    final AenderungsanfrageConf conf = getConfFromServerResource();
+                    final File configDir = (conf.getMessageconfigDir() != null) ? new File(conf.getMessageconfigDir())
+                                                                                : null;
+                    final MessageConfigJson messageConfig = getMessageConfig(status.toString(), configDir);
+                    if (messageConfig != null) {
+                        final String cmdTemplate = messageConfig.getCmdTemplate();
+                        final String betreff = messageConfig.getTopic();
+                        final String messageTemplate = (messageConfig.getMessageTemplateFile() != null)
+                            ? readMessageTemplate(new File(configDir, messageConfig.getMessageTemplateFile())) : null;
+                        if (messageTemplate != null) {
+                            final String inhalt = messageTemplate.replaceAll(Pattern.quote(
+                                        TEMPLATEREPLACER_KASSENZEICHEN),
+                                    Matcher.quoteReplacement(
+                                        (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-"));
+                            sendMail((cmdTemplate != null) ? cmdTemplate : DEFAULT_CMDTEMPLATE,
+                                emailAdresse,
+                                betreff,
+                                inhalt);
+                            return true;
+                        }
                     }
+                } catch (final Exception ex) {
+                    LOG.error("error while sendStatusChangedMail", ex);
                 }
-            } catch (final Exception ex) {
-                LOG.error("error while sendStatusChangedMail", ex);
             }
         }
         return false;
@@ -957,9 +972,7 @@ public class AenderungsanfrageUtils {
             if (emailAdresse != null) {
                 emailVerifiziert = false;
                 final String code = addEmailVerification(kassenzeichennumer, emailAdresse);
-                if (code != null) {
-                    sendVerificationMail(kassenzeichennumer, emailAdresse, code);
-                }
+                sendVerificationMail(anfrageNew, code);
             } else {
                 emailVerifiziert = null;
                 removeEmail(kassenzeichennumer, emailAdresse);
@@ -978,7 +991,7 @@ public class AenderungsanfrageUtils {
                             "validation of %s with code %s SUCCESFULL",
                             emailAdresse,
                             emailVerifikation));
-                    sendConfirmationMail(kassenzeichennumer, emailAdresse);
+                    sendConfirmationMail(anfrageNew);
                 } else {
                     LOG.info(String.format("validation of %s with code %s FAILED", emailAdresse, emailVerifikation));
                 }
@@ -1022,7 +1035,7 @@ public class AenderungsanfrageUtils {
                     if ((nachrichtenParameter != null)
                                 && Boolean.FALSE.equals(nachrichtenParameter.getBenachrichtigt())) {
                         if (!notified) {
-                            notified = sendNotifyMail(kassenzeichennumer, emailAdresse);
+                            notified = sendNotifyMail(anfrageNew);
                         }
                         if (notified) {
                             nachrichtenParameter.setBenachrichtigt(Boolean.TRUE);
@@ -1348,7 +1361,7 @@ public class AenderungsanfrageUtils {
                 if (Boolean.TRUE.equals(veranlagt)) {
                     changeStatusTo = Status.NONE;
                 } else {
-                    changeStatusTo = null;                    
+                    changeStatusTo = null;
                 }
             } else {
                 changeStatusTo = Status.PROCESSING;
