@@ -396,14 +396,12 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                 // UPDATING EXPIRATION
                 if (!Objects.equals(oldStatus, newStatus)) {
                     updateExpiration(stacEntry);
-                    if ((aenderungsanfrageProcessed.getEmailAdresse() != null)
-                                && Boolean.TRUE.equals(aenderungsanfrageProcessed.getEmailVerifiziert())) {
-                        AenderungsanfrageUtils.getInstance()
-                                .sendStatusChangedMail(
-                                    kassenzeichennummer,
-                                    aenderungsanfrageProcessed.getEmailAdresse(),
-                                    newStatus);
-                    }
+                }
+
+                if (AenderungsanfrageUtils.Status.PENDING.equals(newStatus)
+                            || AenderungsanfrageUtils.Status.NEW_CITIZEN_MESSAGE.equals(newStatus)
+                            || !Objects.equals(oldStatus, newStatus)) {
+                    AenderungsanfrageUtils.getInstance().sendStatusChangedMail(aenderungsanfrageProcessed, newStatus);
                 }
 
                 final AenderungsanfrageJson anderungsanfrageFilteredForClerk = AenderungsanfrageUtils.getInstance()
