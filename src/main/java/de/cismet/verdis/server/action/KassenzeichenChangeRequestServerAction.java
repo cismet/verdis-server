@@ -338,6 +338,9 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                             stacEntry,
                             getMetaService(),
                             getConnectionContext()));
+                    aenderungsanfrageBean.setProperty(
+                        VerdisConstants.PROP.AENDERUNGSANFRAGE.CLERK_USERNAME,
+                        stacEntry.getStacOptions().getCreatorUserName());
                 }
 
                 final String statusSchluessel =
