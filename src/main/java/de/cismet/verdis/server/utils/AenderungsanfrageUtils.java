@@ -142,6 +142,7 @@ public class AenderungsanfrageUtils {
     public static final String MESSAGETYPE_MAILVERIFICATION = "MAILVERIFICATION";
     public static final String MESSAGETYPE_MAILCONFIRMATION = "MAILCONFIRMATION";
     public static final String MESSAGETYPE_NOTIFY = "NOTIFY";
+    public static final String MESSAGETYPE_SUBMISSION = "SUBMISSION";
 
     private static final String CONFIG_JSON_FORMAT = "config.%s.json";
     private static final String TEMPLATEREPLACER_KASSENZEICHEN = "{KASSENZEICHEN}";
@@ -754,7 +755,7 @@ public class AenderungsanfrageUtils {
                                         Matcher.quoteReplacement(
                                             (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-"))
                                         .replaceAll(Pattern.quote(TEMPLATEREPLACER_CODE),
-                                            Matcher.quoteReplacement((code != null) ? code : "-"));
+                                            Matcher.quoteReplacement(code));
                             sendMail((cmdTemplate != null) ? cmdTemplate : DEFAULT_CMDTEMPLATE,
                                 emailAdresse,
                                 betreff,
@@ -942,6 +943,49 @@ public class AenderungsanfrageUtils {
     /**
      * DOCUMENT ME!
      *
+     * @param   aenderungsanfrage  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public boolean sendSubmissionMail(final AenderungsanfrageJson aenderungsanfrage) {
+        if (aenderungsanfrage != null) {
+            final Integer kassenzeichenNummer = aenderungsanfrage.getKassenzeichen();
+            final String emailAdresse = aenderungsanfrage.getEmailAdresse();
+            final Boolean verifiziert = aenderungsanfrage.getEmailVerifiziert();
+            if ((emailAdresse != null) && Boolean.TRUE.equals(verifiziert)) {
+                try {
+                    final AenderungsanfrageConf conf = getConfFromServerResource();
+                    final File configDir = (conf.getMessageconfigDir() != null) ? new File(conf.getMessageconfigDir())
+                                                                                : null;
+                    final MessageConfigJson messageConfig = getMessageConfig(MESSAGETYPE_SUBMISSION, configDir);
+                    if (messageConfig != null) {
+                        final String cmdTemplate = messageConfig.getCmdTemplate();
+                        final String betreff = messageConfig.getTopic();
+                        final String messageTemplate = (messageConfig.getMessageTemplateFile() != null)
+                            ? readMessageTemplate(new File(configDir, messageConfig.getMessageTemplateFile())) : null;
+                        if (messageTemplate != null) {
+                            final String inhalt = messageTemplate.replaceAll(Pattern.quote(
+                                        TEMPLATEREPLACER_KASSENZEICHEN),
+                                    Matcher.quoteReplacement(
+                                        (kassenzeichenNummer != null) ? kassenzeichenNummer.toString() : "-"));
+                            sendMail((cmdTemplate != null) ? cmdTemplate : DEFAULT_CMDTEMPLATE,
+                                emailAdresse,
+                                betreff,
+                                inhalt);
+                            return true;
+                        }
+                    }
+                } catch (final Exception ex) {
+                    LOG.error("error while sendSubmissionMail", ex);
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   kassenzeichennumer  DOCUMENT ME!
      * @param   existingFlaechen    DOCUMENT ME!
      * @param   anfrageOrig         DOCUMENT ME!
@@ -1025,7 +1069,8 @@ public class AenderungsanfrageUtils {
                     anfrageNew.getNachrichten(),
                     citizenOrClerk,
                     username,
-                    timestamp));
+                    timestamp),
+                null);
 
         if (anfrageProcessed.getNachrichten() != null) {
             boolean notified = false;

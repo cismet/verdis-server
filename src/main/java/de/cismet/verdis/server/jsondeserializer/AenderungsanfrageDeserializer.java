@@ -104,6 +104,8 @@ public class AenderungsanfrageDeserializer extends StdDeserializer<Aenderungsanf
                     objectMapper.treeToValue(fieldEntry.getValue(), GeoJsonObject.class));
             }
         }
+        final Boolean submission = (on.has("submission") && on.get("submission").isBoolean())
+            ? on.get("submission").asBoolean() : null;
 
         if (kassenzeichen == null) {
             throw new RuntimeException("invalid AnfrageJson: kassenzeichen is missing");
@@ -112,9 +114,10 @@ public class AenderungsanfrageDeserializer extends StdDeserializer<Aenderungsanf
                 kassenzeichen,
                 emailAdresse,
                 emailVerifikation,
-                emailVerifiziert,
+                submission,
                 flaechen,
                 geometrien,
-                nachrichten);
+                nachrichten,
+                submission);
     }
 }
