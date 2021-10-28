@@ -304,6 +304,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             final AenderungsanfrageJson aenderungsanfrageJson = createAenderungsanfrageNew(aenderungsanfrage);
             final CidsBean kassenzeichenBean = createKassenzeichenBean(stacEntry);
             final Integer kassenzeichennummer = createKassenzeichennummer(kassenzeichenBean, aenderungsanfrageJson);
+            final Boolean submission = aenderungsanfrageJson.getSubmission();
 
             final Map<String, CidsBean> existingFlaechen = new HashMap<>();
             for (final CidsBean flaecheBean
@@ -396,15 +397,13 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                     existingAenderungsanfrageBean
                             != null);
 
-                // UPDATING EXPIRATION
                 if (!Objects.equals(oldStatus, newStatus)) {
                     updateExpiration(stacEntry);
+                    AenderungsanfrageUtils.getInstance().sendStatusChangedMail(aenderungsanfrageProcessed, newStatus);
                 }
 
-                if (AenderungsanfrageUtils.Status.PENDING.equals(newStatus)
-                            || AenderungsanfrageUtils.Status.NEW_CITIZEN_MESSAGE.equals(newStatus)
-                            || !Objects.equals(oldStatus, newStatus)) {
-                    AenderungsanfrageUtils.getInstance().sendStatusChangedMail(aenderungsanfrageProcessed, newStatus);
+                if (Boolean.TRUE.equals(submission)) {
+                    AenderungsanfrageUtils.getInstance().sendSubmissionMail(aenderungsanfrageProcessed);
                 }
 
                 final AenderungsanfrageJson anderungsanfrageFilteredForClerk = AenderungsanfrageUtils.getInstance()

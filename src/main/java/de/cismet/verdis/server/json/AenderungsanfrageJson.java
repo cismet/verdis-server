@@ -50,6 +50,7 @@ public class AenderungsanfrageJson extends AbstractJson {
     private Map<String, FlaecheAenderungJson> flaechen;
     private Map<String, GeoJsonObject> geometrien;
     private List<NachrichtJson> nachrichten;
+    private Boolean submission;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -66,7 +67,8 @@ public class AenderungsanfrageJson extends AbstractJson {
             null,
             new HashMap<String, FlaecheAenderungJson>(),
             new HashMap<String, GeoJsonObject>(),
-            new ArrayList<NachrichtJson>());
+            new ArrayList<NachrichtJson>(),
+            null);
     }
 
     /**
@@ -86,7 +88,8 @@ public class AenderungsanfrageJson extends AbstractJson {
             emailVerifiziert,
             new HashMap<String, FlaecheAenderungJson>(),
             new HashMap<String, GeoJsonObject>(),
-            new ArrayList<NachrichtJson>());
+            new ArrayList<NachrichtJson>(),
+            null);
     }
 
     /**
@@ -105,6 +108,6 @@ public class AenderungsanfrageJson extends AbstractJson {
             final Map<String, FlaecheAenderungJson> flaechen,
             final Map<String, GeoJsonObject> geometrien,
             final List<NachrichtJson> nachrichten) {
-        this(kassenzeichen, null, null, null, flaechen, geometrien, nachrichten);
+        this(kassenzeichen, null, null, null, flaechen, geometrien, nachrichten, null);
     }
 }
