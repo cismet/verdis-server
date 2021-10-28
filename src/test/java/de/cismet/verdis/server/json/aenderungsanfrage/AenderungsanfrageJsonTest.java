@@ -109,7 +109,8 @@ public class AenderungsanfrageJsonTest {
                                 null
                             )
                         )
-                    )
+                    ),
+                    null
             );
             return anederungsanfrage;
     }
