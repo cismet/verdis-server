@@ -114,7 +114,7 @@ public class AenderungsanfrageDeserializer extends StdDeserializer<Aenderungsanf
                 kassenzeichen,
                 emailAdresse,
                 emailVerifikation,
-                submission,
+                emailVerifiziert,
                 flaechen,
                 geometrien,
                 nachrichten,
