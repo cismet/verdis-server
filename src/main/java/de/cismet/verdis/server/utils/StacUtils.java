@@ -401,44 +401,6 @@ public class StacUtils {
     /**
      * DOCUMENT ME!
      *
-     * @param   stacEntry          DOCUMENT ME!
-     * @param   metaService        DOCUMENT ME!
-     * @param   connectionContext  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    public static CidsBean getAenderungsanfrageBean(final StacEntry stacEntry,
-            final MetaService metaService,
-            final ConnectionContext connectionContext) throws Exception {
-        if (stacEntry != null) {
-            final User user = getUser(stacEntry, metaService, connectionContext);
-            final Map localServers = new HashMap<>();
-            localServers.put(VerdisConstants.DOMAIN, metaService);
-            final AenderungsanfrageSearchStatement search = new AenderungsanfrageSearchStatement();
-            search.setActiveLocalServers(localServers);
-            search.setUser(user);
-            search.setStacId(stacEntry.getId());
-            final Collection<MetaObjectNode> mons = search.performServerSearch();
-            if (mons != null) {
-                for (final MetaObjectNode mon : mons) {
-                    if (mon != null) {
-                        return metaService.getMetaObject(
-                                    user,
-                                    mon.getObjectId(),
-                                    mon.getClassId(),
-                                    connectionContext).getBean();
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
      * @return  DOCUMENT ME!
      */
     public ObjectMapper getMapper() {
