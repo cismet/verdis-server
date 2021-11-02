@@ -131,25 +131,26 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore,
                         getMetaService(),
                         getConnectionContext());
                 final CidsBean aenderungsanfrageBean = AenderungsanfrageUtils.getInstance()
-                            .getAenderungsanfrageBean(
-                                stacEntry,
-                                getMetaService(),
-                                getConnectionContext());
+                            .getAenderungsanfrageBean(stacEntry, getMetaService(), getConnectionContext());
 
-                final AenderungsanfrageJson aenderungsanfrage = (aenderungsanfrageBean != null)
-                    ? AenderungsanfrageUtils.getInstance()
-                            .createAenderungsanfrageJson((String)aenderungsanfrageBean.getProperty(
-                                        VerdisConstants.PROP.AENDERUNGSANFRAGE.CHANGES_JSON)) : null;
+                final String aenderungsanfrageJson = (aenderungsanfrageBean != null)
+                    ? (String)aenderungsanfrageBean.getProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.CHANGES_JSON)
+                    : null;
+                final AenderungsanfrageJson aenderungsanfrage = (aenderungsanfrageJson != null)
+                    ? AenderungsanfrageUtils.getInstance().createAenderungsanfrageJson(aenderungsanfrageJson) : null;
 
                 final AenderungsanfrageJson anderungsanfrageFiltered = AenderungsanfrageUtils.getInstance()
                             .doFilteringOutWhatIShouldntSee(aenderungsanfrage, "stac".equals(getUser().getName()));
 
-                final String clerkUsername = (String)aenderungsanfrageBean.getProperty(
-                        VerdisConstants.PROP.AENDERUNGSANFRAGE.CLERK_USERNAME);
-                final ContactInfoJson contactInfo = AenderungsanfrageUtils.getInstance()
+                final String clerkUsername = (aenderungsanfrageBean != null)
+                    ? (String)aenderungsanfrageBean.getProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.CLERK_USERNAME)
+                    : null;
+                final ContactInfoJson contactInfo = (clerkUsername != null)
+                    ? AenderungsanfrageUtils.getInstance()
                             .getContactInfo(
-                                clerkUsername,
-                                AenderungsanfrageUtils.getConfFromServerResource().getSachbearbeiterDefaultname());
+                                    clerkUsername,
+                                    AenderungsanfrageUtils.getConfFromServerResource().getSachbearbeiterDefaultname())
+                    : null;
 
                 kassenzeichenBean.setProperty(
                     VerdisConstants.PROP.KASSENZEICHEN.STAC_OPTIONS,
