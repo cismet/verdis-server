@@ -549,7 +549,7 @@ public class AenderungsanfrageUtils {
                             final PruefungGroesseJson pruefungGroesseProcessed = (veranlagt == null)
                                 ? pruefungGroesseOrig
                                 : ((pruefungGroesseAutoaccept != null)
-                                    ? pruefungGroesseOrig
+                                    ? pruefungGroesseAutoaccept
                                     : (((pruefungGroesseNew != null)
                                                     && Boolean.TRUE.equals(pruefungGroesseNew.getPending()))
                                         ? pruefungGroesseNew : pruefungGroesseOrig));
@@ -1420,7 +1420,9 @@ public class AenderungsanfrageUtils {
             aenderungsanfrageAfter.getNachrichten()
                     .add(new NachrichtSystemJson(
                             createIdentifier(null),
-                            timestamp,
+                            Status.PROCESSING.equals(changeStatusTo)
+                                ? new Date(timestamp.getTime() - 1)
+                                : (Status.NONE.equals(changeStatusTo) ? new Date(timestamp.getTime() + 1) : timestamp), // assuring that the processing message comes first and the done status last
                             null,
                             new NachrichtParameterStatusJson(changeStatusTo),
                             username));

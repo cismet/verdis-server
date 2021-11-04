@@ -144,7 +144,8 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore,
 
                 final String clerkUsername = (aenderungsanfrageBean != null)
                     ? (String)aenderungsanfrageBean.getProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.CLERK_USERNAME)
-                    : null;
+                    : (((stacEntry != null) && (stacEntry.getStacOptions() != null))
+                        ? stacEntry.getStacOptions().getCreatorUserName() : null);
                 final ContactInfoJson contactInfo = (clerkUsername != null)
                     ? AenderungsanfrageUtils.getInstance()
                             .getContactInfo(
