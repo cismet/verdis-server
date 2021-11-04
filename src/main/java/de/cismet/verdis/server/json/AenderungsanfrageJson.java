@@ -108,6 +108,6 @@ public class AenderungsanfrageJson extends AbstractJson {
             final Map<String, FlaecheAenderungJson> flaechen,
             final Map<String, GeoJsonObject> geometrien,
             final List<NachrichtJson> nachrichten) {
-        this(kassenzeichen, null, null, null, flaechen, geometrien, nachrichten, null);
+        this(kassenzeichen, emailAdresse, null, emailVerifiziert, flaechen, geometrien, nachrichten, null);
     }
 }
