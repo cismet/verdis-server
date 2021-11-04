@@ -1134,12 +1134,13 @@ public class AenderungsanfrageUtils {
 
             if (aenderungsanfrageAfter.getNachrichten() != null) {
                 for (final NachrichtJson nachricht : aenderungsanfrageAfter.getNachrichten()) {
-                    if (nachricht != null) {
-                        if (
-                            !nachrichtenPerUUid.containsKey(
-                                        (nachricht.getIdentifier() != null) ? nachricht.getIdentifier() : null)
-                                    && !Boolean.TRUE.equals(nachricht.getDraft())
-                                    && NachrichtJson.Typ.CITIZEN.equals(nachricht.getTyp())) {
+                    if ((nachricht != null) && NachrichtJson.Typ.CITIZEN.equals(nachricht.getTyp())) {
+                        final String identifier = nachricht.getIdentifier();
+                        final NachrichtJson nachrichtBefore =
+                            ((identifier != null) && nachrichtenPerUUid.containsKey(identifier))
+                            ? nachrichtenPerUUid.get(identifier) : null;
+                        if (!Boolean.TRUE.equals(nachricht.getDraft())
+                                    && ((nachrichtBefore == null) || Boolean.TRUE.equals(nachrichtBefore.getDraft()))) {
                             newMessage = true;
                             break;
                         }
