@@ -782,8 +782,7 @@ public class AenderungsanfrageUtils {
         if (aenderungsanfrage != null) {
             final Integer kassenzeichenNummer = aenderungsanfrage.getKassenzeichen();
             final String emailAdresse = aenderungsanfrage.getEmailAdresse();
-            final Boolean verifiziert = aenderungsanfrage.getEmailVerifiziert();
-            if ((emailAdresse != null) && Boolean.TRUE.equals(verifiziert)) {
+            if (emailAdresse != null) {
                 try {
                     final AenderungsanfrageConf conf = getConfFromServerResource();
                     final File configDir = (conf.getMessageconfigDir() != null) ? new File(conf.getMessageconfigDir())
