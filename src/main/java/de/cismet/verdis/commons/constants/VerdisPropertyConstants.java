@@ -17,6 +17,8 @@ public final class VerdisPropertyConstants {
     //~ Static fields/initializers ---------------------------------------------
 
     public static final AenderungsanfragePropertyConstants AENDERUNGSANFRAGE = new AenderungsanfragePropertyConstants();
+    public static final AenderungsanfrageStatusPropertyConstants AENDERUNGSANFRAGE_STATUS =
+        new AenderungsanfrageStatusPropertyConstants();
     public static final AnschlussgradPropertyConstants ANSCHLUSSGRAD = new AnschlussgradPropertyConstants();
     public static final ArbeitspaketPropertyConstants ARBEITSPAKET = new ArbeitspaketPropertyConstants();
     public static final ArbeitspaketEintragPropertyConstants ARBEITSPAKET_EINTRAG =
