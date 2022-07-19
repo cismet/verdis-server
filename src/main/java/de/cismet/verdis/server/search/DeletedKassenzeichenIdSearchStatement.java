@@ -48,34 +48,43 @@ public class DeletedKassenzeichenIdSearchStatement extends AbstractCidsServerSea
     }
 
     //~ Methods ----------------------------------------------------------------
-public static void main(String[] args) {
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  args  DOCUMENT ME!
+     */
+    public static void main(final String[] args) {
         System.out.println(
-                String.format(""
-                + "SELECT cs_history.object_id FROM cs_history WHERE class_key = '%1$s' AND object_id IN ("
-                + "  SELECT object_id "
-                + "  FROM cs_history "
-                + "  WHERE class_key = '%1$s' AND json_data ilike '{ DELETED }') AND ("
-                + "    cs_history.json_data LIKE '%% \"%2$s\" : %3$d,%%' OR "
-                + "    cs_history.json_data LIKE '%% \"%2$s\" : %3$d %%' OR "
-                + "    cs_history.json_data LIKE '%% \"%2$s\" : \"%3$d%% "
-                + ") ORDER BY cs_history.valid_from DESC;", 
-                VerdisMetaClassConstants.KASSENZEICHEN, 
-                VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER, 
-                60004629)
-        );
+            String.format(
+                ""
+                        + "SELECT cs_history.object_id FROM cs_history WHERE class_key = '%1$s' AND object_id IN ("
+                        + "  SELECT object_id "
+                        + "  FROM cs_history "
+                        + "  WHERE class_key = '%1$s' AND json_data ilike '{ DELETED }') AND ("
+                        + "    cs_history.json_data LIKE '%% \"%2$s\" : %3$d,%%' OR "
+                        + "    cs_history.json_data LIKE '%% \"%2$s\" : %3$d %%' OR "
+                        + "    cs_history.json_data LIKE '%% \"%2$s\" : \"%3$d%% "
+                        + ") ORDER BY cs_history.valid_from DESC;",
+                VerdisMetaClassConstants.KASSENZEICHEN,
+                VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER,
+                60004629));
     }
     @Override
     public Collection<Integer> performServerSearch() {
         try {
             final String sql = String.format(""
-                + "SELECT cs_history.object_id FROM cs_history WHERE class_key = '%1$s' AND object_id IN ("
-                + "  SELECT object_id "
-                + "  FROM cs_history "
-                + "  WHERE class_key = '%1$s' AND json_data ilike '{ DELETED }') AND ("
-                + "    cs_history.json_data LIKE '%% \"%2$s\" : %3$d,%%' OR "
-                + "    cs_history.json_data LIKE '%% \"%2$s\" : %3$d %%' OR "
-                + "    cs_history.json_data LIKE '%% \"%2$s\" : \"%3$d%% "
-                + ") ORDER BY cs_history.valid_from DESC;", VerdisMetaClassConstants.KASSENZEICHEN, VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER, kassenzeichennummer);
+                            + "SELECT cs_history.object_id FROM cs_history WHERE class_key = '%1$s' AND object_id IN ("
+                            + "  SELECT object_id "
+                            + "  FROM cs_history "
+                            + "  WHERE class_key = '%1$s' AND json_data ilike '{ DELETED }') AND ("
+                            + "    cs_history.json_data LIKE '%% \"%2$s\" : %3$d,%%' OR "
+                            + "    cs_history.json_data LIKE '%% \"%2$s\" : %3$d %%' OR "
+                            + "    cs_history.json_data LIKE '%% \"%2$s\" : \"%3$d%% "
+                            + ") ORDER BY cs_history.valid_from DESC;",
+                    VerdisMetaClassConstants.KASSENZEICHEN,
+                    VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER,
+                    kassenzeichennummer);
 
             final MetaService ms = (MetaService)getActiveLocalServers().get(VerdisConstants.DOMAIN);
 

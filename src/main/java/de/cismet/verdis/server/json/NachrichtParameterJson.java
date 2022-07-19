@@ -70,6 +70,13 @@ public class NachrichtParameterJson extends AbstractJson {
                 return "notify";
             }
         },
+        PROLONG {
+
+            @Override
+            public String toString() {
+                return "prolong";
+            }
+        },
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -81,4 +88,5 @@ public class NachrichtParameterJson extends AbstractJson {
     private FlaecheFlaechenartJson flaechenart;
     private FlaecheAnschlussgradJson anschlussgrad;
     private Boolean benachrichtigt;
+    private Boolean verlaengert;
 }
