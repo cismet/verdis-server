@@ -93,12 +93,17 @@ public class VerdisServerStartupHook implements DomainServerStartupHook {
      * @param  domainServer  DOCUMENT ME!
      */
     private void deleteOldStacs(final DomainServerImpl domainServer) {
+        Connection connection = null;
         try {
-            final Connection connection = domainServer.getConnectionPool().getConnection(true);
+            connection = domainServer.getConnectionPool().getConnection(true);
             final PreparedStatement ps = connection.prepareStatement(PREPARED_STATEMENT__DELETE_OLD_STACS);
             ps.executeUpdate();
         } catch (final SQLException ex) {
             LOG.error(ex, ex);
+        } finally {
+            if (connection != null) {
+                domainServer.getConnectionPool().releaseDbConnection(connection);
+            }
         }
     }
 }
