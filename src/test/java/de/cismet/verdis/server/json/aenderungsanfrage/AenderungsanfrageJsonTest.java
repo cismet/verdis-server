@@ -217,7 +217,7 @@ public class AenderungsanfrageJsonTest {
         final Map<String, CidsBean> map = new HashMap<>();
         map.put("5", null);
                 
-        final AenderungsanfrageJson aenderungsanfrageNew = AenderungsanfrageUtils.getInstance().doProcessing(kassenzeichen, map, aenderungsanfrageOrig, aenderungsanfrageChange, Boolean.TRUE, null, "test", new Date(2500000000000L));               
+        final AenderungsanfrageJson aenderungsanfrageNew = AenderungsanfrageUtils.getInstance().doProcessing(null, kassenzeichen, map, aenderungsanfrageOrig, aenderungsanfrageChange, Boolean.TRUE, null, "test", new Date(2500000000000L), null, null);               
         final String aenderungsanfrageNewJson = aenderungsanfrageNew.toPrettyJson();
         //System.out.println(aenderungsanfrageNewJson);                            
         Assert.assertEquals(aenderungsanfrageProcessedJson, aenderungsanfrageNewJson);        

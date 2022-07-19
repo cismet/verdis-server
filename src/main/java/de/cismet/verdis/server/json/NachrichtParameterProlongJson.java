@@ -17,16 +17,16 @@ package de.cismet.verdis.server.json;
  *
  * @version  $Revision$, $Date$
  */
-public class NachrichtParameterNotifyJson extends NachrichtParameterJson {
+public class NachrichtParameterProlongJson extends NachrichtParameterJson {
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new NachrichtParameterNotifyJson object.
      *
-     * @param  benachrichtigt  DOCUMENT ME!
+     * @param  verlaengert  DOCUMENT ME!
      */
-    public NachrichtParameterNotifyJson(final Boolean benachrichtigt) {
-        super(Type.NOTIFY, null, null, null, null, null, benachrichtigt, null);
+    public NachrichtParameterProlongJson(final Boolean verlaengert) {
+        super(Type.PROLONG, null, null, null, null, null, null, verlaengert);
     }
 }
