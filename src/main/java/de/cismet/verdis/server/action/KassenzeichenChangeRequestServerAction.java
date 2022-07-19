@@ -361,6 +361,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
 
                 final AenderungsanfrageJson aenderungsanfrageProcessed = AenderungsanfrageUtils.getInstance()
                             .doProcessing(
+                                stacEntry,
                                 kassenzeichennummer,
                                 existingFlaechen,
                                 aenderungsanfrageOrig,
@@ -368,7 +369,9 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                                 citizenOrClerk,
                                 veranlagt,
                                 userName,
-                                now);
+                                now,
+                                getMetaService(),
+                                getConnectionContext());
 
                 // STATUS
                 final AenderungsanfrageUtils.Status oldStatus = (statusSchluessel != null)
@@ -398,7 +401,7 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                             != null);
 
                 if (!Objects.equals(oldStatus, newStatus)) {
-                    updateExpiration(stacEntry);
+                    StacUtils.prolongExpiration(stacEntry, getMetaService(), getConnectionContext());
                     AenderungsanfrageUtils.getInstance().sendStatusChangedMail(aenderungsanfrageProcessed, newStatus);
                 }
 
@@ -489,23 +492,6 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
         } else {
             DomainServerImpl.getServerInstance()
                     .insertMetaObject(getUser(), aenderungsanfrageBean.getMetaObject(), getConnectionContext());
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   stacEntry  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    private void updateExpiration(final StacEntry stacEntry) throws Exception {
-        if ((stacEntry.getStacOptions() != null) && (stacEntry.getStacOptions().getDuration() != null)) {
-            StacUtils.updateStacExpiration(
-                stacEntry.getId(),
-                StacUtils.createTimestampFrom(stacEntry.getStacOptions().getDuration()),
-                getMetaService(),
-                getConnectionContext());
         }
     }
 
