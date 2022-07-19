@@ -106,9 +106,11 @@ public class AenderungsanfrageStatusSearchStatement extends AbstractCidsServerSe
     @Override
     public Collection<MetaObjectNode> performServerSearch() {
         try {
+            final Collection<String> froms = new ArrayList<>();
             final Collection<String> wheres = new ArrayList<>();
 
-            final String from = VerdisConstants.MC.AENDERUNGSANFRAGE_STATUS + " AS s";
+            froms.add(VerdisConstants.MC.AENDERUNGSANFRAGE_STATUS + " AS s");
+            final String from = String.join(" LEFT JOIN ", froms);
             final String where;
 
             if (getSchluessel() != null) {

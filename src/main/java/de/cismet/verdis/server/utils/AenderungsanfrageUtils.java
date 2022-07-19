@@ -12,7 +12,6 @@
  */
 package de.cismet.verdis.server.utils;
 
-import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.newuser.User;
@@ -38,10 +37,6 @@ import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import java.sql.Timestamp;
-
-import java.time.LocalDate;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -56,9 +51,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.cismet.cids.dynamics.CidsBean;
-
-import de.cismet.cids.server.search.CidsServerSearch;
-import de.cismet.cids.server.search.SearchException;
 
 import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
@@ -169,7 +161,7 @@ public class AenderungsanfrageUtils {
 
         //~ Enum constants -----------------------------------------------------
 
-        NONE, NEW_CITIZEN_MESSAGE, PENDING, PROCESSING, CLOSED, ARCHIVED;
+        NONE, NEW_CITIZEN_MESSAGE, PENDING, PROCESSING, CLOSED;
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -1574,26 +1566,6 @@ public class AenderungsanfrageUtils {
     /**
      * DOCUMENT ME!
      *
-     * @param   search       DOCUMENT ME!
-     * @param   user         DOCUMENT ME!
-     * @param   metaService  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  SearchException  DOCUMENT ME!
-     */
-    private static Collection execSearch(final CidsServerSearch search, final User user, final MetaService metaService)
-            throws SearchException {
-        final Map localServers = new HashMap<>();
-        localServers.put(VerdisConstants.DOMAIN, metaService);
-        search.setActiveLocalServers(localServers);
-        search.setUser(user);
-        return search.performServerSearch();
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
      * @param   stacEntry          DOCUMENT ME!
      * @param   metaService        DOCUMENT ME!
      * @param   connectionContext  DOCUMENT ME!
@@ -1607,10 +1579,13 @@ public class AenderungsanfrageUtils {
             final ConnectionContext connectionContext) throws Exception {
         if (stacEntry != null) {
             final User user = getUser(stacEntry, metaService, connectionContext);
-
+            final Map localServers = new HashMap<>();
+            localServers.put(VerdisConstants.DOMAIN, metaService);
             final AenderungsanfrageSearchStatement search = new AenderungsanfrageSearchStatement();
+            search.setActiveLocalServers(localServers);
+            search.setUser(user);
             search.setStacId(stacEntry.getId());
-            final Collection<MetaObjectNode> mons = execSearch(search, user, metaService);
+            final Collection<MetaObjectNode> mons = search.performServerSearch();
             for (final MetaObjectNode mon : mons) {
                 if (mon != null) {
                     return metaService.getMetaObject(
@@ -1744,41 +1719,6 @@ public class AenderungsanfrageUtils {
      * DOCUMENT ME!
      *
      * @param   status             DOCUMENT ME!
-     * @param   user               DOCUMENT ME!
-     * @param   metaService        DOCUMENT ME!
-     * @param   connectionContext  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
-     */
-    public static CidsBean getStatusBean(final Status status,
-            final User user,
-            final MetaService metaService,
-            final ConnectionContext connectionContext) throws Exception {
-        final AenderungsanfrageStatusSearchStatement search = new AenderungsanfrageStatusSearchStatement();
-        search.setSchluessel(status.toString());
-
-        final Collection<MetaObjectNode> mons = execSearch(search, user, metaService);
-
-        if ((mons != null) && !mons.isEmpty()) {
-            for (final MetaObjectNode mon : mons) {
-                if (mon != null) {
-                    return metaService.getMetaObject(
-                                user,
-                                mon.getObjectId(),
-                                mon.getClassId(),
-                                connectionContext).getBean();
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   status             DOCUMENT ME!
      * @param   stacEntry          DOCUMENT ME!
      * @param   metaService        DOCUMENT ME!
      * @param   connectionContext  DOCUMENT ME!
@@ -1793,60 +1733,30 @@ public class AenderungsanfrageUtils {
             final ConnectionContext connectionContext) throws Exception {
         if (stacEntry != null) {
             final User user = getUser(stacEntry, metaService, connectionContext);
-            return getStatusBean(status, user, metaService, connectionContext);
-        }
-        return null;
-    }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  user               DOCUMENT ME!
-     * @param  metaService        DOCUMENT ME!
-     * @param  connectionContext  DOCUMENT ME!
-     */
-    public static void archiveOldAenderungsanfragen(final User user,
-            final MetaService metaService,
-            final ConnectionContext connectionContext) {
-        try {
-            final Timestamp now = Timestamp.valueOf(LocalDate.now().minusMonths(2).atStartOfDay());
+            final Map localServers = new HashMap<>();
+            localServers.put(VerdisConstants.DOMAIN, metaService);
+            final AenderungsanfrageStatusSearchStatement search = new AenderungsanfrageStatusSearchStatement();
+            search.setActiveLocalServers(localServers);
+            search.setUser(user);
+            search.setSchluessel(status.toString());
 
-            final CidsBean archivedBean = getStatusBean(Status.ARCHIVED, user, metaService, connectionContext);
+            final Collection<MetaObjectNode> mons = search.performServerSearch();
 
-            final AenderungsanfrageSearchStatement search = new AenderungsanfrageSearchStatement();
-            search.setActive(Boolean.TRUE);
-            final Collection<MetaObjectNode> mons = execSearch(search, user, metaService);
-            for (final MetaObjectNode mon : mons) {
-                final CidsBean aenderungsanfrageBean = metaService.getMetaObject(
-                            user,
-                            mon.getObjectId(),
-                            mon.getClassId(),
-                            connectionContext)
-                            .getBean();
-
-                final Integer stacId = (Integer)aenderungsanfrageBean.getProperty(
-                        VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID);
-                if (stacId == null) {
-                    continue;
-                }
-                final StacEntry stacEntry = StacUtils.getStacEntry(stacId, metaService, connectionContext);
-                if (stacEntry == null) {
-                    continue;
-                }
-                final Timestamp expiration = stacEntry.getExpiration();
-                if (expiration == null) {
-                    continue;
-                }
-                if (now.after(expiration)) {
-                    aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS, archivedBean);
-                    DomainServerImpl.getServerInstance()
-                            .updateMetaObject(user, aenderungsanfrageBean.getMetaObject(), connectionContext);
-                    LOG.fatal("date expired: " + expiration.toLocalDateTime().toString());
+            if ((mons != null) && !mons.isEmpty()) {
+                for (final MetaObjectNode mon : mons) {
+                    if (mon != null) {
+                        return metaService.getMetaObject(
+                                    user,
+                                    mon.getObjectId(),
+                                    mon.getClassId(),
+                                    connectionContext).getBean();
+                    }
                 }
             }
-        } catch (final Exception ex) {
-            LOG.error(ex, ex);
+            return null;
         }
+        return null;
     }
 
     /**
