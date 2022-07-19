@@ -32,8 +32,6 @@ import de.cismet.cidsx.server.search.RestApiCidsServerSearch;
 import de.cismet.verdis.commons.constants.AenderungsanfragePropertyConstants;
 import de.cismet.verdis.commons.constants.VerdisConstants;
 
-import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
-
 /**
  * DOCUMENT ME!
  *
@@ -68,10 +66,6 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
 
     @Getter @Setter private Integer kassenzeichennummer;
 
-    @Getter @Setter private String clerk;
-
-    @Getter @Setter private Boolean active;
-
     @Getter @Setter private Set<String> statii;
 
     @Getter @Setter private SearchMode searchMode = SearchMode.AND;
@@ -99,16 +93,6 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
 
         searchParameterInfo.setKey("kassenzeichenNummer");
         searchParameterInfo.setType(Type.INTEGER);
-        parameterDescription.add(searchParameterInfo);
-        searchInfo.setParameterDescription(parameterDescription);
-
-        searchParameterInfo.setKey("user");
-        searchParameterInfo.setType(Type.STRING);
-        parameterDescription.add(searchParameterInfo);
-        searchInfo.setParameterDescription(parameterDescription);
-
-        searchParameterInfo.setKey("active");
-        searchParameterInfo.setType(Type.BOOLEAN);
         parameterDescription.add(searchParameterInfo);
         searchInfo.setParameterDescription(parameterDescription);
 
@@ -142,31 +126,13 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
             final Collection<String> froms = new ArrayList<>();
             final Collection<String> wheres = new ArrayList<>();
 
-            boolean joinStacId = false;
-            boolean joinStatus = false;
             boolean joinKassenzeichen = false;
-
+            boolean joinStacId = false;
             if (stacId != null) {
                 wheres.add("a." + VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID
                             + " = " + stacId + "");
                 joinStacId = true;
             }
-            if (clerk != null) {
-                wheres.add("a." + VerdisConstants.PROP.AENDERUNGSANFRAGE.CLERK_USERNAME + " LIKE '" + clerk + "'");
-            }
-
-            if (active != null) {
-                joinStatus = true;
-                if (Boolean.TRUE.equals(active)) {
-                    wheres.add("s." + VerdisConstants.PROP.AENDERUNGSANFRAGE_STATUS.SCHLUESSEL
-                                + " NOT LIKE '"
-                                + AenderungsanfrageUtils.Status.ARCHIVED + "'");
-                } else {
-                    wheres.add("s." + VerdisConstants.PROP.AENDERUNGSANFRAGE_STATUS.SCHLUESSEL + " LIKE '"
-                                + AenderungsanfrageUtils.Status.ARCHIVED + "'");
-                }
-            }
-
             if (kassenzeichennummer != null) {
                 joinKassenzeichen = true;
                 wheres.add("k." + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER + " = " + kassenzeichennummer);
@@ -175,11 +141,6 @@ public class AenderungsanfrageSearchStatement extends AbstractCidsServerSearch i
             froms.add(VerdisConstants.MC.AENDERUNGSANFRAGE + " AS a");
             if (joinStacId) {
                 froms.add("cs_stac ON a." + VerdisConstants.PROP.AENDERUNGSANFRAGE.STAC_ID + " = cs_stac.id");
-            }
-            if (joinStatus) {
-                froms.add(VerdisConstants.MC.AENDERUNGSANFRAGE_STATUS + " AS s ON a."
-                            + VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS + " = s."
-                            + VerdisConstants.PROP.AENDERUNGSANFRAGE_STATUS.ID);
             }
             if (joinKassenzeichen) {
                 froms.add(VerdisConstants.MC.KASSENZEICHEN + " AS k ON a."
