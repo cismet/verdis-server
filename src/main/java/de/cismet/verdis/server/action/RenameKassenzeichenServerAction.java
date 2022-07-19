@@ -96,7 +96,7 @@ public class RenameKassenzeichenServerAction implements MetaServiceStore, UserAw
      */
     private Connection getConnection() throws Exception {
         if (connection == null) {
-            connection = DomainServerImpl.getServerInstance().getConnectionPool().getConnection(true);
+            connection = DomainServerImpl.getServerInstance().getConnectionPool().getConnection();
         }
         return connection;
     }

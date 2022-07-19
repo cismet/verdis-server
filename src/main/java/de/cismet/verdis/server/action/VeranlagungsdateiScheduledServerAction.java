@@ -181,14 +181,6 @@ public class VeranlagungsdateiScheduledServerAction extends DefaultScheduledServ
             }
         } catch (final Exception ex) {
             LOG.fatal("error while creating veranlagungsdatei", ex);
-        } finally {
-            try {
-                if (con != null) {
-                    con.close();
-                }
-            } catch (final SQLException ex) {
-                LOG.fatal("could not close sql connection", ex);
-            }
         }
 
         return null;
