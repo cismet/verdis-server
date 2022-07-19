@@ -31,6 +31,6 @@ public class NachrichtParameterFlaechenartJson extends NachrichtParameterJson {
     public NachrichtParameterFlaechenartJson(final NachrichtParameterJson.Type type,
             final String flaeche,
             final FlaecheFlaechenartJson flaechenart) {
-        super(type, null, flaeche, null, flaechenart, null, null);
+        super(type, null, flaeche, null, flaechenart, null, null, null);
     }
 }

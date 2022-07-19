@@ -15,7 +15,6 @@ package de.cismet.verdis.server.utils;
 import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObject;
-import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserServer;
 
@@ -31,7 +30,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,13 +38,10 @@ import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.connectioncontext.ConnectionContext;
 
-import de.cismet.verdis.commons.constants.VerdisConstants;
-
 import de.cismet.verdis.server.json.StacOptionsDurationJson;
 import de.cismet.verdis.server.json.StacOptionsJson;
 import de.cismet.verdis.server.jsondeserializer.StacOptionsDeserializer;
 import de.cismet.verdis.server.jsondeserializer.StacOptionsDurationDeserializer;
-import de.cismet.verdis.server.search.AenderungsanfrageSearchStatement;
 
 /**
  * DOCUMENT ME!
@@ -175,6 +170,27 @@ public class StacUtils {
             LOG.debug(ps.toString());
         }
         ps.executeUpdate();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   stacEntry          DOCUMENT ME!
+     * @param   metaService        DOCUMENT ME!
+     * @param   connectionContext  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static void prolongExpiration(final StacEntry stacEntry,
+            final MetaService metaService,
+            final ConnectionContext connectionContext) throws Exception {
+        if ((stacEntry.getStacOptions() != null) && (stacEntry.getStacOptions().getDuration() != null)) {
+            updateStacExpiration(
+                stacEntry.getId(),
+                createTimestampFrom(stacEntry.getStacOptions().getDuration()),
+                metaService,
+                connectionContext);
+        }
     }
 
     /**
