@@ -14,12 +14,16 @@ package de.cismet.verdis.server.startup;
 
 import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.domainserver.DomainServerStartupHook;
+import Sirius.server.newuser.User;
+import Sirius.server.newuser.UserGroup;
 
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+
+import java.util.Arrays;
 
 import de.cismet.cids.utils.serverresources.ServerResourcesLoader;
 
@@ -62,6 +66,7 @@ public class VerdisServerStartupHook implements DomainServerStartupHook {
                         } catch (InterruptedException ex) {
                         }
                     }
+                    archiveOldAenderungsanfragen(domainServer);
                     // deleteOldStacs(domainServer);
                 }
             }) {
@@ -100,7 +105,7 @@ public class VerdisServerStartupHook implements DomainServerStartupHook {
     private void deleteOldStacs(final DomainServerImpl domainServer) {
         Connection connection = null;
         try {
-            connection = domainServer.getConnectionPool().getConnection(true);
+            connection = domainServer.getConnectionPool().getConnection();
             final PreparedStatement ps = connection.prepareStatement(PREPARED_STATEMENT__DELETE_OLD_STACS);
             ps.executeUpdate();
         } catch (final SQLException ex) {
@@ -110,5 +115,17 @@ public class VerdisServerStartupHook implements DomainServerStartupHook {
                 domainServer.getConnectionPool().releaseDbConnection(connection);
             }
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  domainServer  DOCUMENT ME!
+     */
+    private void archiveOldAenderungsanfragen(final DomainServerImpl domainServer) {
+        final ConnectionContext connectionContext = ConnectionContext.createDeprecated();
+        final User user = new User(-1, "StartupHook", VerdisConstants.DOMAIN);
+        user.setPotentialUserGroups(Arrays.asList(new UserGroup(-1, "VORN_Schreiben_KA", VerdisConstants.DOMAIN)));
+        AenderungsanfrageUtils.getInstance().archiveOldAenderungsanfragen(user, domainServer, connectionContext);
     }
 }
