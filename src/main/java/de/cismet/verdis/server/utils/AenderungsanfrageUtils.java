@@ -1140,6 +1140,7 @@ public class AenderungsanfrageUtils {
             final Date timestamp) throws Exception {
         final boolean isCitizen = Boolean.TRUE.equals(citizenOrClerk);
         final boolean isClerk = Boolean.FALSE.equals(citizenOrClerk);
+        final boolean isArchived = Status.ARCHIVED.equals(oldStatus);
 
         final HashMap<String, NachrichtJson> nachrichtenPerUUid = new HashMap<>();
         if (aenderungsanfrageBefore.getNachrichten() != null) {
@@ -1150,8 +1151,7 @@ public class AenderungsanfrageUtils {
             }
         }
 
-        final Status changeStatusTo;
-        if (isCitizen) {
+        if (isCitizen && !isArchived) {
             boolean newMessage = false;
 
             if (aenderungsanfrageAfter.getNachrichten() != null) {
@@ -1251,11 +1251,9 @@ public class AenderungsanfrageUtils {
             }
 
             if (anyChanges) {
-                changeStatusTo = Status.PENDING;
+                return Status.PENDING;
             } else if (newMessage) {
-                changeStatusTo = Status.NEW_CITIZEN_MESSAGE;
-            } else {
-                changeStatusTo = null;
+                return Status.NEW_CITIZEN_MESSAGE;
             }
         } else if (isClerk) {
             boolean prolong = false;
@@ -1277,7 +1275,7 @@ public class AenderungsanfrageUtils {
                     }
                 }
             }
-            if ((veranlagt != null) || prolong) {
+            if (((veranlagt != null) && !isArchived) || prolong) {
                 if (aenderungsanfrageBefore.getFlaechen().size() < aenderungsanfrageAfter.getFlaechen().size()) {
                     throw new Exception("flaeche added. clerk is not allowed to add flaeche");
                 }
@@ -1447,19 +1445,32 @@ public class AenderungsanfrageUtils {
 
                 if (pruefungDoneCount == aenderungCount) {
                     if (Boolean.TRUE.equals(veranlagt) || prolong) {
-                        changeStatusTo = Status.NONE;
-                    } else {
-                        changeStatusTo = null;
+                        return Status.NONE;
                     }
                 } else {
-                    changeStatusTo = Status.PROCESSING;
+                    return Status.PROCESSING;
                 }
-            } else {
-                changeStatusTo = null;
             }
-        } else {
-            changeStatusTo = null;
         }
+        return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   oldStatus               DOCUMENT ME!
+     * @param   changeStatusTo          DOCUMENT ME!
+     * @param   aenderungsanfrageAfter  DOCUMENT ME!
+     * @param   timestamp               DOCUMENT ME!
+     * @param   username                DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public void addStatusChangedSystemMessage(final Status oldStatus,
+            final Status changeStatusTo,
+            final AenderungsanfrageJson aenderungsanfrageAfter,
+            final Date timestamp,
+            final String username) throws Exception {
         final boolean statusChanged = (changeStatusTo != null) && !changeStatusTo.equals(oldStatus);
         if (statusChanged
                     && ((Status.NEW_CITIZEN_MESSAGE != changeStatusTo) && (Status.NEW_CITIZEN_MESSAGE != oldStatus))) {
@@ -1473,7 +1484,6 @@ public class AenderungsanfrageUtils {
                             new NachrichtParameterStatusJson(changeStatusTo),
                             username));
         }
-        return changeStatusTo;
     }
 
     /**
@@ -1879,7 +1889,6 @@ public class AenderungsanfrageUtils {
                     aenderungsanfrageBean.setProperty(VerdisConstants.PROP.AENDERUNGSANFRAGE.STATUS, archivedBean);
                     DomainServerImpl.getServerInstance()
                             .updateMetaObject(user, aenderungsanfrageBean.getMetaObject(), connectionContext);
-                    LOG.fatal("date expired: " + expiration.toLocalDateTime().toString());
                 }
             }
         } catch (final Exception ex) {
