@@ -386,23 +386,28 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
                                 veranlagt,
                                 userName,
                                 now);
-
+                AenderungsanfrageUtils.getInstance()
+                        .addStatusChangedSystemMessage(oldStatus, status, aenderungsanfrageProcessed, now, userName);
                 final AenderungsanfrageUtils.Status newStatus = (status != null)
                     ? status : ((oldStatus != null) ? oldStatus : AenderungsanfrageUtils.Status.PENDING);
 
-                // PERSISTING
-                persistAenderungsanfrage(
-                    aenderungsanfrageBean,
-                    stacEntry,
-                    aenderungsanfrageProcessed,
-                    kassenzeichennummer,
-                    newStatus,
-                    existingAenderungsanfrageBean
-                            != null);
+                if (!((AenderungsanfrageUtils.Status.ARCHIVED == oldStatus)
+                                && (AenderungsanfrageUtils.Status.ARCHIVED == newStatus))) {
+                    // PERSISTING
+                    persistAenderungsanfrage(
+                        aenderungsanfrageBean,
+                        stacEntry,
+                        aenderungsanfrageProcessed,
+                        kassenzeichennummer,
+                        newStatus,
+                        existingAenderungsanfrageBean
+                                != null);
 
-                if (!Objects.equals(oldStatus, newStatus)) {
-                    StacUtils.prolongExpiration(stacEntry, getMetaService(), getConnectionContext());
-                    AenderungsanfrageUtils.getInstance().sendStatusChangedMail(aenderungsanfrageProcessed, newStatus);
+                    if (!Objects.equals(oldStatus, newStatus)) {
+                        StacUtils.prolongExpiration(stacEntry, getMetaService(), getConnectionContext());
+                        AenderungsanfrageUtils.getInstance()
+                                .sendStatusChangedMail(aenderungsanfrageProcessed, newStatus);
+                    }
                 }
 
                 if (Boolean.TRUE.equals(submission)) {
