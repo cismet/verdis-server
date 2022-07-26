@@ -151,11 +151,6 @@ public class CreateAStacForKassenzeichenServerAction implements MetaServiceStore
                         .loadProperties(VerdisServerResources.CREATE_STAC_FOR_A_KASSENZEICHEN_ACTION_PROPERTIES
                             .getValue());
 
-            final MetaClass mcKassenzeichen = getMetaService().getClassByTableName(
-                    getUser(),
-                    VerdisConstants.MC.KASSENZEICHEN,
-                    getConnectionContext());
-
             final StacInfoSearchStatement search = new StacInfoSearchStatement(
                     StacInfoSearchStatement.SearchBy.KASSENZEICHEN_ID);
             search.setKassenzeichenId(kassenzeichenId);
@@ -189,7 +184,7 @@ public class CreateAStacForKassenzeichenServerAction implements MetaServiceStore
                 }
             }
 
-            return StacUtils.createStac(mcKassenzeichen.getId(),
+            return StacUtils.createStac(
                     kassenzeichenId,
                     properties.getProperty("baseLoginName", userName),
                     userName,

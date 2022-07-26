@@ -29,7 +29,6 @@ public class StacOptionsJson extends AbstractJson {
 
     //~ Instance fields --------------------------------------------------------
 
-    private Integer classId;
     private Integer kassenzeichenid;
     private String creatorUserName;
     private StacOptionsDurationJson duration;
@@ -39,11 +38,10 @@ public class StacOptionsJson extends AbstractJson {
     /**
      * Creates a new StacOptionsJson object.
      *
-     * @param  classId          DOCUMENT ME!
      * @param  kassenzeichenid  DOCUMENT ME!
      * @param  creatorUserName  DOCUMENT ME!
      */
-    public StacOptionsJson(final Integer classId, final Integer kassenzeichenid, final String creatorUserName) {
-        this(classId, kassenzeichenid, creatorUserName, null);
+    public StacOptionsJson(final Integer kassenzeichenid, final String creatorUserName) {
+        this(kassenzeichenid, creatorUserName, null);
     }
 }

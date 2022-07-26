@@ -78,13 +78,15 @@ public class KassenzeichenGeomSearch extends GeomServerSearch {
                         + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER + " AS kassenzeichennumer "
                         + "FROM "
                         + "    cs_attr_object_derived, "
+                        + "    cs_class, "
                         + "    " + VerdisConstants.MC.KASSENZEICHEN + " AS kassenzeichen, "
                         + ((joinFilter.isEmpty()) ? "" : (implodeArray(joinFilter.toArray(new String[0]), ", ") + ", "))
                         + "    " + VerdisConstants.MC.GEOM + " AS geom "
                         + "WHERE "
                         + ((whereFilter.isEmpty())
                             ? " TRUE " : ("(" + implodeArray(whereFilter.toArray(new String[0]), " OR ") + ")"))
-                        + "    AND cs_attr_object_derived.class_id = 11 "
+                        + "    AND cs_class.table_name ILIKE '" + VerdisConstants.MC.KASSENZEICHEN + "' "
+                        + "    AND cs_attr_object_derived.class_id = cs_class.id "
                         + "    AND cs_attr_object_derived.attr_class_id = 0 "
                         + "    AND kassenzeichen." + VerdisConstants.PROP.KASSENZEICHEN.ID
                         + " = cs_attr_object_derived.object_id "

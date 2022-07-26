@@ -59,7 +59,6 @@ public class KassenzeichenNodeByWKTSearch extends KassenzeichenGeomSearch implem
 
     private SearchInfo searchInfo;
     @Getter private String wktString = "";
-    private final int KASSENZEICHEN_CLASS_ID = 11;
 
     @Getter @Setter private boolean flaecheFilter = false;
     @Getter @Setter private boolean frontFilter = false;
@@ -197,11 +196,13 @@ public class KassenzeichenNodeByWKTSearch extends KassenzeichenGeomSearch implem
                 final String geomFromText = "st_GeomFromText('" + searchGeometry.toText() + "', "
                             + searchGeometry.getSRID()
                             + ")";
-                final String sqlDerived = "SELECT DISTINCT " + KASSENZEICHEN_CLASS_ID + " as cid, "
+                final String sqlDerived = "SELECT DISTINCT (SELECT id FROM cs_class WHERE table_name ILIKE '"
+                            + VerdisConstants.MC.KASSENZEICHEN + "' LIMIT 1) as cid, "
                             + VerdisConstants.MC.KASSENZEICHEN + ".id"
                             + " AS oid "
                             + "FROM "
                             + "    cs_attr_object_derived, "
+                            + "    cs_class, "
                             + "    " + VerdisConstants.MC.KASSENZEICHEN + " AS kassenzeichen, "
                             + ((joinFilter.isEmpty()) ? ""
                                                       : (implodeArray(joinFilter.toArray(new String[0]), ", ") + ", "))
@@ -209,7 +210,8 @@ public class KassenzeichenNodeByWKTSearch extends KassenzeichenGeomSearch implem
                             + "WHERE "
                             + ((whereFilter.isEmpty())
                                 ? " TRUE " : ("(" + implodeArray(whereFilter.toArray(new String[0]), " OR ") + ")"))
-                            + "    AND cs_attr_object_derived.class_id = " + KASSENZEICHEN_CLASS_ID + " "
+                            + "    AND cs_class.table_name = '" + VerdisConstants.MC.KASSENZEICHEN + "' "
+                            + "    AND cs_attr_object_derived.class_id = cs_class.id "
                             + "    AND cs_attr_object_derived.attr_class_id = 0 "
                             + "    AND kassenzeichen." + VerdisConstants.PROP.KASSENZEICHEN.ID
                             + " = cs_attr_object_derived.object_id "
