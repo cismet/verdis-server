@@ -53,18 +53,14 @@ public class StacOptionsDeserializer extends StdDeserializer<StacOptionsJson> {
     public StacOptionsJson deserialize(final JsonParser jp, final DeserializationContext dc) throws IOException,
         JsonProcessingException {
         final ObjectNode on = jp.readValueAsTree();
-        final Integer classId = on.has("classId") ? on.get("classId").asInt() : null;
         final Integer kassenzeichenid = on.has("kassenzeichenid") ? on.get("kassenzeichenid").asInt() : null;
         final String creatorUserName = on.has("creatorUserName") ? on.get("creatorUserName").asText() : null;
         final StacOptionsDurationJson duration = on.has("duration")
             ? objectMapper.treeToValue(on.get("duration"), StacOptionsDurationJson.class) : null;
 
-        if (classId == null) {
-            throw new RuntimeException("invalid StacOptionsJson: classId is missing");
-        }
         if (kassenzeichenid == null) {
             throw new RuntimeException("invalid StacOptionsJson: kassenzeichenid is missing");
         }
-        return new StacOptionsJson(classId, kassenzeichenid, creatorUserName, duration);
+        return new StacOptionsJson(kassenzeichenid, creatorUserName, duration);
     }
 }

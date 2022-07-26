@@ -14,6 +14,7 @@ package de.cismet.verdis.server.utils;
 
 import Sirius.server.middleware.impls.domainserver.DomainServerImpl;
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
+import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObject;
 import Sirius.server.newuser.User;
 import Sirius.server.newuser.UserServer;
@@ -37,6 +38,8 @@ import java.util.Map;
 import de.cismet.cids.dynamics.CidsBean;
 
 import de.cismet.connectioncontext.ConnectionContext;
+
+import de.cismet.verdis.commons.constants.VerdisConstants;
 
 import de.cismet.verdis.server.json.StacOptionsDurationJson;
 import de.cismet.verdis.server.json.StacOptionsJson;
@@ -113,7 +116,6 @@ public class StacUtils {
     /**
      * DOCUMENT ME!
      *
-     * @param   classId          DOCUMENT ME!
      * @param   kassenzeichenId  DOCUMENT ME!
      * @param   baseLoginName    DOCUMENT ME!
      * @param   creatorUserName  DOCUMENT ME!
@@ -124,13 +126,13 @@ public class StacUtils {
      *
      * @throws  Exception  DOCUMENT ME!
      */
-    public static String createStac(final Integer classId,
+    public static String createStac(
             final Integer kassenzeichenId,
             final String baseLoginName,
             final String creatorUserName,
             final Timestamp expiration,
             final StacOptionsDurationJson duration) throws Exception {
-        final StacOptionsJson stacOptions = new StacOptionsJson(classId, kassenzeichenId, creatorUserName, duration);
+        final StacOptionsJson stacOptions = new StacOptionsJson(kassenzeichenId, creatorUserName, duration);
 
         final String stacOptionsJson = stacOptions.toJson();
 
@@ -363,10 +365,15 @@ public class StacUtils {
         if (stacEntry != null) {
             final User user = getUser(stacEntry, metaService, connectionContext);
 
+            final MetaClass mc = metaService.getClassByTableName(
+                    user,
+                    VerdisConstants.MC.KASSENZEICHEN,
+                    connectionContext);
+
             final MetaObject mo = metaService.getMetaObject(
                     user,
                     stacEntry.getStacOptions().getKassenzeichenid(),
-                    stacEntry.getStacOptions().getClassId(),
+                    mc.getId(),
                     connectionContext);
             return mo.getBean();
         } else {

@@ -207,18 +207,18 @@ public class RenameKassenzeichenServerAction implements MetaServiceStore, UserAw
      * @throws  Exception  DOCUMENT ME!
      */
     private CidsBean getKassenzeichen(final int kassenzeichennummer) throws Exception {
-        final MetaClass kassenzeichenMc = CidsBean.getMetaClassFromTableName(
-                VerdisConstants.DOMAIN,
-                VerdisConstants.MC.KASSENZEICHEN);
+        final User user = getUser();
+        final MetaService metaService = getMetaService();
+        final MetaClass mc = metaService.getClassByTableName(user, VerdisConstants.MC.KASSENZEICHEN);
 
-        final String kassenzeichenQuery = "SELECT DISTINCT " + kassenzeichenMc.getID() + ", "
-                    + kassenzeichenMc.getTableName() + "." + kassenzeichenMc.getPrimaryKey() + " "
-                    + "FROM " + kassenzeichenMc.getTableName() + " "
-                    + "WHERE " + kassenzeichenMc.getTableName() + "."
+        final String kassenzeichenQuery = "SELECT DISTINCT " + mc.getID() + ", "
+                    + mc.getTableName() + "." + mc.getPrimaryKey() + " "
+                    + "FROM " + mc.getTableName() + " "
+                    + "WHERE " + mc.getTableName() + "."
                     + VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER + " = " + kassenzeichennummer + " "
                     + "LIMIT 1;";
 
-        final MetaObject[] mos = getMetaService().getMetaObject(getUser(), kassenzeichenQuery);
+        final MetaObject[] mos = metaService.getMetaObject(user, kassenzeichenQuery);
         if (mos.length == 1) {
             return mos[0].getBean();
         } else {
