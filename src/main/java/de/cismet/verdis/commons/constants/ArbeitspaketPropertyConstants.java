@@ -18,7 +18,7 @@ public final class ArbeitspaketPropertyConstants extends PropertyConstants {
     //~ Static fields/initializers ---------------------------------------------
 
     public static final String NAME = "name";
-    public static final String FK_USER = "fk_user";
+    public static final String LOGIN_NAME = "login_name";
     public static final String KASSENZEICHENNUMMERN = "kassenzeichennummern";
 
     //~ Constructors -----------------------------------------------------------
