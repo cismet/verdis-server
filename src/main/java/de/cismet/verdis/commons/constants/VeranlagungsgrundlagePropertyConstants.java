@@ -37,6 +37,7 @@ public final class VeranlagungsgrundlagePropertyConstants extends PropertyConsta
     public static final String ANSCHLUSSGRAD = "anschlussgrad";
     public static final String VERANLAGUNGSSCHLUESSEL = "veranlagungsschluessel";
     public static final String VERANLAGUNGSNUMMER = "veranlagungsnummer";
+    public static final String AKTIV = "aktiv";
 
     //~ Constructors -----------------------------------------------------------
 
