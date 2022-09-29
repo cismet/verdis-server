@@ -47,6 +47,8 @@ public class VerdisServerStartupHook implements DomainServerStartupHook {
 
     private static final Logger LOG = Logger.getLogger(VerdisServerStartupHook.class.getName());
     private static final String PREPARED_STATEMENT__DELETE_OLD_STACS = "DELETE FROM cs_stac WHERE expiration < now()";
+    private static final String PREPARED_STATEMENT__DELETE_OLD_HISTORY =
+        "DELETE FROM cs_history WHERE valid_from < (SELECT now() - interval '3 years')";
 
     //~ Methods ----------------------------------------------------------------
 
@@ -68,6 +70,7 @@ public class VerdisServerStartupHook implements DomainServerStartupHook {
                     }
                     archiveOldAenderungsanfragen(domainServer);
                     // deleteOldStacs(domainServer);
+                    deleteOldHistory(domainServer);
                 }
             }) {
             }.start();
@@ -107,6 +110,26 @@ public class VerdisServerStartupHook implements DomainServerStartupHook {
         try {
             connection = domainServer.getConnectionPool().getConnection();
             final PreparedStatement ps = connection.prepareStatement(PREPARED_STATEMENT__DELETE_OLD_STACS);
+            ps.executeUpdate();
+        } catch (final SQLException ex) {
+            LOG.error(ex, ex);
+        } finally {
+            if (connection != null) {
+                domainServer.getConnectionPool().releaseDbConnection(connection);
+            }
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  domainServer  DOCUMENT ME!
+     */
+    private void deleteOldHistory(final DomainServerImpl domainServer) {
+        Connection connection = null;
+        try {
+            connection = domainServer.getConnectionPool().getConnection();
+            final PreparedStatement ps = connection.prepareStatement(PREPARED_STATEMENT__DELETE_OLD_HISTORY);
             ps.executeUpdate();
         } catch (final SQLException ex) {
             LOG.error(ex, ex);
