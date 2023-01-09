@@ -41,10 +41,7 @@ public final class FrontinfoPropertyConstants extends PropertyConstants {
     public static final String LAENGE_GRAFIK = "laenge_grafik";
     public static final String LAENGE_KORREKTUR = "laenge_korrektur";
     public static final String GARAGE_STELLPLATZ = "garage_stellplatz";
-    public static final String BAULASTEN = "baulasten";
-    public static final String GRUNDDIENSTBARKEIT = "grunddienstbarkeit";
     public static final String ANTEIL = "anteil";
-    public static final String QUADRATWURZEL = "quadratwurzel";
     public static final String WINKEL = "winkel";
     public static final String GEOMETRIE = "geometrie";
 

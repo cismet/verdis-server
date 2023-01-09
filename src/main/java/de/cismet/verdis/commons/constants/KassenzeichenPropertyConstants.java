@@ -50,6 +50,10 @@ public final class KassenzeichenPropertyConstants extends PropertyConstants {
     public static final String STAC_EXPIRATION = "stac_expiration";
     public static final String AENDERUNGSANFRAGE = "aenderungsanfrage";
     public static final String CONTACTINFO = "contactinfo";
+    public static final String GRUNDDIENSTBARKEIT = "grunddienstbarkeit";
+    public static final String BAULASTEN = "baulasten";
+    public static final String QUADRATWURZEL = "quadratwurzel";
+    public static final String KEINE_GESICHERTE_ERSCHLIESSUNG = "keine_gesicherte_erschliessung";
 
     //~ Constructors -----------------------------------------------------------
 
