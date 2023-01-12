@@ -54,6 +54,9 @@ public final class KassenzeichenPropertyConstants extends PropertyConstants {
     public static final String BAULASTEN = "baulasten";
     public static final String QUADRATWURZEL = "quadratwurzel";
     public static final String KEINE_GESICHERTE_ERSCHLIESSUNG = "keine_gesicherte_erschliessung";
+    public static final String LUFTBILDMERKER = "luftbildmerker";
+    public static final String LUFTBILDMERKER_VON = "luftbildmerker_von";
+    public static final String LUFTBILDMERKER_AM = "luftbildmerker_am";
 
     //~ Constructors -----------------------------------------------------------
 
