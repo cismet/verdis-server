@@ -124,8 +124,10 @@ public class BeschreibungLightweightSearch extends AbstractCidsServerSearch impl
         if (dachflaeche != null) {
             conditions.add(String.format("dachflaeche is %s", dachflaeche.toString()));
         }
-        final String query = "SELECT id, beschreibung FROM " + TABLE__FLAECHENBESCHREIUNG
-                    + (conditions.isEmpty() ? "" : (" wHERE " + String.join(" AND ", conditions)));
+        final String query = "SELECT id, beschreibung FROM " 
+                + TABLE__FLAECHENBESCHREIUNG
+                + (conditions.isEmpty() ? "" : (" wHERE " + String.join(" AND ", conditions)) 
+                + " ORDER BY beschreibung");
         try {
             final MetaClass mc = CidsBean.getMetaClassFromTableName(
                     VerdisConstants.DOMAIN,
