@@ -1,0 +1,105 @@
+
+body {
+  background: white;
+}
+
+.chat {
+  --rad: 20px;
+  --rad-sm: 2px;
+  --font-size: /*font-size*/;
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  max-width: 800px;
+  margin: auto;
+}
+
+.chat .msg {
+  font-size: var(--font-size);
+  line-height: 1.5;
+  position: relative;
+  min-width: 100px;
+  max-width: 75%;
+  margin-top: 3px;
+  margin-bottom: 2px;
+}
+.chat .msg.sent {
+  margin-left: auto;
+}
+.chat .msg.rcvd {
+  margin-right: auto;
+}
+.chat .msg.sys {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  min-width: 66%;
+  max-width: 66%;
+}
+
+.chat .msg .content {
+  color: #000000cc;
+  border-radius: var(--rad) var(--rad) var(--rad) var(--rad);
+  padding: calc(var(--rad) / 2) calc(var(--rad) * 3 / 4);
+  text-align: justify;
+}
+
+.chat .msg.sent .content {
+  background: #fdeecc;
+  border-top-right-radius: var(--rad-sm);
+}
+
+.chat .msg.rcvd .content {
+  background: #b6e5ea;
+  border-top-left-radius: var(--rad-sm);
+}
+
+.chat .msg.sys .content {
+  color: #00000088;
+  background: #eeeeee;
+}
+
+.chat .msg .time-header {
+  font-size: /*calc(*/var(--font-size)/* * 8 / 10)*/;
+  color: #000000cc;
+  white-space: nowrap;
+  display: block;
+  width: calc(100% - var(--rad));
+  margin-top: 5px;
+  margin-left: calc(var(--rad) / 2);
+  margin-right: calc(var(--rad) / 2);
+}
+.chat .msg.sent .time-header {
+  text-align: end;
+}
+.chat .msg.rcvd .time-header {
+  text-align: start;
+}
+.chat .msg.sys .time-header {
+  text-align: center;
+}
+
+.chat .msg .content .attachment {
+  display: block;
+
+  background-image: url(data:image/png;base64,/*attachmentBase64*/);
+  background-position: 100% 50%;
+  background-repeat: no-repeat;
+
+  text-align: end;
+}  
+
+.chat .msg .content .attachment * {
+  text-decoration: none;
+  color: #5795fc;
+  padding: 0px 18px;
+}  
+.chat .msg .content .attachment *:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+.chat .msg .content .attachment button {
+  border: none;
+  background: none;
+}

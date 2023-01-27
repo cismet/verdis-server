@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title><!--title--></title>
+        <style>
+/*css*/
+        </style>
+    </head>
+    <body>
+        <div class="info">
+<!--info-->
+        </div>
+        <div class="chat">
+<!--chat-->
+        </div>
+    </body>
+</html>
