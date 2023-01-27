@@ -28,21 +28,27 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.log4j.Logger;
 
 import org.geojson.Feature;
 import org.geojson.GeoJsonObject;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import java.sql.Timestamp;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
 import java.time.LocalDate;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
@@ -156,7 +162,7 @@ public class AenderungsanfrageUtils {
     private static final String TEMPLATEREPLACER_KASSENZEICHEN = "{KASSENZEICHEN}";
     private static final String TEMPLATEREPLACER_CODE = "{CODE}";
 
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     //~ Enums ------------------------------------------------------------------
 
@@ -186,23 +192,22 @@ public class AenderungsanfrageUtils {
     private AenderungsanfrageUtils() {
         try {
             final SimpleModule module = new SimpleModule();
-            module.addDeserializer(PruefungGroesseJson.class, new PruefungGroesseDeserializer(mapper));
-            module.addDeserializer(PruefungFlaechenartJson.class, new PruefungFlaechenartDeserializer(mapper));
-            module.addDeserializer(
-                PruefungAnschlussgradJson.class,
-                new PruefungAnschlussgradDeserializer(mapper));
+            module.addDeserializer(PruefungGroesseJson.class, new PruefungGroesseDeserializer(MAPPER));
+            module.addDeserializer(PruefungFlaechenartJson.class, new PruefungFlaechenartDeserializer(MAPPER));
+            module.addDeserializer(PruefungAnschlussgradJson.class,
+                new PruefungAnschlussgradDeserializer(MAPPER));
             module.addDeserializer(NachrichtParameterJson.class,
-                new NachrichtParameterDeserializer(mapper));
-            module.addDeserializer(PruefungGroesseJson.class, new PruefungGroesseDeserializer(mapper));
-            module.addDeserializer(FlaechePruefungJson.class, new FlaechePruefungDeserializer(mapper));
-            module.addDeserializer(FlaecheAenderungJson.class, new FlaecheAenderungDeserializer(mapper));
-            module.addDeserializer(FlaecheAnschlussgradJson.class, new FlaecheAnschlussgradDeserializer(mapper));
-            module.addDeserializer(FlaecheFlaechenartJson.class, new FlaecheFlaechenartDeserializer(mapper));
-            module.addDeserializer(NachrichtAnhangJson.class, new NachrichtAnhangDeserializer(mapper));
-            module.addDeserializer(NachrichtJson.class, new NachrichtDeserializer(mapper));
-            module.addDeserializer(AenderungsanfrageJson.class, new AenderungsanfrageDeserializer(mapper));
-            module.addDeserializer(AenderungsanfrageResultJson.class, new AenderungsanfrageResultDeserializer(mapper));
-            mapper.registerModule(module);
+                new NachrichtParameterDeserializer(MAPPER));
+            module.addDeserializer(PruefungGroesseJson.class, new PruefungGroesseDeserializer(MAPPER));
+            module.addDeserializer(FlaechePruefungJson.class, new FlaechePruefungDeserializer(MAPPER));
+            module.addDeserializer(FlaecheAenderungJson.class, new FlaecheAenderungDeserializer(MAPPER));
+            module.addDeserializer(FlaecheAnschlussgradJson.class, new FlaecheAnschlussgradDeserializer(MAPPER));
+            module.addDeserializer(FlaecheFlaechenartJson.class, new FlaecheFlaechenartDeserializer(MAPPER));
+            module.addDeserializer(NachrichtAnhangJson.class, new NachrichtAnhangDeserializer(MAPPER));
+            module.addDeserializer(NachrichtJson.class, new NachrichtDeserializer(MAPPER));
+            module.addDeserializer(AenderungsanfrageJson.class, new AenderungsanfrageDeserializer(MAPPER));
+            module.addDeserializer(AenderungsanfrageResultJson.class, new AenderungsanfrageResultDeserializer(MAPPER));
+            MAPPER.registerModule(module);
         } catch (final Throwable t) {
             LOG.fatal("this should never happen", t);
         }
@@ -261,7 +266,7 @@ public class AenderungsanfrageUtils {
      * @return  DOCUMENT ME!
      */
     private ObjectMapper getMapper() {
-        return mapper;
+        return MAPPER;
     }
 
     /**
@@ -1894,6 +1899,250 @@ public class AenderungsanfrageUtils {
         } catch (final Exception ex) {
             LOG.error(ex, ex);
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   anfrage       DOCUMENT ME!
+     * @param   fontSize      DOCUMENT ME!
+     * @param   showSystem    DOCUMENT ME!
+     * @param   linkOrButton  DOCUMENT ME!
+     * @param   anon          DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static String createChatHtmlFromAenderungsanfrage(final AenderungsanfrageJson anfrage,
+            final int fontSize,
+            final boolean showSystem,
+            final boolean linkOrButton,
+            final boolean anon) throws Exception {
+        final String mainTemplate = IOUtils.toString(AenderungsanfrageUtils.class.getResource(
+                    "/de/cismet/verdis/server/utils/main.template"),
+                "UTF-8");
+        final String msgTemplate = IOUtils.toString(AenderungsanfrageUtils.class.getResource(
+                    "/de/cismet/verdis/server/utils/msg.template"),
+                "UTF-8");
+        final String timeHeaderTemplate = IOUtils.toString(AenderungsanfrageUtils.class.getResource(
+                    "/de/cismet/verdis/server/utils/timeHeader.template"),
+                "UTF-8");
+        final String attachmentLinkTemplate = IOUtils.toString(AenderungsanfrageUtils.class.getResource(
+                    "/de/cismet/verdis/server/utils/attachmentLink.template"),
+                "UTF-8");
+        final String attachmentButtonTemplate = IOUtils.toString(AenderungsanfrageUtils.class.getResource(
+                    "/de/cismet/verdis/server/utils/attachmentButton.template"),
+                "UTF-8");
+        final String styleTemplate = IOUtils.toString(AenderungsanfrageUtils.class.getResource(
+                    "/de/cismet/verdis/server/utils/style.template"),
+                "UTF-8");
+        final String attachmentPngbase64 = Base64.getEncoder()
+                    .encodeToString(IOUtils.toByteArray(
+                            AenderungsanfrageUtils.class.getResource("/de/cismet/verdis/server/utils/attachment.png")));
+        final DateFormat dateFormat = new SimpleDateFormat("dd.MM.YYYY - hh:mm");
+        final DateFormat sameDateFormat = new SimpleDateFormat("hh:mm");
+
+        final StringBuffer chatSb = new StringBuffer();
+        if (anfrage.getNachrichten() != null) {
+            NachrichtJson nachrichtBefore = null;
+            for (final NachrichtJson nachricht : anfrage.getNachrichten()) {
+                if (NachrichtJson.Typ.CITIZEN.equals(nachricht.getTyp())
+                            && Boolean.TRUE.equals(nachricht.getDraft())) {
+                    continue;
+                }
+                if (NachrichtJson.Typ.SYSTEM.equals(nachricht.getTyp()) && !showSystem) {
+                    continue;
+                }
+                final String clazz;
+                switch (nachricht.getTyp()) {
+                    case CITIZEN: {
+                        clazz = "sent";
+                        break;
+                    }
+                    case CLERK: {
+                        clazz = "rcvd";
+                        break;
+                    }
+                    case SYSTEM: {
+                        clazz = "sys";
+                        break;
+                    }
+                    default: {
+                        clazz = null;
+                    }
+                }
+
+                final String content;
+                if (NachrichtJson.Typ.SYSTEM.equals(nachricht.getTyp())) {
+                    final NachrichtParameterJson nachrichtenParameter = nachricht.getNachrichtenParameter();
+
+                    if ((nachrichtenParameter != null) && (nachrichtenParameter.getType() != null)) {
+                        final Integer groesse = nachrichtenParameter.getGroesse();
+                        final FlaecheFlaechenartJson flaechenart = nachrichtenParameter.getFlaechenart();
+                        final FlaecheAnschlussgradJson anschlussgrad = nachrichtenParameter.getAnschlussgrad();
+                        final Boolean benachrichtigt = nachrichtenParameter.getBenachrichtigt();
+                        final boolean accepted = NachrichtParameterJson.Type.CHANGED.equals(
+                                nachrichtenParameter.getType());
+                        final AenderungsanfrageUtils.Status status = nachrichtenParameter.getStatus();
+                        if (status != null) {
+                            switch (status) {
+                                case CLOSED: {
+                                    content = anon
+                                        ? "Die Bearbeitung wurde gesperrt."
+                                        : String.format(
+                                            "Die Bearbeitung wurde durch '%s' gesperrt.",
+                                            nachricht.getAbsender());
+                                }
+                                break;
+                                case NONE: {        // FINISHED
+                                    content = anon
+                                        ? "Die Bearbeitung wurde abgeschlossen."
+                                        : String.format(
+                                            "Die Bearbeitung wurde von '%s' abgeschlossen.",
+                                            nachricht.getAbsender());
+                                }
+                                break;
+                                case PROCESSING: {
+                                    content = anon
+                                        ? "Die Bearbeitung wurde aufgenommen."
+                                        : String.format(
+                                            "Die Bearbeitung wurde von '%s' aufgenommen.",
+                                            nachricht.getAbsender());
+                                }
+                                break;
+                                case PENDING: {
+                                    content = "Es wurden neue Änderungen eingereicht.";
+                                }
+                                break;
+                                default: {
+                                    content = null; // unreachable
+                                }
+                            }
+                        } else if (groesse != null) {
+                            content = anon
+                                ? String.format(
+                                    "Die Änderung der Größe der Fläche '%s' auf %dm² wurde %s.",
+                                    nachrichtenParameter.getFlaeche(),
+                                    groesse,
+                                    accepted ? "angenommen" : "abgelehnt")
+                                : String.format(
+                                    "Die Änderung der Größe der Fläche '%s' auf %dm² wurde von '%s' %s.",
+                                    nachrichtenParameter.getFlaeche(),
+                                    groesse,
+                                    nachricht.getAbsender(),
+                                    accepted ? "angenommen" : "abgelehnt");
+                        } else if (flaechenart != null) {
+                            content = anon
+                                ? String.format(
+                                    "Die Änderung der Flächenart der Fläche '%s' auf '%s' wurde %s.",
+                                    nachrichtenParameter.getFlaeche(),
+                                    flaechenart.getArt(),
+                                    accepted ? "angenommen" : "abgelehnt")
+                                : String.format(
+                                    "Die Änderung der Flächenart der Fläche '%s' auf '%s' wurde von '%s' %s.",
+                                    nachrichtenParameter.getFlaeche(),
+                                    flaechenart.getArt(),
+                                    nachricht.getAbsender(),
+                                    accepted ? "angenommen" : "abgelehnt");
+                        } else if (anschlussgrad != null) {
+                            content = anon
+                                ? String.format(
+                                    "Die Änderung des Anschlussgrads der Fläche '%s' auf '%s' wurde %s.",
+                                    nachrichtenParameter.getFlaeche(),
+                                    anschlussgrad.getGrad(),
+                                    accepted ? "angenommen" : "abgelehnt")
+                                : String.format(
+                                    "Die Änderung des Anschlussgrads der Fläche '%s' auf '%s' wurde von '%s' %s.",
+                                    nachrichtenParameter.getFlaeche(),
+                                    anschlussgrad.getGrad(),
+                                    nachricht.getAbsender(),
+                                    accepted ? "angenommen" : "abgelehnt");
+                        } else if (benachrichtigt != null) {
+                            content = anon
+                                ? String.format(
+                                    "Eine Änderungs-Benachrichtigung wurde %s.",
+                                    benachrichtigt ? "versandt" : "angefordet")
+                                : String.format(
+                                    "Eine Änderungs-Benachrichtigung von '%s' wurde %s.",
+                                    nachricht.getAbsender(),
+                                    benachrichtigt ? "versandt" : "angefordet");
+                        } else {
+                            content = null;
+                        }
+                    } else {
+                        content = null;
+                    }
+                } else {
+                    content = nachricht.getNachricht().replaceAll(Pattern.quote("\n"), "<br/>\n");
+                }
+
+                final String timeHeader;
+                if (Boolean.TRUE.equals(nachricht.getDraft())) {
+                    timeHeader = "Entwurf";
+                } else if ((nachrichtBefore != null)
+                            && ((nachricht.getTimestamp().getTime() - nachrichtBefore.getTimestamp().getTime()) < 60000)
+                            && (nachrichtBefore.getTyp() == nachricht.getTyp())) {
+                    timeHeader = "";
+                } else if ((nachrichtBefore != null)
+                            && DateUtils.isSameDay(nachricht.getTimestamp(), nachrichtBefore.getTimestamp())
+                            && (nachrichtBefore.getTyp() == nachricht.getTyp())) {
+                    timeHeader = timeHeaderTemplate.replaceAll(
+                            "<!--time-->",
+                            sameDateFormat.format(nachricht.getTimestamp()));
+                } else {
+                    timeHeader = timeHeaderTemplate.replaceAll(
+                            "<!--time-->",
+                            dateFormat.format(nachricht.getTimestamp()));
+                }
+
+                final StringBuffer attachmentsSb = new StringBuffer();
+                for (final NachrichtAnhangJson anhang : nachricht.getAnhang()) {
+                    final String anhangJson = anhang.toJson().replaceAll("\"", "&quot;"); // sieht komisch aus, muss
+                                                                                          // aber so
+
+                    attachmentsSb.append(
+                        linkOrButton
+                            ? attachmentLinkTemplate.replaceAll(Pattern.quote("<!--name-->"), anhang.getName())
+                            : attachmentButtonTemplate.replaceAll(Pattern.quote("<!--json-->"), anhangJson).replaceAll(
+                                Pattern.quote("<!--name-->"),
+                                anhang.getName()));
+                }
+                final String attachments = attachmentsSb.toString();
+                final String msg = msgTemplate.replaceAll(Pattern.quote("<!--time-header-->"), timeHeader)
+                            .replaceAll(Pattern.quote("<!--class-->"), clazz)
+                            .replaceAll(Pattern.quote("<!--content-->"), content)
+                            .replaceAll(Pattern.quote("<!--attachments-->"), attachments);
+                chatSb.append(msg);
+
+                nachrichtBefore = nachricht;
+            }
+        }
+
+        final String title = String.format("%d", anfrage.getKassenzeichen());
+        final String css = styleTemplate.replaceAll(Pattern.quote("/*font-size*/"), String.format("%dpx", fontSize))
+                    .replaceAll(Pattern.quote("/*attachmentBase64*/"), attachmentPngbase64);
+        final String chat = chatSb.toString();
+
+        final String html = mainTemplate.replaceAll(Pattern.quote("<!--title-->"), title)
+                    .replaceAll(Pattern.quote("/*css*/"), css)
+                    .replaceAll(Pattern.quote("<!--info-->"), "")
+                    .replaceAll(Pattern.quote("<!--chat-->"), chat);
+        return html;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   args  DOCUMENT ME!
+     *
+     * @throws  Exception  DOCUMENT ME!
+     */
+    public static void main(final String[] args) throws Exception {
+        final AenderungsanfrageJson anfrage = AenderungsanfrageUtils.getInstance().createAenderungsanfrageJson("...");
+        final String html = createChatHtmlFromAenderungsanfrage(anfrage, 14, true, false, true);
+        System.out.println(html);
+        IOUtils.write(html, new FileOutputStream("/tmp/chat/index.html"), "UTF-8");
     }
 
     /**

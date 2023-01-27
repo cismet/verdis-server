@@ -1,0 +1,1 @@
+<span class="attachment"><button onClick="java.linkClicked('<!--name-->', '<!--json-->')"><!--name--></button></span>
