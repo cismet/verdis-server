@@ -2075,7 +2075,7 @@ public class AenderungsanfrageUtils {
                     }
                 } else {
                     content = (nachricht.getNachricht() != null)
-                        ? nachricht.getNachricht().replaceAll(Pattern.quote("\n"), "<br/>\n") : null;
+                        ? nachricht.getNachricht().replaceAll(Pattern.quote("\n"), "<br/>\n") : "";
                 }
 
                 final String timeHeader;
