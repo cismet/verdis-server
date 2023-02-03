@@ -2110,10 +2110,11 @@ public class AenderungsanfrageUtils {
                                 anhang.getName()));
                 }
                 final String attachments = attachmentsSb.toString();
-                final String msg = msgTemplate.replaceAll(Pattern.quote("<!--time-header-->"), timeHeader)
-                            .replaceAll(Pattern.quote("<!--class-->"), clazz)
-                            .replaceAll(Pattern.quote("<!--content-->"), content)
-                            .replaceAll(Pattern.quote("<!--attachments-->"), attachments);
+                final String msg = msgTemplate.replaceAll(Pattern.quote("<!--time-header-->"),
+                            (timeHeader != null) ? timeHeader : "")
+                            .replaceAll(Pattern.quote("<!--class-->"), (clazz != null) ? clazz : null)
+                            .replaceAll(Pattern.quote("<!--content-->"), (content != null) ? content : "")
+                            .replaceAll(Pattern.quote("<!--attachments-->"), (attachments != null) ? attachments : "");
                 chatSb.append(msg);
 
                 nachrichtBefore = nachricht;
