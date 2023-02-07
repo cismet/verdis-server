@@ -15,6 +15,7 @@ package de.cismet.verdis.server.utils;
 import lombok.Getter;
 
 import de.cismet.cids.utils.serverresources.JasperReportServerResource;
+import de.cismet.cids.utils.serverresources.JsonServerResource;
 import de.cismet.cids.utils.serverresources.ServerResource;
 import de.cismet.cids.utils.serverresources.TextServerResource;
 
@@ -59,7 +60,9 @@ public enum VerdisServerResources {
 
     WEBDAV(new TextServerResource("/webdav/WebDav.properties")),
 
-    AENDERUNTSANFRAGE(new TextServerResource("/aenderungsanfrage/aenderungsanfrage.properties"));
+    AENDERUNTSANFRAGE(new TextServerResource("/aenderungsanfrage/aenderungsanfrage.properties")),
+
+    AENDERUNTSANFRAGE_TEXTBAUSTEINE(new JsonServerResource("/aenderungsanfrage/textbausteine.json"));
 
     //~ Instance fields --------------------------------------------------------
 
