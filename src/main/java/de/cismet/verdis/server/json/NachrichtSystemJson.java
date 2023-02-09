@@ -25,6 +25,16 @@ public class NachrichtSystemJson extends NachrichtJson {
     //~ Constructors -----------------------------------------------------------
 
     /**
+     * Creates a new NachrichtSystemJson object.
+     *
+     * @param  nachrichtenParameter  DOCUMENT ME!
+     * @param  verursacher           DOCUMENT ME!
+     */
+    public NachrichtSystemJson(final NachrichtParameterJson nachrichtenParameter, final String verursacher) {
+        this(null, null, null, nachrichtenParameter, verursacher);
+    }
+
+    /**
      * Creates a new System object.
      *
      * @param  identifier            DOCUMENT ME!

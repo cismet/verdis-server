@@ -77,6 +77,13 @@ public class NachrichtParameterJson extends AbstractJson {
                 return "prolong";
             }
         },
+        SEEN {
+
+            @Override
+            public String toString() {
+                return "seen";
+            }
+        },
     }
 
     //~ Instance fields --------------------------------------------------------
