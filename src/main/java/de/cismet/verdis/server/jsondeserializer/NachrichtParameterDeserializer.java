@@ -57,10 +57,10 @@ public class NachrichtParameterDeserializer extends StdDeserializer<NachrichtPar
         JsonProcessingException {
         final ObjectNode on = jp.readValueAsTree();
 
-        final AenderungsanfrageUtils.Status status = on.has("status")
-            ? AenderungsanfrageUtils.Status.valueOf(on.get("status").textValue()) : null;
         final NachrichtParameterJson.Type type = on.has("type")
             ? NachrichtParameterJson.Type.valueOf(on.get("type").textValue()) : null;
+        final AenderungsanfrageUtils.Status status = on.has("status")
+            ? AenderungsanfrageUtils.Status.valueOf(on.get("status").textValue()) : null;
         final String flaeche = on.has("flaeche") ? on.get("flaeche").asText() : null;
         final Integer groesse = on.has("groesse") ? on.get("groesse").asInt() : null;
         final FlaecheFlaechenartJson flaechenart = on.has("flaechenart")
@@ -70,11 +70,36 @@ public class NachrichtParameterDeserializer extends StdDeserializer<NachrichtPar
         final Boolean benachrichtigt = on.has("benachrichtigt") ? on.get("benachrichtigt").booleanValue() : null;
         final Boolean verlaengern = on.has("verlaengert") ? on.get("verlaengert").booleanValue() : null;
 
-        if ((status == null) && (groesse == null) && (flaechenart == null) && (anschlussgrad == null)
-                    && (benachrichtigt == null)
-                    && (verlaengern == null)) {
-            throw new RuntimeException(
-                "invalid NachrichtSystemParametersJson: neither groesse nor flaechenart nor anschlussgrad is set");
+        if (type == null) {
+            throw new RuntimeException("invalid NachrichtSystemParametersJson: type has to be is set");
+        }
+        switch (type) {
+            case STATUS: {
+                if (status == null) {
+                    throw new RuntimeException("invalid NachrichtSystemParametersJson: status has to be is set");
+                }
+            }
+            break;
+            case CHANGED:
+            case REJECTED: {
+                if ((groesse == null) && (flaechenart == null) && (anschlussgrad == null)) {
+                    throw new RuntimeException(
+                        "invalid NachrichtSystemParametersJson: neither groesse nor flaechenart nor anschlussgrad is set");
+                }
+            }
+            break;
+            case NOTIFY: {
+                if (benachrichtigt == null) {
+                    throw new RuntimeException("invalid NachrichtSystemParametersJson: benachrichtigt has to be set");
+                }
+            }
+            break;
+            case PROLONG: {
+                if (verlaengern == null) {
+                    throw new RuntimeException("invalid NachrichtSystemParametersJson: verlaengern has to be set");
+                }
+            }
+            break;
         }
         return new NachrichtParameterJson(
                 type,

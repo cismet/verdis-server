@@ -175,7 +175,7 @@ public class AenderungsanfrageUtils {
 
         //~ Enum constants -----------------------------------------------------
 
-        NONE, NEW_CITIZEN_MESSAGE, PENDING, PROCESSING, CLOSED, ARCHIVED;
+        NONE, PENDING, PROCESSING, CLOSED, ARCHIVED;
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -363,9 +363,13 @@ public class AenderungsanfrageUtils {
                         && NachrichtParameterJson.Type.PROLONG.equals(nachrichtenParameter.getType())
                         && Boolean.FALSE.equals(nachrichtenParameter.getVerlaengert())
                         && username.equals(newNachricht.getAbsender());
+            final boolean isClerksSeenMessage = isSystemMessage && (nachrichtenParameter != null)
+                        && NachrichtParameterJson.Type.SEEN.equals(nachrichtenParameter.getType())
+                        && username.equals(newNachricht.getAbsender());
 
             // nur eigene neue Nachrichten betrachten
-            if ((isOwnMessage && (isNew || wasPrefiouslyDraft)) || isClerksNotifyMessage || isClerksProlongMessage) {
+            if ((isOwnMessage && (isNew || wasPrefiouslyDraft)) || isClerksNotifyMessage || isClerksProlongMessage
+                        || isClerksSeenMessage) {
                 final NachrichtJson origNachricht =
                     ((newNachricht.getIdentifier() != null)
                                 && origNachrichtenMap.containsKey(newNachricht.getIdentifier()))
@@ -1157,24 +1161,6 @@ public class AenderungsanfrageUtils {
         }
 
         if (isCitizen && !isArchived) {
-            boolean newMessage = false;
-
-            if (aenderungsanfrageAfter.getNachrichten() != null) {
-                for (final NachrichtJson nachricht : aenderungsanfrageAfter.getNachrichten()) {
-                    if ((nachricht != null) && NachrichtJson.Typ.CITIZEN.equals(nachricht.getTyp())) {
-                        final String identifier = nachricht.getIdentifier();
-                        final NachrichtJson nachrichtBefore =
-                            ((identifier != null) && nachrichtenPerUUid.containsKey(identifier))
-                            ? nachrichtenPerUUid.get(identifier) : null;
-                        if (!Boolean.TRUE.equals(nachricht.getDraft())
-                                    && ((nachrichtBefore == null) || Boolean.TRUE.equals(nachrichtBefore.getDraft()))) {
-                            newMessage = true;
-                            break;
-                        }
-                    }
-                }
-            }
-
             boolean anyChanges = false;
             if (aenderungsanfrageAfter.getFlaechen() != null) {
                 for (final String bezeichnung : aenderungsanfrageAfter.getFlaechen().keySet()) {
@@ -1257,8 +1243,6 @@ public class AenderungsanfrageUtils {
 
             if (anyChanges) {
                 return Status.PENDING;
-            } else if (newMessage) {
-                return Status.NEW_CITIZEN_MESSAGE;
             }
         } else if (isClerk) {
             boolean prolong = false;
@@ -1477,8 +1461,7 @@ public class AenderungsanfrageUtils {
             final Date timestamp,
             final String username) throws Exception {
         final boolean statusChanged = (changeStatusTo != null) && !changeStatusTo.equals(oldStatus);
-        if (statusChanged
-                    && ((Status.NEW_CITIZEN_MESSAGE != changeStatusTo) && (Status.NEW_CITIZEN_MESSAGE != oldStatus))) {
+        if (statusChanged) {
             aenderungsanfrageAfter.getNachrichten()
                     .add(new NachrichtSystemJson(
                             createIdentifier(null),
@@ -1904,6 +1887,25 @@ public class AenderungsanfrageUtils {
     /**
      * DOCUMENT ME!
      *
+     * @param   aenderungsanfrage  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static boolean isNewCitizenMessage(final AenderungsanfrageJson aenderungsanfrage) {
+        boolean lastIsCitizen = false;
+        if ((aenderungsanfrage != null) && (aenderungsanfrage.getNachrichten() != null)) {
+            for (final NachrichtJson nachricht : aenderungsanfrage.getNachrichten()) {
+                if ((nachricht != null) && !Boolean.TRUE.equals(nachricht.getDraft())) {
+                    lastIsCitizen = NachrichtJson.Typ.CITIZEN.equals(nachricht.getTyp());
+                }
+            }
+        }
+        return lastIsCitizen;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   anfrage       DOCUMENT ME!
      * @param   fontSize      DOCUMENT ME!
      * @param   showSystem    DOCUMENT ME!
@@ -1944,7 +1946,7 @@ public class AenderungsanfrageUtils {
         final DateFormat sameDateFormat = new SimpleDateFormat("hh:mm");
 
         final StringBuffer chatSb = new StringBuffer();
-        if (anfrage.getNachrichten() != null) {
+        if ((anfrage != null) && (anfrage.getNachrichten() != null)) {
             NachrichtJson nachrichtBefore = null;
             for (final NachrichtJson nachricht : anfrage.getNachrichten()) {
                 if (NachrichtJson.Typ.CITIZEN.equals(nachricht.getTyp())
@@ -1978,97 +1980,119 @@ public class AenderungsanfrageUtils {
                     final NachrichtParameterJson nachrichtenParameter = nachricht.getNachrichtenParameter();
 
                     if ((nachrichtenParameter != null) && (nachrichtenParameter.getType() != null)) {
-                        final Integer groesse = nachrichtenParameter.getGroesse();
-                        final FlaecheFlaechenartJson flaechenart = nachrichtenParameter.getFlaechenart();
-                        final FlaecheAnschlussgradJson anschlussgrad = nachrichtenParameter.getAnschlussgrad();
-                        final Boolean benachrichtigt = nachrichtenParameter.getBenachrichtigt();
-                        final boolean accepted = NachrichtParameterJson.Type.CHANGED.equals(
-                                nachrichtenParameter.getType());
-                        final AenderungsanfrageUtils.Status status = nachrichtenParameter.getStatus();
-                        if (status != null) {
-                            switch (status) {
-                                case CLOSED: {
-                                    content = anon
-                                        ? "Die Bearbeitung wurde gesperrt."
-                                        : String.format(
-                                            "Die Bearbeitung wurde durch '%s' gesperrt.",
-                                            nachricht.getAbsender());
-                                }
-                                break;
-                                case NONE: {        // FINISHED
-                                    content = anon
-                                        ? "Die Bearbeitung wurde abgeschlossen."
-                                        : String.format(
-                                            "Die Bearbeitung wurde von '%s' abgeschlossen.",
-                                            nachricht.getAbsender());
-                                }
-                                break;
-                                case PROCESSING: {
-                                    content = anon
-                                        ? "Die Bearbeitung wurde aufgenommen."
-                                        : String.format(
-                                            "Die Bearbeitung wurde von '%s' aufgenommen.",
-                                            nachricht.getAbsender());
-                                }
-                                break;
-                                case PENDING: {
-                                    content = "Es wurden neue Änderungen eingereicht.";
-                                }
-                                break;
-                                default: {
-                                    content = null; // unreachable
+                        switch (nachrichtenParameter.getType()) {
+                            case STATUS: {
+                                final AenderungsanfrageUtils.Status status = nachrichtenParameter.getStatus();
+                                switch (status) {
+                                    case CLOSED: {
+                                        content = anon
+                                            ? "Die Bearbeitung wurde gesperrt."
+                                            : String.format(
+                                                "Die Bearbeitung wurde durch '%s' gesperrt.",
+                                                nachricht.getAbsender());
+                                    }
+                                    break;
+                                    case NONE: {        // FINISHED
+                                        content = anon
+                                            ? "Die Bearbeitung wurde abgeschlossen."
+                                            : String.format(
+                                                "Die Bearbeitung wurde von '%s' abgeschlossen.",
+                                                nachricht.getAbsender());
+                                    }
+                                    break;
+                                    case PROCESSING: {
+                                        content = anon
+                                            ? "Die Bearbeitung wurde aufgenommen."
+                                            : String.format(
+                                                "Die Bearbeitung wurde von '%s' aufgenommen.",
+                                                nachricht.getAbsender());
+                                    }
+                                    break;
+                                    case PENDING: {
+                                        content = "Es wurden neue Änderungen eingereicht.";
+                                    }
+                                    break;
+                                    default: {
+                                        content = null; // unreachable
+                                    }
                                 }
                             }
-                        } else if (groesse != null) {
-                            content = anon
-                                ? String.format(
-                                    "Die Änderung der Größe der Fläche '%s' auf %dm² wurde %s.",
-                                    nachrichtenParameter.getFlaeche(),
-                                    groesse,
-                                    accepted ? "angenommen" : "abgelehnt")
-                                : String.format(
-                                    "Die Änderung der Größe der Fläche '%s' auf %dm² wurde von '%s' %s.",
-                                    nachrichtenParameter.getFlaeche(),
-                                    groesse,
-                                    nachricht.getAbsender(),
-                                    accepted ? "angenommen" : "abgelehnt");
-                        } else if (flaechenart != null) {
-                            content = anon
-                                ? String.format(
-                                    "Die Änderung der Flächenart der Fläche '%s' auf '%s' wurde %s.",
-                                    nachrichtenParameter.getFlaeche(),
-                                    flaechenart.getArt(),
-                                    accepted ? "angenommen" : "abgelehnt")
-                                : String.format(
-                                    "Die Änderung der Flächenart der Fläche '%s' auf '%s' wurde von '%s' %s.",
-                                    nachrichtenParameter.getFlaeche(),
-                                    flaechenart.getArt(),
-                                    nachricht.getAbsender(),
-                                    accepted ? "angenommen" : "abgelehnt");
-                        } else if (anschlussgrad != null) {
-                            content = anon
-                                ? String.format(
-                                    "Die Änderung des Anschlussgrads der Fläche '%s' auf '%s' wurde %s.",
-                                    nachrichtenParameter.getFlaeche(),
-                                    anschlussgrad.getGrad(),
-                                    accepted ? "angenommen" : "abgelehnt")
-                                : String.format(
-                                    "Die Änderung des Anschlussgrads der Fläche '%s' auf '%s' wurde von '%s' %s.",
-                                    nachrichtenParameter.getFlaeche(),
-                                    anschlussgrad.getGrad(),
-                                    nachricht.getAbsender(),
-                                    accepted ? "angenommen" : "abgelehnt");
-                        } else if (benachrichtigt != null) {
-                            content = anon
-                                ? String.format(
-                                    "Eine Änderungs-Benachrichtigung wurde %s.",
-                                    benachrichtigt ? "versandt" : "angefordet")
-                                : String.format(
-                                    "Eine Änderungs-Benachrichtigung von '%s' wurde %s.",
-                                    nachricht.getAbsender(),
-                                    benachrichtigt ? "versandt" : "angefordet");
-                        } else {
-                            content = null;
+                            break;
+                            case CHANGED:
+                            case REJECTED: {
+                                final Integer groesse = nachrichtenParameter.getGroesse();
+                                final FlaecheFlaechenartJson flaechenart = nachrichtenParameter.getFlaechenart();
+                                final FlaecheAnschlussgradJson anschlussgrad = nachrichtenParameter.getAnschlussgrad();
+                                final boolean accepted = NachrichtParameterJson.Type.CHANGED.equals(
+                                        nachrichtenParameter.getType());
+                                if (groesse != null) {
+                                    content = anon
+                                        ? String.format(
+                                            "Die Änderung der Größe der Fläche '%s' auf %dm² wurde %s.",
+                                            nachrichtenParameter.getFlaeche(),
+                                            groesse,
+                                            accepted ? "angenommen" : "abgelehnt")
+                                        : String.format(
+                                            "Die Änderung der Größe der Fläche '%s' auf %dm² wurde von '%s' %s.",
+                                            nachrichtenParameter.getFlaeche(),
+                                            groesse,
+                                            nachricht.getAbsender(),
+                                            accepted ? "angenommen" : "abgelehnt");
+                                } else if (flaechenart != null) {
+                                    content = anon
+                                        ? String.format(
+                                            "Die Änderung der Flächenart der Fläche '%s' auf '%s' wurde %s.",
+                                            nachrichtenParameter.getFlaeche(),
+                                            flaechenart.getArt(),
+                                            accepted ? "angenommen" : "abgelehnt")
+                                        : String.format(
+                                            "Die Änderung der Flächenart der Fläche '%s' auf '%s' wurde von '%s' %s.",
+                                            nachrichtenParameter.getFlaeche(),
+                                            flaechenart.getArt(),
+                                            nachricht.getAbsender(),
+                                            accepted ? "angenommen" : "abgelehnt");
+                                } else if (anschlussgrad != null) {
+                                    content = anon
+                                        ? String.format(
+                                            "Die Änderung des Anschlussgrads der Fläche '%s' auf '%s' wurde %s.",
+                                            nachrichtenParameter.getFlaeche(),
+                                            anschlussgrad.getGrad(),
+                                            accepted ? "angenommen" : "abgelehnt")
+                                        : String.format(
+                                            "Die Änderung des Anschlussgrads der Fläche '%s' auf '%s' wurde von '%s' %s.",
+                                            nachrichtenParameter.getFlaeche(),
+                                            anschlussgrad.getGrad(),
+                                            nachricht.getAbsender(),
+                                            accepted ? "angenommen" : "abgelehnt");
+                                } else {
+                                    content = null;
+                                }
+                            }
+                            break;
+                            case NOTIFY: {
+                                final boolean benachrichtigt = Boolean.TRUE.equals(
+                                        nachrichtenParameter.getBenachrichtigt());
+                                content = anon
+                                    ? String.format(
+                                        "Eine Änderungs-Benachrichtigung wurde %s.",
+                                        benachrichtigt ? "versandt" : "angefordet")
+                                    : String.format(
+                                        "Eine Änderungs-Benachrichtigung von '%s' wurde %s.",
+                                        nachricht.getAbsender(),
+                                        benachrichtigt ? "versandt" : "angefordet");
+                            }
+                            break;
+                            case SEEN: {
+                                content = anon
+                                    ? "Letzte Nachricht wurde als gelesen markiert."
+                                    : String.format(
+                                        "Letzte Nachricht wurde von %s als gelesen markiert.",
+                                        nachricht.getAbsender());
+                            }
+                            break;
+                            default: {
+                                content = null;
+                            }
                         }
                     } else {
                         content = null;
