@@ -2145,7 +2145,7 @@ public class AenderungsanfrageUtils {
             }
         }
 
-        final String title = String.format("%d", anfrage.getKassenzeichen());
+        final String title = String.format("%d", (anfrage != null) ? anfrage.getKassenzeichen() : 0);
         final String css = styleTemplate.replaceAll(Pattern.quote("/*font-size*/"), String.format("%dpx", fontSize))
                     .replaceAll(Pattern.quote("/*attachmentBase64*/"), attachmentPngbase64);
         final String chat = chatSb.toString();
