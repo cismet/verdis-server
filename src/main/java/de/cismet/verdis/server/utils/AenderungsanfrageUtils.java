@@ -37,6 +37,7 @@ import org.geojson.GeoJsonObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
@@ -265,7 +266,7 @@ public class AenderungsanfrageUtils {
      *
      * @return  DOCUMENT ME!
      */
-    private ObjectMapper getMapper() {
+    private static ObjectMapper getMapper() {
         return MAPPER;
     }
 
@@ -1625,6 +1626,81 @@ public class AenderungsanfrageUtils {
         search.setActiveLocalServers(localServers);
         search.setUser(user);
         return search.performServerSearch();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   aenderungsanfrage  DOCUMENT ME!
+     * @param   typ                DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  IOException  DOCUMENT ME!
+     */
+    public static AenderungsanfrageJson stripAenderungsanfrageFor(final AenderungsanfrageJson aenderungsanfrage,
+            final NachrichtJson.Typ typ) throws IOException {
+        if (aenderungsanfrage == null) {
+            return null;
+        }
+        final AenderungsanfrageJson anfrageStripped = getMapper().readValue(aenderungsanfrage.toJson(),
+                AenderungsanfrageJson.class);
+
+        final List<NachrichtJson> nachrichten = aenderungsanfrage.getNachrichten();
+        if (nachrichten != null) {
+            anfrageStripped.getNachrichten().clear();
+            for (final NachrichtJson nachricht : nachrichten) {
+                if (!Boolean.TRUE.equals(nachricht.getDraft())
+                            || ((typ != null) && Objects.equals(typ, nachricht.getTyp()))) {
+                    anfrageStripped.getNachrichten().add(nachricht);
+                }
+            }
+        }
+        if (anfrageStripped.getNachrichten().isEmpty()) {
+            anfrageStripped.setNachrichten(null);
+        }
+
+        final Map<String, FlaecheAenderungJson> flaechen = aenderungsanfrage.getFlaechen();
+        if (flaechen != null) {
+            anfrageStripped.getFlaechen().clear();
+            for (final String key : flaechen.keySet()) {
+                final FlaecheAenderungJson flaecheAenderungStripped = getMapper().readValue(flaechen.get(key).toJson(),
+                        FlaecheAenderungJson.class);
+                if (!Boolean.TRUE.equals(flaecheAenderungStripped.getDraft())
+                            || NachrichtJson.Typ.CITIZEN.equals(typ)) {
+                    final FlaechePruefungJson pruefungStripped = flaecheAenderungStripped.getPruefung();
+                    if ((pruefungStripped != null) && ((typ == null) || NachrichtJson.Typ.CITIZEN.equals(typ))) {
+                        final PruefungAnschlussgradJson pruefungAnschlussgrad = pruefungStripped.getAnschlussgrad();
+                        if ((pruefungAnschlussgrad != null)
+                                    && Boolean.TRUE.equals(pruefungAnschlussgrad.getPending())) {
+                            pruefungStripped.setAnschlussgrad(null);
+                        }
+                        final PruefungFlaechenartJson pruefungFlaechenart = pruefungStripped.getFlaechenart();
+                        if ((pruefungFlaechenart != null) && Boolean.TRUE.equals(pruefungFlaechenart.getPending())) {
+                            pruefungStripped.setFlaechenart(null);
+                        }
+                        final PruefungGroesseJson pruefungGroesse = pruefungStripped.getGroesse();
+                        if ((pruefungGroesse != null) && Boolean.TRUE.equals(pruefungGroesse.getPending())) {
+                            pruefungStripped.setGroesse(null);
+                        }
+                        if ((pruefungStripped.getAnschlussgrad() == null) && (pruefungStripped.getFlaechenart() == null)
+                                    && (pruefungStripped.getGroesse() == null)) {
+                            flaecheAenderungStripped.setPruefung(null);
+                        }
+                    }
+                    if ((flaecheAenderungStripped.getAnschlussgrad() != null)
+                                || (flaecheAenderungStripped.getFlaechenart() != null)
+                                || (flaecheAenderungStripped.getGroesse() != null)
+                                || (flaecheAenderungStripped.getPruefung() != null)) {
+                        anfrageStripped.getFlaechen().put(key, flaecheAenderungStripped);
+                    }
+                }
+            }
+            if (anfrageStripped.getFlaechen().isEmpty()) {
+                anfrageStripped.setFlaechen(null);
+            }
+        }
+        return anfrageStripped;
     }
 
     /**
