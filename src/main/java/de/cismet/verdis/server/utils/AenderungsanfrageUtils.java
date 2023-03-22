@@ -526,8 +526,10 @@ public class AenderungsanfrageUtils {
                         // tut er dies, hat es ein zurücksetzen der Prüfung zur Folge
                         if (isCitizen) {
                             // Änderung wird zurückgenommen. Nur möglich wenn keine Prüfung vorhanden
-                            if ((flaecheOrig.getPruefung() == null) && groesseNewEqualsBean && flaechenartNewEqualsBean
-                                        && anschlussgradNewEqualsBean) {
+                            if ((flaecheOrig.getPruefung() == null) && ((groesseNew == null) || groesseNewEqualsBean)
+                                        && ((flaechenartNew == null) || flaechenartNewEqualsBean)
+                                        && ((anschlussgradNew == null) || anschlussgradNewEqualsBean)) {
+                                flaechenProcessed.remove(bezeichnung);
                                 continue;
                             }
                             flaecheProcessed.setDraft((flaecheNew != null) ? flaecheNew.getDraft() : null);
