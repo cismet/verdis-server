@@ -2199,6 +2199,8 @@ public class AenderungsanfrageUtils {
                 final String timeHeader;
                 if (Boolean.TRUE.equals(nachricht.getDraft())) {
                     timeHeader = "Entwurf";
+                } else if (nachricht.getTimestamp() == null) {
+                    timeHeader = timeHeaderTemplate.replaceAll("<!--time-->", "");                    
                 } else if ((nachrichtBefore != null)
                             && ((nachricht.getTimestamp().getTime() - nachrichtBefore.getTimestamp().getTime()) < 60000)
                             && (nachrichtBefore.getTyp() == nachricht.getTyp())) {
