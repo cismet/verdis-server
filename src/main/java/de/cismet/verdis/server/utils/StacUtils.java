@@ -388,21 +388,26 @@ public class StacUtils {
      * @param   connectionContext  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
-     *
-     * @throws  Exception  DOCUMENT ME!
      */
     public static User getUser(final StacEntry stacEntry,
             final MetaService metaService,
-            final ConnectionContext connectionContext) throws Exception {
+            final ConnectionContext connectionContext) {
         if (stacEntry != null) {
-            final Object userServer = Naming.lookup("rmi://localhost/userServer");
-            final User user = ((UserServer)userServer).getUser(
-                    null,
-                    null,
-                    "VERDIS_GRUNDIS",
-                    stacEntry.getLoginName(),
-                    null);
-            return user;
+            for (final String registryIP : DomainServerImpl.getServerProperties().getRegistryIps()) {
+                try {
+                    final Object userServer = Naming.lookup("rmi://" + registryIP + "/userServer");
+                    final User user = ((UserServer)userServer).getUser(
+                            null,
+                            null,
+                            "VERDIS_GRUNDIS",
+                            stacEntry.getLoginName(),
+                            null);
+                    return user;
+                } catch (final Exception ex) {
+                    LOG.error(ex, ex);
+                }
+            }
+            return null;
         } else {
             return null;
         }
