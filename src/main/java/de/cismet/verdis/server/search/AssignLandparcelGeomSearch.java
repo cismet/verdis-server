@@ -54,7 +54,7 @@ public class AssignLandparcelGeomSearch extends GeomServerSearch {
                         + "   geom "
                         + "WHERE "
                         + "   geom.id = alkis_landparcel.geometrie AND "
-                        + "   ST_Within(GeomFromText('" + geometry.toText() + "', " + geometry.getSRID()
+                        + "   ST_Within(ST_GeomFromText('" + geometry.toText() + "', " + geometry.getSRID()
                         + "), geom.geo_field)";
             if (LOG.isDebugEnabled()) {
                 LOG.debug(sql);
