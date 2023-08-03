@@ -210,7 +210,7 @@ public class KassenzeichenNodeByWKTSearch extends KassenzeichenGeomSearch implem
                             + "WHERE "
                             + ((whereFilter.isEmpty())
                                 ? " TRUE " : ("(" + implodeArray(whereFilter.toArray(new String[0]), " OR ") + ")"))
-                            + "    AND cs_class.table_name = '" + VerdisConstants.MC.KASSENZEICHEN + "' "
+                            + "    AND cs_class.table_name ilike '" + VerdisConstants.MC.KASSENZEICHEN + "' "
                             + "    AND cs_attr_object_derived.class_id = cs_class.id "
                             + "    AND cs_attr_object_derived.attr_class_id = (SELECT id FROM cs_class WHERE table_name ILIKE '"
                             + VerdisConstants.MC.GEOM + "') "
