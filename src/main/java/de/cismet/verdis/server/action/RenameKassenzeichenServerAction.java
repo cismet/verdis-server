@@ -49,7 +49,7 @@ public class RenameKassenzeichenServerAction implements MetaServiceStore, UserAw
                 + "SELECT cs_locks.id "
                 + "FROM cs_locks, {mcTableKassenzeichen} AS kassenzeichen "
                 + "WHERE kassenzeichen.id = cs_locks.object_id "
-                + "AND cs_locks.class_id = {mcIdKassenzeichen} "
+                + "AND cs_locks.class_key = {mcKassenzeichenKey} "
                 + "AND kassenzeichen.{fieldKassenzeichenKassenzeichennummer} = ?;";
 
     public static final String TASKNAME = "renameKassenzeichen";
@@ -116,7 +116,7 @@ public class RenameKassenzeichenServerAction implements MetaServiceStore, UserAw
             final String query = QUERY_SELECT_CSLOCKS.replaceAll(
                         "\\{mcTableKassenzeichen\\}",
                         mcKassenzeichen.getTableName())
-                        .replaceAll("\\{mcIdKassenzeichen\\}", Integer.toString(mcKassenzeichen.getID()))
+                        .replaceAll("\\{mcKassenzeichenKey\\}", mcKassenzeichen.getTableName())
                         .replaceAll(
                             "\\{fieldKassenzeichenKassenzeichennummer\\}",
                             VerdisConstants.PROP.KASSENZEICHEN.KASSENZEICHENNUMMER);
