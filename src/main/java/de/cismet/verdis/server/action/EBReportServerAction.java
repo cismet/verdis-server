@@ -91,7 +91,7 @@ public class EBReportServerAction implements UserAwareServerAction, MetaServiceS
 
         //~ Enum constants -----------------------------------------------------
 
-        BYTE_ARRAY, STRING, INTEGER
+        BYTE_ARRAY, STRING, INTEGER, STRING_AS_BYTE_ARRAY
     }
 
     /**
@@ -196,6 +196,10 @@ public class EBReportServerAction implements UserAwareServerAction, MetaServiceS
                 switch (body) {
                     case BYTE_ARRAY: {
                         kassenzeichen = new BigInteger((byte[])object).intValue();
+                    }
+                    break;
+                    case STRING_AS_BYTE_ARRAY: {
+                        kassenzeichen = new BigInteger(new String((byte[])object)).intValue();
                     }
                     break;
                     case INTEGER: {
