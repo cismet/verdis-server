@@ -2036,7 +2036,7 @@ public class AenderungsanfrageUtils {
         final String attachmentPngbase64 = Base64.getEncoder()
                     .encodeToString(IOUtils.toByteArray(
                             AenderungsanfrageUtils.class.getResource("/de/cismet/verdis/server/utils/attachment.png")));
-        final DateFormat dateFormat = new SimpleDateFormat("dd.MM.YYYY - hh:mm");
+        final DateFormat dateFormat = new SimpleDateFormat("dd.MM.YYYY - HH:mm");
         final DateFormat sameDateFormat = new SimpleDateFormat("hh:mm");
 
         final StringBuffer chatSb = new StringBuffer();
