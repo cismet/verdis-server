@@ -1372,15 +1372,17 @@ public class AenderungsanfrageUtils {
                     }
 
                     // Änderungen zählen die geprüft wurden oder werden
-                    if (flaecheAenderungAfter.getPruefung() != null) {
-                        if (flaecheAenderungAfter.getPruefung().getGroesse() != null) {
-                            pruefungDoneCount++;
-                        }
-                        if (flaecheAenderungAfter.getPruefung().getAnschlussgrad() != null) {
-                            pruefungDoneCount++;
-                        }
-                        if (flaecheAenderungAfter.getPruefung().getFlaechenart() != null) {
-                            pruefungDoneCount++;
+                    if (!Boolean.TRUE.equals(flaecheAenderungBefore.getDraft())) {
+                        if (flaecheAenderungAfter.getPruefung() != null) {
+                            if (flaecheAenderungAfter.getPruefung().getGroesse() != null) {
+                                pruefungDoneCount++;
+                            }
+                            if (flaecheAenderungAfter.getPruefung().getAnschlussgrad() != null) {
+                                pruefungDoneCount++;
+                            }
+                            if (flaecheAenderungAfter.getPruefung().getFlaechenart() != null) {
+                                pruefungDoneCount++;
+                            }
                         }
                     }
 

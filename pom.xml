@@ -10,7 +10,7 @@
 
     <groupId>de.cismet.verdis</groupId>
     <artifactId>verdis-server</artifactId>
-    <version>8.0.7</version>
+    <version>8.0.8</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -24,7 +24,7 @@
         <connection>https://github.com/cismet/verdis-server.git</connection>
         <developerConnection>scm:git:git@github.com:cismet/verdis-server.git</developerConnection>
         <url>https://github.com/cismet/verdis-server</url>
-        <tag>v8.0.7</tag>
+        <tag>v8.0.8</tag>
     </scm>
 
     <issueManagement>
@@ -52,7 +52,7 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>8.0</version>
+                <version>8.0.1</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
@@ -60,7 +60,7 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>8.0</version>
+                <version>8.5.2</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
@@ -76,7 +76,7 @@
             <dependency>
                 <groupId>de.cismet.cids.custom.wupp.server</groupId>
                 <artifactId>cids-custom-server-wuppertal</artifactId>
-                <version>8.0</version>
+                <version>8.3.2</version>
                 <scope>compile</scope>
                 <type>jar</type>
             </dependency>
