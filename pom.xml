@@ -52,7 +52,7 @@
             <dependency>
                 <groupId>de.cismet.commons</groupId>
                 <artifactId>cismet-commons</artifactId>
-                <version>8.0</version>
+                <version>8.0.1</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
@@ -60,7 +60,7 @@
             <dependency>
                 <groupId>de.cismet.cids</groupId>
                 <artifactId>cids-server</artifactId>
-                <version>8.0</version>
+                <version>8.5.2</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
@@ -76,7 +76,7 @@
             <dependency>
                 <groupId>de.cismet.cids.custom.wupp.server</groupId>
                 <artifactId>cids-custom-server-wuppertal</artifactId>
-                <version>8.0</version>
+                <version>8.3.2</version>
                 <scope>compile</scope>
                 <type>jar</type>
             </dependency>
