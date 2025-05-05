@@ -43,14 +43,12 @@ public class AlkisLandparcelSearch extends GeomServerSearch {
 
             final String sql = "SELECT DISTINCT alkis_landparcel.id "
                         + "FROM "
-                        + "   alkis_landparcel, "
-                        + "   geom "
+                        + "   alkis_landparcel "
                         + "WHERE "
-                        + "   geom.id = alkis_landparcel.geometrie AND "
                         + "   st_GeomFromText('" + geometry.toText() + "', " + geometry.getSRID()
-                        + ") && geom.geo_field AND"
+                        + ") && alkis_landparcel.geometrie AND"
                         + "   ST_intersects(ST_GeomFromText('" + geometry.toText() + "', " + geometry.getSRID()
-                        + "), geom.geo_field)";
+                        + "), alkis_landparcel.geometrie)";
             if (LOG.isDebugEnabled()) {
                 LOG.debug(sql);
             }

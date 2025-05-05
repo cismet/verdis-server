@@ -47,15 +47,13 @@ public class AssignLandparcelGeomSearch extends GeomServerSearch {
             final Geometry geometry = (Geometry)getGeometry();
 
             final String sql = "SELECT "
-                        + "   st_ASTEXT(geom.geo_field), "
+                        + "   st_ASTEXT(alkis_landparcel.geometrie), "
                         + "   alkis_landparcel.alkis_id "
                         + "FROM "
-                        + "   alkis_landparcel, "
-                        + "   geom "
+                        + "   alkis_landparcel "
                         + "WHERE "
-                        + "   geom.id = alkis_landparcel.geometrie AND "
                         + "   ST_Within(ST_GeomFromText('" + geometry.toText() + "', " + geometry.getSRID()
-                        + "), geom.geo_field)";
+                        + "), alkis_landparcel.geometrie)";
             if (LOG.isDebugEnabled()) {
                 LOG.debug(sql);
             }
