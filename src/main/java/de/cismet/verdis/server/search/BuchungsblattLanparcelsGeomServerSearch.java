@@ -45,14 +45,13 @@ public class BuchungsblattLanparcelsGeomServerSearch extends AbstractCidsServerS
      */
     public BuchungsblattLanparcelsGeomServerSearch(final String bbcode) {
         searchQuery = ""
-                    + "SELECT st_astext(ST_SimplifyPreserveTopology(st_union(st_buffer(geom.geo_field, "
+                    + "SELECT st_astext(ST_SimplifyPreserveTopology(st_union(st_buffer(alkis_buchungsblatt_landparcel.geometrie, "
                     + FLURSTUECKBUFFER_FOR_KASSENZEICHEN_GEOMSEARCH
-                    + ")), 0.1)), st_srid(max(geom.geo_field)) "
-                    + "FROM alkis_buchungsblatt, alkis_buchungsblatt_to_buchungsblattlandparcels, alkis_buchungsblatt_landparcel, geom "
+                    + ")), 0.1)), st_srid(max(alkis_buchungsblatt_landparcel.geometrie)) "
+                    + "FROM alkis_buchungsblatt, alkis_buchungsblatt_to_buchungsblattlandparcels, alkis_buchungsblatt_landparcel "
                     + "WHERE "
                     + "alkis_buchungsblatt.landparcels = alkis_buchungsblatt_to_buchungsblattlandparcels.buchungsblatt_reference "
                     + "AND alkis_buchungsblatt_to_buchungsblattlandparcels.buchungsblatt_landparcel = alkis_buchungsblatt_landparcel.id "
-                    + "AND alkis_buchungsblatt_landparcel.geometrie = geom.id "
                     + "AND alkis_buchungsblatt.buchungsblattcode ILIKE '" + bbcode + "' "
                     + "GROUP BY alkis_buchungsblatt.id";
     }
