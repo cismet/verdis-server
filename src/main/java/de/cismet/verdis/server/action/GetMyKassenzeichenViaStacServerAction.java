@@ -51,6 +51,8 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore,
             GetMyKassenzeichenViaStacServerAction.class);
 
     public static final String TASKNAME = "getMyKassenzeichen";
+    private static final int MAX_CONCURRENT_RUNS = 4;
+    private static volatile int currentRuns = 0;
 
     //~ Enums ------------------------------------------------------------------
 
@@ -106,10 +108,26 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore,
 
     @Override
     public Object execute(final Object o, final ServerActionParameter... saps) {
-        String stac = null;
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("getMyKassenzeichen increaseCurrentRuns: existing runs: " + currentRuns);
+        }
+
         try {
+            increaseCurrentRuns();
+
+            while (!canRunStart()) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    // nothing to do
+                }
+            }
+
+            final long startTime = System.currentTimeMillis();
+            String stac = null;
+
             if (LOG.isDebugEnabled()) {
-                LOG.debug("GetMyKassenzeichenViaStacServerAction");
+                LOG.debug("GetMyKassenzeichenViaStacServerAction Run: " + currentRuns);
             }
             if (saps != null) {
                 for (final ServerActionParameter sap : saps) {
@@ -165,13 +183,45 @@ public class GetMyKassenzeichenViaStacServerAction implements MetaServiceStore,
                 kassenzeichenBean.setProperty(
                     VerdisConstants.PROP.KASSENZEICHEN.CONTACTINFO,
                     (contactInfo != null) ? contactInfo : null);
-
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("getMyKassenzeichen runtime: " + (System.currentTimeMillis() - startTime));
+                }
                 return kassenzeichenBean.toJSONString(false);
             }
         } catch (final Exception ex) {
             LOG.error("Error during GetMyKassenzeichenViaStacServerAction.execute()", ex);
+        } finally {
+            decreaseCurrentRuns();
         }
+
         return "{\"nothing\":\"at all\"}";
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
+    private synchronized void increaseCurrentRuns() {
+        ++currentRuns;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private synchronized boolean canRunStart() {
+        return currentRuns <= MAX_CONCURRENT_RUNS;
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
+    private synchronized void decreaseCurrentRuns() {
+        --currentRuns;
+
+        if (currentRuns < 0) {
+            currentRuns = 0;
+        }
     }
 
     @Override
