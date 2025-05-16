@@ -31,16 +31,9 @@ abstract class AbstractJson {
 
     private static final Logger LOG = Logger.getLogger(AbstractJson.class);
 
-    //~ Instance fields --------------------------------------------------------
+    private static final ObjectMapper mapper = new ObjectMapper();
 
-    private final ObjectMapper mapper = new ObjectMapper();
-
-    //~ Constructors -----------------------------------------------------------
-
-    /**
-     * Creates a new AbstractJson object.
-     */
-    protected AbstractJson() {
+    static {
         try {
             final SimpleModule module = new SimpleModule();
             mapper.registerModule(module);
@@ -49,6 +42,14 @@ abstract class AbstractJson {
         } catch (final Throwable t) {
             LOG.fatal("this should never happen", t);
         }
+    }
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new AbstractJson object.
+     */
+    protected AbstractJson() {
     }
 
     //~ Methods ----------------------------------------------------------------
