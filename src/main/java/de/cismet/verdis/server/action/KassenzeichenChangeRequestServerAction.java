@@ -26,8 +26,10 @@ import java.io.Serializable;
 
 import java.sql.Timestamp;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -45,6 +47,8 @@ import de.cismet.verdis.commons.constants.VerdisConstants;
 
 import de.cismet.verdis.server.json.AenderungsanfrageJson;
 import de.cismet.verdis.server.json.AenderungsanfrageResultJson;
+import de.cismet.verdis.server.json.NachrichtJson;
+import de.cismet.verdis.server.json.NachrichtParameterJson;
 import de.cismet.verdis.server.utils.AenderungsanfrageUtils;
 import de.cismet.verdis.server.utils.StacEntry;
 import de.cismet.verdis.server.utils.StacUtils;
@@ -306,6 +310,8 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             final Integer kassenzeichennummer = createKassenzeichennummer(kassenzeichenBean, aenderungsanfrageJson);
             final Boolean submission = aenderungsanfrageJson.getSubmission();
 
+            removeDoublesFromAenderungsanfrage(aenderungsanfrageJson);
+
             final Map<String, CidsBean> existingFlaechen = new HashMap<>();
             for (final CidsBean flaecheBean
                         : kassenzeichenBean.getBeanCollectionProperty(VerdisConstants.PROP.KASSENZEICHEN.FLAECHEN)) {
@@ -455,6 +461,31 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
     }
 
     /**
+     * Sometimes, messages of the type seen will be double. This method removes doubled messages.
+     *
+     * @param  aenderungsanfrage  DOCUMENT ME!
+     */
+    private void removeDoublesFromAenderungsanfrage(final AenderungsanfrageJson aenderungsanfrage) {
+        final List<NachrichtJson> nachrichten = aenderungsanfrage.getNachrichten();
+        NachrichtJson lastMessage = nachrichten.get(nachrichten.size() - 1);
+
+        for (int i = (nachrichten.size() - 2); i > 0; --i) {
+            final NachrichtJson currentMessage = nachrichten.get(i);
+            final NachrichtParameterJson.Type currentType = ((currentMessage.getNachrichtenParameter() != null)
+                    ? currentMessage.getNachrichtenParameter().getType() : null);
+            final NachrichtParameterJson.Type lastType = ((lastMessage.getNachrichtenParameter() != null)
+                    ? lastMessage.getNachrichtenParameter().getType() : null);
+
+            if ((currentType != null) && (lastType != null) && currentType.equals(NachrichtParameterJson.Type.SEEN)
+                        && lastType.equals(NachrichtParameterJson.Type.SEEN) && currentMessage.equals(lastMessage)) {
+                nachrichten.remove(i);
+            } else {
+                lastMessage = currentMessage;
+            }
+        }
+    }
+
+    /**
      * DOCUMENT ME!
      *
      * @param   aenderungsanfrageBean           DOCUMENT ME!
@@ -473,6 +504,8 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             final Integer kassenzeichennumer,
             final AenderungsanfrageUtils.Status status,
             final boolean aenderungsanfrageAlreadyExists) throws Exception {
+        removeDoublesFromAenderungsanfrage(aenderungsanfrageProcessed);
+
         aenderungsanfrageBean.setProperty(
             VerdisConstants.PROP.AENDERUNGSANFRAGE.CHANGES_JSON,
             aenderungsanfrageProcessed.toJson());
