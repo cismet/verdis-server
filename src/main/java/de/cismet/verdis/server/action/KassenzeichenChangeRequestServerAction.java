@@ -468,6 +468,12 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
     private void removeDoublesFromAenderungsanfrage(final AenderungsanfrageJson aenderungsanfrage) {
         final List<NachrichtJson> nachrichten = aenderungsanfrage.getNachrichten();
         NachrichtJson lastMessage = nachrichten.get(nachrichten.size() - 1);
+        boolean firstRemoval = true;
+        int count = 1;
+
+        if (nachrichten.size() < 2) {
+            return;
+        }
 
         for (int i = (nachrichten.size() - 2); i > 0; --i) {
             final NachrichtJson currentMessage = nachrichten.get(i);
@@ -479,9 +485,22 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
             if ((currentType != null) && (lastType != null) && currentType.equals(NachrichtParameterJson.Type.SEEN)
                         && lastType.equals(NachrichtParameterJson.Type.SEEN) && currentMessage.equals(lastMessage)) {
                 nachrichten.remove(i);
+
+                if (firstRemoval) {
+                    LOG.warn("REMOVE doubled message: Kassenzeichen_nummer "
+                                + String.valueOf(aenderungsanfrage.getKassenzeichen()),
+                        new Exception());
+                    firstRemoval = false;
+                } else {
+                    ++count;
+                }
             } else {
                 lastMessage = currentMessage;
             }
+        }
+
+        if (!firstRemoval) {
+            LOG.warn("REMOVE doubled message: count " + String.valueOf(count));
         }
     }
 
