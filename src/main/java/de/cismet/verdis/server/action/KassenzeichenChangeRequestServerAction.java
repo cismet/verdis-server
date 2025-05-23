@@ -467,13 +467,15 @@ public class KassenzeichenChangeRequestServerAction implements MetaServiceStore,
      */
     private void removeDoublesFromAenderungsanfrage(final AenderungsanfrageJson aenderungsanfrage) {
         final List<NachrichtJson> nachrichten = aenderungsanfrage.getNachrichten();
+
+        if ((nachrichten == null) || (nachrichten.size() < 2)) {
+            // prevent indexOutOfBoundsException
+            return;
+        }
+
         NachrichtJson lastMessage = nachrichten.get(nachrichten.size() - 1);
         boolean firstRemoval = true;
         int count = 1;
-
-        if (nachrichten.size() < 2) {
-            return;
-        }
 
         for (int i = (nachrichten.size() - 2); i > 0; --i) {
             final NachrichtJson currentMessage = nachrichten.get(i);
