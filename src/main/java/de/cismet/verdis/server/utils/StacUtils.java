@@ -107,7 +107,7 @@ public class StacUtils {
      * @throws  Exception  DOCUMENT ME!
      */
     private static Connection getConnection() throws Exception {
-        if (CONNECTION == null || CONNECTION.isClosed() || !CONNECTION.isValid(1)) {
+        if ((CONNECTION == null) || CONNECTION.isClosed() || !CONNECTION.isValid(1)) {
             if (CONNECTION != null) {
                 DomainServerImpl.getServerInstance().getConnectionPool().releaseDbConnection(CONNECTION);
             }
